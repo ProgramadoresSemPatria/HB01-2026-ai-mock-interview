@@ -28,10 +28,5 @@ export function makeAuthService(): AuthService {
     { mailFrom: env.MAIL_FROM },
   );
 
-  return new AuthService(
-    userRepository,
-    passwordHasher,
-    tokenService,
-    mailer,
-  );
+  return new AuthService(userRepository, passwordHasher, tokenService, mailer);
 }

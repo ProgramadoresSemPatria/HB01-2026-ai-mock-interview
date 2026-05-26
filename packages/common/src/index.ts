@@ -1,3 +1,10 @@
+export type {
+  IMailer,
+  IPasswordHasher,
+  ITokenService,
+  SignTokenOptions,
+  TokenPayload,
+} from "./protocols";
 export {
   BcryptPasswordHasher,
   createBcryptPasswordHasher,

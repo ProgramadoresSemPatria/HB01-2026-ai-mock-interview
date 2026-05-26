@@ -6,7 +6,7 @@ export type {
   ITokenService,
   SignTokenOptions,
   TokenPayload,
-} from "./protocols";
+} from "@hackathon2026/common";
 export { UserRepository } from "./repository/user-repository";
 export {
   AuthService,

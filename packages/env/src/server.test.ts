@@ -46,8 +46,14 @@ describe("serverEnvSchema", () => {
 
     const messages = result.error.issues.map((i) => i.message).join(" ");
     expect(messages.length).toBeGreaterThan(0);
-    expect(result.error.issues.some((i) => i.path.includes("JWT_SECRET"))).toBe(true);
-    expect(result.error.issues.some((i) => i.path.includes("CORS_ORIGIN"))).toBe(true);
-    expect(result.error.issues.some((i) => i.path.includes("MAIL_FROM"))).toBe(true);
+    expect(result.error.issues.some((i) => i.path.includes("JWT_SECRET"))).toBe(
+      true,
+    );
+    expect(
+      result.error.issues.some((i) => i.path.includes("CORS_ORIGIN")),
+    ).toBe(true);
+    expect(result.error.issues.some((i) => i.path.includes("MAIL_FROM"))).toBe(
+      true,
+    );
   });
 });

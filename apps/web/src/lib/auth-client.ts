@@ -7,5 +7,5 @@ export const authClient = {
   signUp: { email: async () => {} },
   signOut: async () => {},
   getSession: async () => null,
-  $Infer: { Session: null as any },
+  $Infer: { Session: null as unknown },
 };

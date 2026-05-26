@@ -1,4 +1,4 @@
-import type { IPasswordHasher } from "@hackathon2026/auth";
+import type { IPasswordHasher } from "../../protocols/password-hasher";
 import bcrypt from "bcrypt";
 
 export class BcryptPasswordHasher implements IPasswordHasher {

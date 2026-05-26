@@ -1,4 +1,4 @@
-import type { ITokenService } from "@hackathon2026/auth";
+import type { ITokenService } from "../protocols/token-service";
 import type { RequestHandler } from "express";
 
 export type PublicRoute = {

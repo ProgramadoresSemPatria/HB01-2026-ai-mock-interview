@@ -6,14 +6,16 @@ import {
   type CreateUserParams,
   type LoginParams,
   type UserWithoutPassword,
-} from '@hackathon2026/common';
-import { env } from '@hackathon2026/env/server';
-import { randomUUID } from 'node:crypto';
+} from "@hackathon2026/common";
+import { env } from "@hackathon2026/env/server";
+import { randomUUID } from "node:crypto";
 
-import type { IMailer } from '../protocols/mailer';
-import type { IPasswordHasher } from '../protocols/password-hasher';
-import type { ITokenService } from '../protocols/token-service';
-import type { UserRepository } from '../repository/user-repository';
+import type {
+  IMailer,
+  IPasswordHasher,
+  ITokenService,
+} from "@hackathon2026/common";
+import type { UserRepository } from "../repository/user-repository";
 
 export type LoginResult = {
   user: UserWithoutPassword;
@@ -37,7 +39,7 @@ export class AuthService {
   async signUp(params: CreateUserParams): Promise<UserWithoutPassword> {
     const existing = await this.userRepository.getByEmail(params.email);
     if (existing) {
-      throw new BadRequestError('Email already in use');
+      throw new BadRequestError("Email already in use");
     }
 
     const password = await this.passwordHasher.hash(params.password);
@@ -53,8 +55,8 @@ export class AuthService {
     const user = await this.userRepository.getByEmail(params.email);
 
     if (!user) {
-      logger.warn('Invalid login attempt');
-      throw new UnauthorizedError('Invalid credentials');
+      logger.warn("Invalid login attempt");
+      throw new UnauthorizedError("Invalid credentials");
     }
 
     const passwordMatches = await this.passwordHasher.compare(
@@ -63,8 +65,8 @@ export class AuthService {
     );
 
     if (!passwordMatches) {
-      logger.warn('Invalid login attempt');
-      throw new UnauthorizedError('Invalid credentials');
+      logger.warn("Invalid login attempt");
+      throw new UnauthorizedError("Invalid credentials");
     }
 
     const accessToken = this.tokenService.sign({ userId: user.id });
@@ -89,7 +91,7 @@ export class AuthService {
       await this.userRepository.getRefreshTokenWithUser(refreshToken);
 
     if (!stored) {
-      throw new UnauthorizedError('Invalid or expired refresh token');
+      throw new UnauthorizedError("Invalid or expired refresh token");
     }
 
     await this.userRepository.revokeAllUserRefreshTokens(stored.userId);
@@ -131,7 +133,7 @@ export class AuthService {
 
     await this.mailer.send(
       user.email,
-      'Password reset',
+      "Password reset",
       `Use the following link to reset your password: ${resetUrl}`,
     );
   }
@@ -140,13 +142,13 @@ export class AuthService {
     const decoded = this.tokenService.decode<{ userId?: number }>(token);
 
     if (!decoded?.userId) {
-      throw new UnauthorizedError('Invalid or expired reset token');
+      throw new UnauthorizedError("Invalid or expired reset token");
     }
 
     const user = await this.userRepository.getById(decoded.userId);
 
     if (!user) {
-      throw new UnauthorizedError('Invalid or expired reset token');
+      throw new UnauthorizedError("Invalid or expired reset token");
     }
 
     const resetSecret = env.JWT_SECRET + user.password;
@@ -154,7 +156,7 @@ export class AuthService {
     try {
       this.tokenService.verify(token, resetSecret);
     } catch {
-      throw new UnauthorizedError('Invalid or expired reset token');
+      throw new UnauthorizedError("Invalid or expired reset token");
     }
 
     const hashedPassword = await this.passwordHasher.hash(password);

@@ -1,4 +1,7 @@
-import { JwtTokenService, makeCheckAuthMiddleware } from "@hackathon2026/common";
+import {
+  JwtTokenService,
+  makeCheckAuthMiddleware,
+} from "@hackathon2026/common";
 import { env } from "@hackathon2026/env/server";
 import type { RequestHandler } from "express";
 

@@ -2,7 +2,7 @@ import type {
   ITokenService,
   SignTokenOptions,
   TokenPayload,
-} from "@hackathon2026/auth";
+} from "../protocols/token-service";
 import type { Request, Response } from "express";
 import { describe, expect, it, vi } from "vitest";
 

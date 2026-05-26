@@ -1,4 +1,4 @@
-import type { IMailer } from "@hackathon2026/auth";
+import type { IMailer } from "../../protocols/mailer";
 import { createRequire } from "node:module";
 import nodemailer, { type Transporter } from "nodemailer";
 
@@ -24,6 +24,16 @@ export class NodemailerMailerAdapter implements IMailer {
   }
 }
 
+type EnvServerMailerModule = {
+  env: {
+    MAIL_FROM: string;
+    SMTP_HOST: string;
+    SMTP_PORT: number;
+    SMTP_USER: string;
+    SMTP_PASS: string;
+  };
+};
+
 function readEnvMailerConfig(): NodemailerMailerConfig & {
   smtp: {
     host: string;
@@ -32,9 +42,7 @@ function readEnvMailerConfig(): NodemailerMailerConfig & {
     pass: string;
   };
 } {
-  const { env } = require("@hackathon2026/env/server") as typeof import(
-    "@hackathon2026/env/server"
-  );
+  const { env } = require("@hackathon2026/env/server") as EnvServerMailerModule;
 
   return {
     mailFrom: env.MAIL_FROM,

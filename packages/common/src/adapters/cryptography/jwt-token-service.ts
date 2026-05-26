@@ -2,7 +2,7 @@ import type {
   ITokenService,
   SignTokenOptions,
   TokenPayload,
-} from "@hackathon2026/auth";
+} from "../../protocols/token-service";
 import jwt, { type SignOptions } from "jsonwebtoken";
 import { createRequire } from "node:module";
 
@@ -47,10 +47,15 @@ export class JwtTokenService implements ITokenService {
   }
 }
 
+type EnvServerModule = {
+  env: {
+    JWT_SECRET: string;
+    JWT_EXPIRE_IN: string;
+  };
+};
+
 function readEnvConfig(): JwtTokenServiceConfig {
-  const { env } = require("@hackathon2026/env/server") as typeof import(
-    "@hackathon2026/env/server"
-  );
+  const { env } = require("@hackathon2026/env/server") as EnvServerModule;
 
   return {
     secret: env.JWT_SECRET,
@@ -62,8 +67,7 @@ export function createJwtTokenService(
   overrides?: Partial<JwtTokenServiceConfig>,
 ): ITokenService {
   const fromEnv =
-    overrides?.secret !== undefined &&
-    overrides?.defaultExpiresIn !== undefined
+    overrides?.secret !== undefined && overrides?.defaultExpiresIn !== undefined
       ? null
       : readEnvConfig();
 

@@ -47,8 +47,7 @@ export class AuthController {
   ): Promise<void> => {
     try {
       const { refreshToken } = req.body as { refreshToken: string };
-      const result =
-        await this.authService.refreshAccessToken(refreshToken);
+      const result = await this.authService.refreshAccessToken(refreshToken);
       res.status(200).json(result);
     } catch (error) {
       next(error);

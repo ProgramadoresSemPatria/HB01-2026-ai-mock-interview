@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { IMailer } from "../protocols/mailer";
-import type { IPasswordHasher } from "../protocols/password-hasher";
 import type {
+  IMailer,
+  IPasswordHasher,
   ITokenService,
   SignTokenOptions,
   TokenPayload,
-} from "../protocols/token-service";
+} from "@hackathon2026/common";
 import type { UserRepository } from "../repository/user-repository";
 
 const mockRandomUUID = vi.hoisted(() => vi.fn());
@@ -23,8 +23,7 @@ vi.mock("node:crypto", () => ({
 }));
 
 vi.mock("@hackathon2026/common", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("@hackathon2026/common")>();
+  const actual = await importOriginal();
   return {
     ...actual,
     logger: stubLogger,
@@ -39,10 +38,7 @@ vi.mock("@hackathon2026/env/server", () => ({
   },
 }));
 
-import {
-  BadRequestError,
-  UnauthorizedError,
-} from "@hackathon2026/common";
+import { BadRequestError, UnauthorizedError } from "@hackathon2026/common";
 
 import { AuthService } from "./auth-service";
 
@@ -97,8 +93,7 @@ class StubTokenService implements ITokenService {
 }
 
 class StubMailer implements IMailer {
-  readonly sendCalls: Array<{ to: string; subject: string; body: string }> =
-    [];
+  readonly sendCalls: Array<{ to: string; subject: string; body: string }> = [];
 
   async send(to: string, subject: string, body: string): Promise<void> {
     this.sendCalls.push({ to, subject, body });
@@ -288,9 +283,9 @@ describe("AuthService", () => {
         createdAt: new Date("2026-01-01T00:00:00.000Z"),
         user: sampleUser,
       });
-      vi.mocked(mockUserRepository.revokeAllUserRefreshTokens).mockResolvedValue(
-        undefined,
-      );
+      vi.mocked(
+        mockUserRepository.revokeAllUserRefreshTokens,
+      ).mockResolvedValue(undefined);
       let signedBeforeSave = false;
       vi.mocked(mockUserRepository.saveRefreshToken).mockImplementation(
         async (params) => {
@@ -310,9 +305,9 @@ describe("AuthService", () => {
       expect(mockUserRepository.getRefreshTokenWithUser).toHaveBeenCalledWith(
         "old-refresh-token",
       );
-      expect(mockUserRepository.revokeAllUserRefreshTokens).toHaveBeenCalledWith(
-        sampleUser.id,
-      );
+      expect(
+        mockUserRepository.revokeAllUserRefreshTokens,
+      ).toHaveBeenCalledWith(sampleUser.id);
       expect(tokenService.signCalls).toEqual([
         { payload: { userId: sampleUser.id }, options: undefined },
       ]);

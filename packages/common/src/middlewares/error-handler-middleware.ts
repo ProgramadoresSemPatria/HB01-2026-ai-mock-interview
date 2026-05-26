@@ -8,7 +8,8 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   const message = isHttpError ? err.message : "Internal Server Error";
 
   if (statusCode >= 500) {
-    const logMessage = err instanceof Error ? err.message : "Internal Server Error";
+    const logMessage =
+      err instanceof Error ? err.message : "Internal Server Error";
     const stack = err instanceof Error ? err.stack : undefined;
     logger.error(logMessage, { stack });
   }

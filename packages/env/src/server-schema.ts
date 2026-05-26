@@ -10,7 +10,9 @@ export const serverEnv = {
   PORT: z.coerce.number().default(3000),
   CORS_ORIGIN: z.url(),
   FRONTEND_URL: z.url(),
-  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  NODE_ENV: z
+    .enum(["development", "production", "test"])
+    .default("development"),
 
   // JWT Auth
   JWT_SECRET: z.string().min(32),

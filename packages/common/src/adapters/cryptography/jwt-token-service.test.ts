@@ -28,9 +28,9 @@ describe("JwtTokenService", () => {
     const customSecret = "another-secret-key-with-32-chars-min";
     const token = tokenService.sign({ userId: 1 }, { secret: customSecret });
 
-    expect(
-      tokenService.verify(token, customSecret),
-    ).toMatchObject({ userId: 1 });
+    expect(tokenService.verify(token, customSecret)).toMatchObject({
+      userId: 1,
+    });
   });
 
   it("verify throws for an invalid token", () => {
@@ -49,10 +49,7 @@ describe("JwtTokenService", () => {
   });
 
   it("sign honors custom expiresIn in options", () => {
-    const token = tokenService.sign(
-      { userId: 1 },
-      { expiresIn: "2h" },
-    );
+    const token = tokenService.sign({ userId: 1 }, { expiresIn: "2h" });
 
     expect(tokenService.verify(token)).toMatchObject({ userId: 1 });
   });

@@ -3,7 +3,11 @@
 
 import { Button } from "@hackathon2026/ui/components/button";
 
-export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () => void }) {
+export default function SignInForm({
+  onSwitchToSignUp,
+}: {
+  onSwitchToSignUp: () => void;
+}) {
   return (
     <div className="mx-auto w-full mt-10 max-w-md p-6">
       <h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>

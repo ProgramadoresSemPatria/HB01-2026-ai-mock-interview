@@ -17,7 +17,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@hackathon2026/auth": "workspace:*",
     "@hackathon2026/config": "workspace:*",
     "@types/bcrypt": "^6.0.0",
     "@types/jsonwebtoken": "^9.0.10",

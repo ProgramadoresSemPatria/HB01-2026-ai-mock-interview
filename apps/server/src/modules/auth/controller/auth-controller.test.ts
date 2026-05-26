@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AuthService } from "@hackathon2026/auth";
-import { BadRequestError, NotFoundError, UnauthorizedError } from "@hackathon2026/common";
+import {
+  BadRequestError,
+  NotFoundError,
+  UnauthorizedError,
+} from "@hackathon2026/common";
 import type { NextFunction, Request, Response } from "express";
 
 import {
@@ -126,7 +130,9 @@ describe("AuthController", () => {
         refreshToken: "new-refresh-token",
       };
 
-      vi.mocked(authService.refreshAccessToken).mockResolvedValue(refreshResult);
+      vi.mocked(authService.refreshAccessToken).mockResolvedValue(
+        refreshResult,
+      );
 
       await controller.refresh(createMockRequest(body), res, next);
 

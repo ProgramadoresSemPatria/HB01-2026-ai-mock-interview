@@ -13,7 +13,9 @@ function resolveMountPath(routeFilePath: string): string {
   const match = normalized.match(/\/modules\/([^/]+)\/routes\//);
 
   if (!match) {
-    throw new Error(`Cannot resolve mount path for route file: ${routeFilePath}`);
+    throw new Error(
+      `Cannot resolve mount path for route file: ${routeFilePath}`,
+    );
   }
 
   return `/api/${match[1]}`;

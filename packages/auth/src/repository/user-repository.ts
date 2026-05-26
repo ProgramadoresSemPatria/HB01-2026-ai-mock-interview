@@ -29,7 +29,9 @@ export class UserRepository {
     });
   }
 
-  async saveRefreshToken(params: SaveRefreshTokenParams): Promise<RefreshToken> {
+  async saveRefreshToken(
+    params: SaveRefreshTokenParams,
+  ): Promise<RefreshToken> {
     const { id, token, userId } = params;
     return prisma.refreshToken.create({
       data: {
