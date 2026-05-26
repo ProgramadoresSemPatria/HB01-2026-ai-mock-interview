@@ -1,104 +1,64 @@
 # hackathon2026
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Next.js, Express, TRPC, and more.
+Full-stack TypeScript app split into two standalone projects in one Git repository:
 
-## Features
+- **Backend/** — Express REST API, Prisma, PostgreSQL
+- **Front/** — Next.js App Router (port 3001)
 
-- **TypeScript** - For type safety and improved developer experience
-- **Next.js** - Full-stack React framework
-- **TailwindCSS** - Utility-first CSS for rapid UI development
-- **Shared UI package** - shadcn/ui primitives live in `packages/ui`
-- **Express** - Fast, unopinionated web framework
-- **tRPC** - End-to-end type-safe APIs
-- **Bun** - Runtime environment
-- **Prisma** - TypeScript-first ORM
-- **PostgreSQL** - Database engine
-- **Authentication** - Better-Auth
-- **Husky** - Git hooks for code quality
-- **Turborepo** - Optimized monorepo build system
+There is no Turborepo, no npm workspaces, and no tRPC. The Front talks to the Backend over HTTP JSON.
 
-## Getting Started
+## Getting started
 
-First, install the dependencies:
+### Backend
 
 ```bash
+cd Backend
+cp .env.example .env   # edit DATABASE_URL and secrets
 bun install
-```
-
-## Database Setup
-
-This project uses PostgreSQL with Prisma.
-
-1. Make sure you have a PostgreSQL database set up.
-2. Update your `apps/server/.env` file with your PostgreSQL connection details.
-
-3. Apply the schema to your database:
-
-```bash
+bun run db:start       # optional: Docker Postgres
 bun run db:push
+bun run dev            # http://localhost:3000
 ```
 
-Then, run the development server:
+### Front
 
 ```bash
-bun run dev
+cd Front
+cp .env.example .env.local
+bun install
+bun run dev            # http://localhost:3001
 ```
 
-Open [http://localhost:3001](http://localhost:3001) in your browser to see the web application.
-The API is running at [http://localhost:3000](http://localhost:3000).
+Set `NEXT_PUBLIC_SERVER_URL` in `Front/.env.local` to the Backend base URL (default `http://localhost:3000`).
 
-## UI Customization
+Set `CORS_ORIGIN` in `Backend/.env` to the Front origin (default `http://localhost:3001`).
 
-React web apps in this stack share shadcn/ui primitives through `packages/ui`.
+## Scripts (per project)
 
-- Change design tokens and global styles in `packages/ui/src/styles/globals.css`
-- Update shared primitives in `packages/ui/src/components/*`
-- Adjust shadcn aliases or style config in `packages/ui/components.json` and `apps/web/components.json`
+| Project  | Dev              | Build           | Tests           |
+|----------|------------------|-----------------|-----------------|
+| Backend  | `bun run dev`    | `bun run build` | `bun run test`  |
+| Front    | `bun run dev`    | `bun run build` | —               |
 
-### Add more shared components
+## Lint and format
 
-Run this from the project root to add more primitives to the shared UI package:
+Run inside each project:
 
 ```bash
-npx shadcn@latest add accordion dialog popover sheet table -c packages/ui
+cd Backend && bun run lint && bun run format:check
+cd Front && bun run lint && bun run format:check
 ```
 
-Import shared components like this:
+Git hooks: `cd Backend && bun install` configures Husky automatically. The pre-commit hook runs Backend tests.
 
-```tsx
-import { Button } from "@hackathon2026/ui/components/button";
-```
+## Auth API (REST)
 
-### Add app-specific blocks
+| Method | Path |
+|--------|------|
+| POST | `/api/auth/signup` |
+| POST | `/api/auth/login` |
+| POST | `/api/auth/refresh` |
+| POST | `/api/auth/request-password-reset` |
+| POST | `/api/auth/reset-password` |
 
-If you want to add app-specific blocks instead of shared primitives, run the shadcn CLI from `apps/web`.
-
-## Git Hooks and Formatting
-
-- Initialize hooks: `bun run prepare`
-
-## Project Structure
-
-```
-hackathon2026/
-├── apps/
-│   ├── web/         # Frontend application (Next.js)
-│   └── server/      # Backend API (Express, TRPC)
-├── packages/
-│   ├── ui/          # Shared shadcn/ui components and styles
-│   ├── api/         # API layer / business logic
-│   ├── auth/        # Authentication configuration & logic
-│   └── db/          # Database schema & queries
-```
-
-## Available Scripts
-
-- `bun run dev`: Start all applications in development mode
-- `bun run build`: Build all applications
-- `bun run dev:web`: Start only the web application
-- `bun run dev:server`: Start only the server
-- `bun run check-types`: Check TypeScript types across all apps
-- `bun run db:push`: Push schema changes to database
-- `bun run db:generate`: Generate database client/types
-- `bun run db:migrate`: Run database migrations
-- `bun run db:studio`: Open database studio UI
+Health: `GET /` returns `OK`.
