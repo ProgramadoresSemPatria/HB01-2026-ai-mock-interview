@@ -1,15 +1,17 @@
-import { auth } from "@hackathon2026/auth";
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
-import { fromNodeHeaders } from "better-auth/node";
 
-export async function createContext(opts: CreateExpressContextOptions) {
-  const session = await auth.api.getSession({
-    headers: fromNodeHeaders(opts.req.headers),
-  });
+export interface Context {
+  req: CreateExpressContextOptions["req"];
+  res: CreateExpressContextOptions["res"];
+  userId?: number;
+}
+
+export function createContext(opts: CreateExpressContextOptions): Context {
   return {
-    auth: null,
-    session,
+    req: opts.req,
+    res: opts.res,
+    // userId será adicionado pelo middleware de auth quando implementado
   };
 }
 
-export type Context = Awaited<ReturnType<typeof createContext>>;
+export type { Context as AppContext };
