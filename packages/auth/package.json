@@ -11,10 +11,13 @@
   },
   "scripts": {},
   "dependencies": {
+    "@hackathon2026/common": "workspace:*",
     "@hackathon2026/db": "workspace:*",
     "@hackathon2026/env": "workspace:*",
-    "better-auth": "catalog:",
+    "bcrypt": "catalog:",
     "dotenv": "catalog:",
+    "jsonwebtoken": "catalog:",
+    "nodemailer": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

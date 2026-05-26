@@ -1,10 +1,14 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated"
+  provider     = "prisma-client"
+  output       = "../generated"
   moduleFormat = "esm"
-  runtime = "bun"
+  runtime      = "bun"
 }
 
 datasource db {
   provider = "postgresql"
 }
+
+// Importa os modelos de usuário e refresh tokens
+// Os modelos estão definidos em user.prisma
+// DATABASE_URL é configurado via prisma.config.ts

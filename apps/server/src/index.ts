@@ -1,9 +1,7 @@
 import { createContext } from "@hackathon2026/api/context";
 import { appRouter } from "@hackathon2026/api/routers/index";
-import { auth } from "@hackathon2026/auth";
 import { env } from "@hackathon2026/env/server";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { toNodeHandler } from "better-auth/node";
 import cors from "cors";
 import express from "express";
 
@@ -18,7 +16,9 @@ app.use(
   }),
 );
 
-app.all("/api/auth{/*path}", toNodeHandler(auth));
+app.use(express.json());
+
+// Auth routes MVC serão registradas em /api/auth via setupRoutes (T28)
 
 app.use(
   "/trpc",
@@ -28,12 +28,10 @@ app.use(
   }),
 );
 
-app.use(express.json());
-
 app.get("/", (_req, res) => {
   res.status(200).send("OK");
 });
 
-app.listen(3000, () => {
-  console.log("Server is running on http://localhost:3000");
+app.listen(env.PORT || 3000, () => {
+  console.log(`Server is running on http://localhost:${env.PORT || 3000}`);
 });

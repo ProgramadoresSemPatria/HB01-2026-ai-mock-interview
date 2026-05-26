@@ -12,11 +12,11 @@
   "dependencies": {
     "@hackathon2026/api": "workspace:*",
     "@hackathon2026/auth": "workspace:*",
+    "@hackathon2026/common": "workspace:*",
     "@hackathon2026/db": "workspace:*",
     "@hackathon2026/env": "workspace:*",
     "@hono/trpc-server": "^0.4.0",
     "@trpc/server": "catalog:",
-    "better-auth": "catalog:",
     "bcrypt": "catalog:",
     "cors": "^2.8.5",
     "dotenv": "catalog:",
