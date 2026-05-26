@@ -1,11 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AuthService } from "@/modules/auth";
-import {
-  BadRequestError,
-  NotFoundError,
-  UnauthorizedError,
-} from "@/shared";
+import { BadRequestError, NotFoundError, UnauthorizedError } from "@/shared";
 import type { NextFunction, Request, Response } from "express";
 
 import {

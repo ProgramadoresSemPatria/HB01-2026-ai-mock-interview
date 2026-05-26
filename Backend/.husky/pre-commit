@@ -1,2 +1,2 @@
 #!/usr/bin/env sh
-cd "$(dirname "$0")/.." && bun run test
+cd "$(dirname "$0")/.." && bun run lint && bun run test
