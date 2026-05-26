@@ -12,6 +12,7 @@
   "devDependencies": {
     "@hackathon2026/config": "workspace:*",
     "@types/bun": "catalog:",
+    "@types/express": "catalog:",
     "typescript": "catalog:"
   }
 }
