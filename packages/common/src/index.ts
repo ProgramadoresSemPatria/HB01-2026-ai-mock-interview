@@ -1,4 +1,8 @@
 export {
+  BcryptPasswordHasher,
+  createBcryptPasswordHasher,
+} from "./adapters/cryptography/bcrypt-password-hasher";
+export {
   HttpError,
   BadRequestError,
   UnauthorizedError,

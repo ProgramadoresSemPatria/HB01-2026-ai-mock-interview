@@ -9,10 +9,13 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "bcrypt": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@hackathon2026/auth": "workspace:*",
     "@hackathon2026/config": "workspace:*",
+    "@types/bcrypt": "^6.0.0",
     "@types/bun": "catalog:",
     "@types/express": "catalog:",
     "typescript": "catalog:"
