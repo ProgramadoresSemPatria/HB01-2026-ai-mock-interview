@@ -8,3 +8,4 @@ export type {
   SignTokenOptions,
   TokenPayload,
 } from "./protocols";
+export { UserRepository } from "./repository/user-repository";
