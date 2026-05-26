@@ -19,6 +19,11 @@ export type LoginResult = {
   refreshToken: string;
 };
 
+export type RefreshResult = {
+  accessToken: string;
+  refreshToken: string;
+};
+
 export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
@@ -73,6 +78,32 @@ export class AuthService {
       user: toUserWithoutPassword(user),
       accessToken,
       refreshToken,
+    };
+  }
+
+  async refreshAccessToken(refreshToken: string): Promise<RefreshResult> {
+    const stored =
+      await this.userRepository.getRefreshTokenWithUser(refreshToken);
+
+    if (!stored) {
+      throw new UnauthorizedError("Invalid or expired refresh token");
+    }
+
+    await this.userRepository.revokeAllUserRefreshTokens(stored.userId);
+
+    const accessToken = this.tokenService.sign({ userId: stored.userId });
+    const refreshId = randomUUID();
+    const newRefreshToken = randomUUID();
+
+    await this.userRepository.saveRefreshToken({
+      id: refreshId,
+      token: newRefreshToken,
+      userId: stored.userId,
+    });
+
+    return {
+      accessToken,
+      refreshToken: newRefreshToken,
     };
   }
 }

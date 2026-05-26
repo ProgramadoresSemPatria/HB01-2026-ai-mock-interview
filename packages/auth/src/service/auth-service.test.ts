@@ -242,4 +242,79 @@ describe("AuthService", () => {
       expect(mockUserRepository.saveRefreshToken).not.toHaveBeenCalled();
     });
   });
+
+  describe("refreshAccessToken", () => {
+    it("rotates tokens, revokes existing refresh tokens, and persists the new refresh token", async () => {
+      mockRandomUUID.mockReset();
+      mockRandomUUID
+        .mockReturnValueOnce("new-refresh-id")
+        .mockReturnValueOnce("new-refresh-token");
+
+      vi.mocked(mockUserRepository.getRefreshTokenWithUser).mockResolvedValue({
+        id: "old-refresh-id",
+        token: "old-refresh-token",
+        userId: sampleUser.id,
+        expiresAt: new Date("2026-12-31T00:00:00.000Z"),
+        createdAt: new Date("2026-01-01T00:00:00.000Z"),
+        user: sampleUser,
+      });
+      vi.mocked(mockUserRepository.revokeAllUserRefreshTokens).mockResolvedValue(
+        undefined,
+      );
+      let signedBeforeSave = false;
+      vi.mocked(mockUserRepository.saveRefreshToken).mockImplementation(
+        async (params) => {
+          signedBeforeSave = tokenService.signCalls.length > 0;
+          return {
+            id: params.id,
+            token: params.token,
+            userId: params.userId,
+            expiresAt: new Date(),
+            createdAt: new Date(),
+          };
+        },
+      );
+
+      const result = await service.refreshAccessToken("old-refresh-token");
+
+      expect(mockUserRepository.getRefreshTokenWithUser).toHaveBeenCalledWith(
+        "old-refresh-token",
+      );
+      expect(mockUserRepository.revokeAllUserRefreshTokens).toHaveBeenCalledWith(
+        sampleUser.id,
+      );
+      expect(tokenService.signCalls).toEqual([
+        { payload: { userId: sampleUser.id }, options: undefined },
+      ]);
+      expect(mockUserRepository.saveRefreshToken).toHaveBeenCalledWith({
+        id: "new-refresh-id",
+        token: "new-refresh-token",
+        userId: sampleUser.id,
+      });
+      expect(result).toEqual({
+        accessToken: "access-jwt",
+        refreshToken: "new-refresh-token",
+      });
+      expect(signedBeforeSave).toBe(true);
+    });
+
+    it("throws UnauthorizedError with status 401 when refresh token is expired or revoked", async () => {
+      vi.mocked(mockUserRepository.getRefreshTokenWithUser).mockResolvedValue(
+        null,
+      );
+
+      await expect(
+        service.refreshAccessToken("missing-or-expired-token"),
+      ).rejects.toMatchObject({
+        name: "UnauthorizedError",
+        statusCode: 401,
+      });
+
+      expect(
+        mockUserRepository.revokeAllUserRefreshTokens,
+      ).not.toHaveBeenCalled();
+      expect(tokenService.signCalls).toHaveLength(0);
+      expect(mockUserRepository.saveRefreshToken).not.toHaveBeenCalled();
+    });
+  });
 });

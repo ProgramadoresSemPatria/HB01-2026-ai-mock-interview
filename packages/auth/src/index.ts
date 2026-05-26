@@ -9,4 +9,8 @@ export type {
   TokenPayload,
 } from "./protocols";
 export { UserRepository } from "./repository/user-repository";
-export { AuthService, type LoginResult } from "./service/auth-service";
+export {
+  AuthService,
+  type LoginResult,
+  type RefreshResult,
+} from "./service/auth-service";
