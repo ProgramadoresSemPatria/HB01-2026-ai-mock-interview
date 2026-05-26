@@ -5,33 +5,44 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import cors from "cors";
 import express from "express";
 
-const app = express();
+import { setupRoutes } from "./config/routes";
 
-app.use(
-  cors({
-    origin: env.CORS_ORIGIN,
-    methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  }),
-);
+async function main(): Promise<void> {
+  const app = express();
 
-app.use(express.json());
+  app.use(
+    cors({
+      origin: env.CORS_ORIGIN,
+      methods: ["GET", "POST", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+      credentials: true,
+    }),
+  );
 
-// Auth routes MVC serão registradas em /api/auth via setupRoutes (T28)
+  app.use(express.json());
 
-app.use(
-  "/trpc",
-  createExpressMiddleware({
-    router: appRouter,
-    createContext,
-  }),
-);
+  await setupRoutes(app);
 
-app.get("/", (_req, res) => {
-  res.status(200).send("OK");
-});
+  app.use(
+    "/trpc",
+    createExpressMiddleware({
+      router: appRouter,
+      createContext,
+    }),
+  );
 
-app.listen(env.PORT || 3000, () => {
-  console.log(`Server is running on http://localhost:${env.PORT || 3000}`);
+  app.get("/", (_req, res) => {
+    res.status(200).send("OK");
+  });
+
+  const port = env.PORT || 3000;
+
+  app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
+  });
+}
+
+main().catch((error: unknown) => {
+  console.error("Failed to start server:", error);
+  process.exit(1);
 });
