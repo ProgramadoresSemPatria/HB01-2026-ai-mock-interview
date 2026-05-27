@@ -6,6 +6,8 @@
   "main": "src/index.ts",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
+    "dev:worker": "bun run --hot src/worker.ts",
+    "worker": "bun run src/worker.ts",
     "build": "tsdown",
     "start": "bun run dist/index.mjs",
     "test": "vitest run",
