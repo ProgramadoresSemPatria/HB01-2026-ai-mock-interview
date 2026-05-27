@@ -2,28 +2,26 @@
 
 Full-stack TypeScript app split into two standalone projects in one Git repository:
 
-- **Backend/** — Express REST API, Prisma, PostgreSQL
-- **Front/** — Next.js App Router (port 3001)
+- `backend/` - Express REST API, Prisma, PostgreSQL
+- `frontend/` - Next.js App Router (port `3001`)
 
-There is no Turborepo, no npm workspaces, and no tRPC. The Front talks to the Backend over HTTP JSON.
+## backend architecture
 
-## Backend architecture
-
-The Backend follows a **layered, module-based** design inspired by Clean Architecture: HTTP concerns stay at the edges, business rules live in services, and infrastructure (database, mail, crypto) is wired through adapters and factories.
+`backend` follows layered, module-based design inspired by Clean Architecture: HTTP concerns stay at edges, business rules live in services, and infrastructure (database, mail, crypto) is wired through adapters and factories.
 
 ### Stack
 
-| Layer | Technology |
-|-------|------------|
-| Runtime | Bun |
-| HTTP | Express 5 |
-| ORM | Prisma 7 + PostgreSQL (`@prisma/adapter-pg`) |
-| Validation | Zod |
-| Auth tokens | JWT (`jsonwebtoken`) |
-| Passwords | bcrypt |
-| Email | Nodemailer |
-| Env | `@t3-oss/env-core` + Zod |
-| Tests | Vitest |
+| Layer       | Technology                                   |
+| ----------- | -------------------------------------------- |
+| Runtime     | Bun                                          |
+| HTTP        | Express 5                                    |
+| ORM         | Prisma 7 + PostgreSQL (`@prisma/adapter-pg`) |
+| Validation  | Zod                                          |
+| Auth tokens | JWT (`jsonwebtoken`)                         |
+| Passwords   | bcrypt                                       |
+| Email       | Nodemailer                                   |
+| Env         | `@t3-oss/env-core` + Zod                     |
+| Tests       | Vitest                                       |
 
 ### Request flow
 
@@ -39,108 +37,111 @@ flowchart LR
   Adapters --> JWT["JWT / bcrypt / SMTP"]
 ```
 
-1. **Routes** — register endpoints under `/api/{module}` (e.g. `/api/auth`).
-2. **Middlewares** — rate limiting, Zod validation (`validate`), optional auth (`check-auth`).
-3. **Controller** — maps HTTP request/response; delegates to the service.
-4. **Service** — business logic; depends on **protocols** (interfaces), not concrete libs.
-5. **Repository** — data access via Prisma.
-6. **Adapters** — implementations of protocols (bcrypt, JWT, Nodemailer) in `shared/adapters/`.
+1. Routes register endpoints under `/api/{module}` such as `/api/auth`.
+2. Middlewares handle rate limiting, Zod validation (`validate`), and auth (`check-auth`).
+3. Controllers map HTTP request/response and delegate to services.
+4. Services hold business logic and depend on protocols, not concrete libraries.
+5. Repositories handle data access via Prisma.
+6. Adapters implement protocols for bcrypt, JWT, and Nodemailer.
 
-Errors bubble to a global `errorHandler`; unknown routes return 404 JSON.
+Errors bubble to global `errorHandler`; unknown routes return `404` JSON.
 
-### Folder layout (`Backend/src/`)
+### Folder layout (`backend/src/`)
 
-```
+```text
 src/
-├── index.ts                 # Entry: load env, create app, listen
-├── config/
-│   ├── app.ts               # Express setup (CORS, JSON, routes, errors)
-│   ├── routes.ts            # Auto-discover *routes.ts under modules/
-│   └── env/                 # Typed environment (Zod schema)
-├── factories/               # Composition root (manual DI)
-│   └── auth/                # makeAuthController, makeAuthService, makeCheckAuth
-├── infrastructure/
-│   └── database/            # Prisma client singleton
-├── modules/                 # Feature modules (one folder per domain)
-│   └── auth/
-│       ├── routes/          # Route registrar (default export)
-│       ├── controller/
-│       ├── service/
-│       ├── repository/
-│       ├── protocols/       # IPasswordHasher, ITokenService, IMailer
-│       ├── validations/     # Zod schemas per endpoint
-│       └── middlewares/     # Module-specific middleware (e.g. check-auth)
-├── shared/
-│   ├── adapters/            # cryptography, mailer
-│   ├── middlewares/         # validate, rate-limit, error-handler
-│   ├── errors/              # HttpError hierarchy
-│   └── types/
-└── types/                   # Express augmentation (e.g. req.user)
+|-- index.ts
+|-- config/
+|   |-- app.ts
+|   |-- routes.ts
+|   `-- env/
+|-- docs/
+|-- factories/
+|   `-- auth/
+|-- infrastructure/
+|   `-- database/
+|-- modules/
+|   `-- auth/
+|       |-- controller/
+|       |-- middlewares/
+|       |-- protocols/
+|       |-- repository/
+|       |-- routes/
+|       |-- service/
+|       `-- validations/
+|-- shared/
+|   |-- adapters/
+|   |-- errors/
+|   |-- middlewares/
+|   `-- types/
+`-- types/
 ```
 
-Prisma schemas live in `Backend/prisma/schema/`; the generated client is under `prisma/generated/`.
+Prisma schemas live in `backend/prisma/schema/`; generated client lives in `backend/prisma/generated/`.
 
 ### Conventions
 
-- **Module discovery** — any `src/modules/{name}/routes/*routes.ts` file is mounted at `/api/{name}` without manual registration in `app.ts`.
-- **Factories** — dependencies are assembled in `factories/` (e.g. `makeAuthService` injects repository + bcrypt + JWT + mailer). Controllers and services stay easy to unit-test with mocks.
-- **Protocols vs adapters** — services depend on interfaces in `modules/*/protocols/`; concrete implementations live in `shared/adapters/`.
-- **Validation at the boundary** — request bodies are validated with Zod schemas in `modules/*/validations/` before reaching the controller.
-
-Adding a new domain module: create `src/modules/{feature}/` with `routes/{feature}-routes.ts` (default export registrar), then add `controller`, `service`, `repository`, and a factory under `factories/{feature}/`.
+- Route discovery: any `src/modules/{name}/routes/*routes.ts` file mounts at `/api/{name}` automatically.
+- Factories: dependencies are assembled in `factories/`.
+- Protocols vs adapters: services depend on interfaces in `modules/*/protocols/`; concrete implementations live in `shared/adapters/`.
+- Validation at boundary: request bodies are validated with Zod before reaching controllers.
 
 ## Getting started
 
-### Backend
+### backend
 
 ```bash
-cd Backend
-cp .env.example .env   # edit DATABASE_URL and secrets
+cd backend
+cp .env.example .env
 bun install
-bun run db:start       # optional: Docker Postgres
+bun run db:start
 bun run db:push
-bun run dev            # http://localhost:3000
+bun run dev
 ```
 
-### Front
+API base URL: `http://localhost:3000`
+
+Swagger UI: `http://localhost:3000/api-docs`
+
+### frontend
 
 ```bash
-cd Front
+cd frontend
 cp .env.example .env.local
 bun install
-bun run dev            # http://localhost:3001
+bun run dev
 ```
 
-Set `NEXT_PUBLIC_SERVER_URL` in `Front/.env.local` to the Backend base URL (default `http://localhost:3000`).
+Frontend URL: `http://localhost:3001`
 
-Set `CORS_ORIGIN` in `Backend/.env` to the Front origin (default `http://localhost:3001`).
+Set `NEXT_PUBLIC_SERVER_URL` in `frontend/.env.local` to backend base URL.
 
-## Scripts (per project)
+Set `CORS_ORIGIN` in `backend/.env` to frontend origin.
 
-| Project  | Dev              | Build           | Tests           |
-|----------|------------------|-----------------|-----------------|
-| Backend  | `bun run dev`    | `bun run build` | `bun run test`  |
-| Front    | `bun run dev`    | `bun run build` | —               |
+## Scripts
+
+| Project    | Dev           | Build           | Tests                              |
+| ---------- | ------------- | --------------- | ---------------------------------- |
+| `backend`  | `bun run dev` | `bun run build` | `bun run test`, `bun run test:e2e` |
+| `frontend` | `bun run dev` | `bun run build` | -                                  |
 
 ## Lint and format
 
-Run inside each project:
-
 ```bash
-cd Backend && bun run lint && bun run format:check
-cd Front && bun run lint && bun run format:check
+cd backend && bun run lint && bun run format:check
+cd frontend && bun run lint && bun run format:check
 ```
 
-Git hooks: `cd Backend && bun install` configures Husky automatically. The pre-commit hook runs Backend tests.
+Git hooks: `cd backend && bun install` configures Husky. Pre-commit runs backend tests.
 
-## Auth API (REST)
+## Auth API
 
-| Method | Path |
-|--------|------|
-| POST | `/api/auth/signup` |
-| POST | `/api/auth/login` |
-| POST | `/api/auth/refresh` |
-| POST | `/api/auth/request-password-reset` |
-| POST | `/api/auth/reset-password` |
+| Method | Path                               |
+| ------ | ---------------------------------- |
+| POST   | `/api/auth/signup`                 |
+| POST   | `/api/auth/login`                  |
+| POST   | `/api/auth/refresh`                |
+| POST   | `/api/auth/request-password-reset` |
+| POST   | `/api/auth/reset-password`         |
 
 Health: `GET /` returns `OK`.
