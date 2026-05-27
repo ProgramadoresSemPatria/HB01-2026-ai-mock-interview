@@ -6,7 +6,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  refreshTokens RefreshToken[]
+  refreshTokens     RefreshToken[]
+  resumes           Resume[]
+  interviewSessions InterviewSession[]
+  reviewItems       ReviewItem[]
 
   @@map("users")
 }
