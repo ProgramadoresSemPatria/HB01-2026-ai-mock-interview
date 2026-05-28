@@ -116,7 +116,7 @@
   body {
     @apply bg-background font-sans text-foreground;
     background-image:
-      radial-gradient(circle at top, rgba(11, 139, 115, 0.14), transparent 24%),
+      radial-gradient(circle at top, rgba(255, 255, 255, 0.32), transparent 24%),
       radial-gradient(circle at 82% 18%, rgba(0, 0, 0, 0.05), transparent 18%),
       linear-gradient(180deg, #fcfaf6 0%, #f9f5ef 100%);
   }
