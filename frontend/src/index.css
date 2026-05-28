@@ -190,12 +190,16 @@
       0 18px 40px rgba(11, 139, 115, 0.26);
   }
 
-  .marquee-track {
-    animation: marquee 24s linear infinite;
+  .orb-sway {
+    will-change: transform;
   }
 
-  .pause-on-hover:hover {
-    animation-play-state: paused;
+  .orb-sway-up {
+    animation: orb-sway-up 4.8s ease-in-out infinite;
+  }
+
+  .orb-sway-down {
+    animation: orb-sway-down 4.8s ease-in-out infinite;
   }
 
   .animate-float-slow {
@@ -237,11 +241,38 @@
   }
 }
 
-@keyframes marquee {
+@keyframes orb-sway-up {
   0% {
-    transform: translateX(0);
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-9px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(9px);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translateY(0);
+  }
+}
+
+@keyframes orb-sway-down {
+  0% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(9px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-9px);
+  }
+  100% {
+    transform: translateY(0);
   }
 }

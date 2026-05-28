@@ -388,12 +388,13 @@ export default function Home() {
 
       <section className="overflow-hidden py-12 md:py-16">
         <div className="content-width">
-          <div className="marquee-track pause-on-hover flex w-[calc(200%+2rem)] gap-5">
-            {[...orbColors, ...orbColors].map((orbClass, index) => (
+          <div className="flex flex-wrap items-center justify-center gap-5 md:flex-nowrap">
+            {orbColors.map((orbClass, index) => (
               <div
                 key={`${orbClass}-${index}`}
                 className={cn(
-                  "size-14 shrink-0 rounded-full shadow-[0_14px_28px_rgba(17,14,12,0.16)] md:size-16",
+                  "orb-sway size-14 shrink-0 rounded-full shadow-[0_14px_28px_rgba(17,14,12,0.16)] md:size-16",
+                  index % 2 === 0 ? "orb-sway-up" : "orb-sway-down",
                   orbClass,
                 )}
               />
