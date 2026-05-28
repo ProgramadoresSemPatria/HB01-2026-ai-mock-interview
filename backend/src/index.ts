@@ -3,10 +3,8 @@ import "@/config/env";
 import { env } from "@/config/env";
 
 import { createApp } from "@/config/app";
-import { setup as setupCheckpointer } from "@/infrastructure/ai/checkpoint/postgres-checkpointer";
 
 async function main(): Promise<void> {
-  await setupCheckpointer();
   const app = await createApp();
   const port = env.PORT || 3000;
 

@@ -5,9 +5,13 @@ import type { IObjectStorage } from "@/modules/resumes/protocols/object-storage"
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
 import { buildResumeExtractionPrompt } from "@/modules/resumes/prompts/resume-extraction-prompt";
 import { structuredSummarySchema } from "@/modules/resumes/validations/resume-schemas";
-import { logger } from "@/shared";
 
 export type PdfTextExtractor = (buffer: Buffer) => Promise<string>;
+
+export type ResumeProcessResult =
+  | { status: "ready"; resumeId: string }
+  | { status: "failed"; resumeId: string; error: string; cause?: unknown }
+  | { status: "skipped"; resumeId: string; reason: "not_found" };
 
 export type ResumeProcessorDeps = {
   resumeRepository: ResumeRepository;
@@ -19,15 +23,14 @@ export type ResumeProcessorDeps = {
 export class ResumeProcessor {
   constructor(private readonly deps: ResumeProcessorDeps) {}
 
-  async process(resumeId: string): Promise<void> {
+  async process(resumeId: string): Promise<ResumeProcessResult> {
     const { resumeRepository, objectStorage, extractionModel } = this.deps;
     const extractText = this.deps.extractText ?? extractPdfText;
 
     const resume = await resumeRepository.findById(resumeId);
 
     if (!resume) {
-      logger.warn(`Resume job skipped: resume ${resumeId} not found`);
-      return;
+      return { status: "skipped", resumeId, reason: "not_found" };
     }
 
     try {
@@ -49,11 +52,13 @@ export class ResumeProcessor {
       ]);
 
       await resumeRepository.updateReady(resumeId, structuredSummary, rawText);
+      return { status: "ready", resumeId };
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Resume processing failed";
 
       await resumeRepository.updateFailed(resumeId, message);
+      return { status: "failed", resumeId, error: message, cause: error };
     }
   }
 }

@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ResumeStatus } from "../../../prisma/generated/client";
 import type { IObjectStorage } from "@/modules/resumes/protocols/object-storage";
+import { buildResumeExtractionPrompt } from "@/modules/resumes/prompts/resume-extraction-prompt";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
+import {
+  structuredSummarySchema,
+  type StructuredSummary,
+} from "@/modules/resumes/validations/resume-schemas";
 
 import { ResumeProcessor } from "./resume-processor";
 
@@ -18,8 +23,10 @@ const sampleResume = {
   createdAt: new Date("2026-01-01T00:00:00.000Z"),
 };
 
-const structuredSummary = {
-  personal_info: { name: "Jane Doe", title: "Engineer" },
+const rawText = "Jane Doe\nSoftware Engineer";
+
+const structuredSummary: StructuredSummary = {
+  personal_info: { name: "Jane Doe", title: "Engineer", about: "" },
   skills: ["TypeScript"],
   experiences: [
     {
@@ -28,7 +35,15 @@ const structuredSummary = {
       highlights: ["Built APIs"],
     },
   ],
-  projects: [{ name: "Portfolio" }],
+  projects: [
+    {
+      name: "Portfolio",
+      description: "",
+      technologies: [],
+      highlights: [],
+    },
+  ],
+  certifications: [],
 };
 
 describe("ResumeProcessor", () => {
@@ -62,7 +77,7 @@ describe("ResumeProcessor", () => {
       withStructuredOutput: vi.fn().mockReturnValue(structuredModel),
     };
 
-    extractText = vi.fn().mockResolvedValue("Jane Doe\nSoftware Engineer");
+    extractText = vi.fn().mockResolvedValue(rawText);
 
     processor = new ResumeProcessor({
       resumeRepository,
@@ -78,29 +93,63 @@ describe("ResumeProcessor", () => {
       ...sampleResume,
       status: ResumeStatus.ready,
       structuredSummary,
-      rawText: "Jane Doe\nSoftware Engineer",
+      rawText,
     });
 
-    await processor.process("resume-uuid");
+    const result = await processor.process("resume-uuid");
 
     expect(objectStorage.get).toHaveBeenCalledWith(sampleResume.storageKey);
+    expect(result).toEqual({ status: "ready", resumeId: "resume-uuid" });
     expect(extractText).toHaveBeenCalledWith(Buffer.from("pdf-bytes"));
-    expect(extractionModel.withStructuredOutput).toHaveBeenCalled();
-    expect(structuredModel.invoke).toHaveBeenCalled();
+    expect(extractionModel.withStructuredOutput).toHaveBeenCalledWith(
+      structuredSummarySchema,
+    );
+    expect(structuredModel.invoke).toHaveBeenCalledWith([
+      {
+        role: "user",
+        content: buildResumeExtractionPrompt(rawText),
+      },
+    ]);
     expect(resumeRepository.updateReady).toHaveBeenCalledWith(
       "resume-uuid",
       structuredSummary,
-      "Jane Doe\nSoftware Engineer",
+      rawText,
     );
     expect(resumeRepository.updateFailed).not.toHaveBeenCalled();
+  });
+
+  it("marks resume failed when PDF has no extractable text", async () => {
+    vi.mocked(resumeRepository.findById).mockResolvedValue(sampleResume);
+    extractText.mockResolvedValue("   \n  ");
+
+    const result = await processor.process("resume-uuid");
+
+    expect(result).toEqual({
+      status: "failed",
+      resumeId: "resume-uuid",
+      error: "PDF contains no extractable text",
+      cause: expect.any(Error),
+    });
+    expect(extractionModel.withStructuredOutput).not.toHaveBeenCalled();
+    expect(resumeRepository.updateFailed).toHaveBeenCalledWith(
+      "resume-uuid",
+      "PDF contains no extractable text",
+    );
+    expect(resumeRepository.updateReady).not.toHaveBeenCalled();
   });
 
   it("marks resume failed when processing throws", async () => {
     vi.mocked(resumeRepository.findById).mockResolvedValue(sampleResume);
     extractText.mockRejectedValue(new Error("PDF parse error"));
 
-    await processor.process("resume-uuid");
+    const result = await processor.process("resume-uuid");
 
+    expect(result).toEqual({
+      status: "failed",
+      resumeId: "resume-uuid",
+      error: "PDF parse error",
+      cause: expect.any(Error),
+    });
     expect(resumeRepository.updateFailed).toHaveBeenCalledWith(
       "resume-uuid",
       "PDF parse error",
@@ -111,8 +160,13 @@ describe("ResumeProcessor", () => {
   it("skips processing when resume is not found", async () => {
     vi.mocked(resumeRepository.findById).mockResolvedValue(null);
 
-    await processor.process("missing-id");
+    const result = await processor.process("missing-id");
 
+    expect(result).toEqual({
+      status: "skipped",
+      resumeId: "missing-id",
+      reason: "not_found",
+    });
     expect(objectStorage.get).not.toHaveBeenCalled();
     expect(resumeRepository.updateReady).not.toHaveBeenCalled();
     expect(resumeRepository.updateFailed).not.toHaveBeenCalled();

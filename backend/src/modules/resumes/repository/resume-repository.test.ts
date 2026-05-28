@@ -30,7 +30,7 @@ const sampleResume = {
 };
 
 const structuredSummary = {
-  personal_info: { name: "Jane Doe", title: "Engineer" },
+  personal_info: { name: "Jane Doe", title: "Engineer", about: "" },
   skills: ["TypeScript", "Node.js"],
   experiences: [
     {
@@ -39,7 +39,15 @@ const structuredSummary = {
       highlights: ["Built APIs"],
     },
   ],
-  projects: [{ name: "Portfolio" }],
+  projects: [
+    {
+      name: "Portfolio",
+      description: "",
+      technologies: [],
+      highlights: [],
+    },
+  ],
+  certifications: [],
 };
 
 describe("ResumeRepository", () => {
