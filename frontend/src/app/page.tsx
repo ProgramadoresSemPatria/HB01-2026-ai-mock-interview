@@ -457,7 +457,7 @@ export default function Home() {
               "mt-10 rounded-full border-white/20 bg-white text-[#090909] hover:bg-white/90",
             )}
           >
-            Download Hone
+            Use Hone
             <ArrowRight className="size-4" />
           </Link>
         </div>
