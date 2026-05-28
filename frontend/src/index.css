@@ -243,36 +243,36 @@
 
 @keyframes orb-sway-up {
   0% {
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
   25% {
-    transform: translateY(-9px);
+    transform: translate3d(0, -9px, 0);
   }
   50% {
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
   75% {
-    transform: translateY(9px);
+    transform: translate3d(0, 9px, 0);
   }
   100% {
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 @keyframes orb-sway-down {
   0% {
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
   25% {
-    transform: translateY(9px);
+    transform: translate3d(0, 9px, 0);
   }
   50% {
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
   75% {
-    transform: translateY(-9px);
+    transform: translate3d(0, -9px, 0);
   }
   100% {
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }

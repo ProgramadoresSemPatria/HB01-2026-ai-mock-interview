@@ -388,7 +388,7 @@ export default function Home() {
 
       <section className="overflow-hidden py-12 md:py-16">
         <div className="content-width">
-          <div className="flex flex-wrap items-center justify-center gap-5 md:flex-nowrap">
+          <div className="grid grid-flow-col justify-center gap-5">
             {orbColors.map((orbClass, index) => (
               <div
                 key={`${orbClass}-${index}`}
