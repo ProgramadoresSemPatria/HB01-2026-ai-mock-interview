@@ -1,18 +1,23 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Outfit, Playfair_Display } from "next/font/google";
 
 import "../index.css";
 import Providers from "@/components/providers";
 
-const inter = Inter({
-  variable: "--font-inter",
+const outfit = Outfit({
+  variable: "--font-outfit",
+  subsets: ["latin"],
+});
+
+const playfairDisplay = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "AI Mock Interview",
+  title: "Hone | AI Mock Interview",
   description:
-    "Entrevistas tecnicas simuladas por IA com feedback estruturado e backlog automatico de revisao.",
+    "Landing page do AI Mock Interview com foco em preparacao tecnica, feedback estruturado e pratica guiada por IA.",
 };
 
 export default function RootLayout({
@@ -22,7 +27,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className={`${inter.variable} min-h-screen antialiased`}>
+      <body
+        className={`${outfit.variable} ${playfairDisplay.variable} min-h-screen antialiased`}
+      >
         <Providers>{children}</Providers>
       </body>
     </html>

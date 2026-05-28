@@ -4,57 +4,49 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "#como-funciona", label: "Como funciona" },
-  { href: "#feedback", label: "Feedback" },
-  { href: "#revisao", label: "Revisao" },
+  { href: "#product", label: "Product" },
+  { href: "#features", label: "Features" },
+  { href: "#practice", label: "Practice" },
+  { href: "#about", label: "About" },
 ] as const;
 
 export function MarketingHeader() {
   return (
-    <header className="content-width sticky top-0 z-20 pt-5">
-      <div className="glass-card flex items-center justify-between px-4 py-3 md:px-6">
-        <Link href="/" className="flex items-center gap-3">
-          <span className="size-2.5 rounded-full bg-primary shadow-[0_0_24px_rgba(0,220,130,0.8)]" />
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
-              AI Mock Interview
-            </p>
-            <p className="text-sm font-semibold tracking-[-0.02em] text-foreground">
-              Conversas tecnicas com postura de Tech Lead
-            </p>
-          </div>
-        </Link>
+    <header className="fixed inset-x-0 top-0 z-30">
+      <div className="content-width pt-5">
+        <div className="flex items-center justify-between rounded-full border border-black/6 bg-background/76 px-4 py-3 shadow-[0_12px_40px_rgba(26,22,18,0.06)] backdrop-blur-xl md:px-6">
+          <Link href="/" className="flex items-center gap-3">
+            <span className="orb-gradient size-7 rounded-full" />
+            <div className="flex items-baseline gap-2">
+              <span className="font-display text-xl tracking-[-0.04em] text-foreground">
+                Hone
+              </span>
+              <span className="hidden text-[10px] uppercase tracking-[0.24em] text-muted-foreground md:block">
+                AI mock interview
+              </span>
+            </div>
+          </Link>
 
-        <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="transition-colors hover:text-foreground"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+          <nav className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="transition-colors hover:text-foreground"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
 
-        <div className="flex items-center gap-2">
           <Link
             href="/login"
             className={cn(
-              buttonVariants({ variant: "outline", size: "sm" }),
-              "rounded-[6px] border-white/10 bg-transparent px-4 text-white hover:bg-white/6",
+              buttonVariants({ size: "sm" }),
+              "rounded-full border border-black/90 bg-[#101010] px-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-white hover:bg-[#101010]/90",
             )}
           >
-            Login
-          </Link>
-          <Link
-            href="/dashboard"
-            className={cn(
-              buttonVariants({ variant: "default", size: "sm" }),
-              "rounded-[6px] px-4 font-semibold",
-            )}
-          >
-            Abrir dashboard
+            Get started
           </Link>
         </div>
       </div>

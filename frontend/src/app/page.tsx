@@ -1,355 +1,490 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  BrainCircuit,
-  FileStack,
-  MessageSquareText,
-  Radar,
-  Sparkles,
+  Bot,
+  Check,
+  Paperclip,
+  Plus,
+  Rocket,
+  SendHorizontal,
+  Terminal,
 } from "lucide-react";
 
 import { MarketingHeader } from "@/components/marketing-header";
 import { buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-const workflow = [
+const featureCards = [
   {
-    step: "01",
-    title: "Upload do curriculo em PDF",
+    title: "AI Resumes",
     description:
-      "O backend salva no R2, extrai o texto e monta um resumo estruturado com LLM.",
+      "Instant analysis of your experience against role requirements.",
+    variant: "resume",
   },
   {
-    step: "02",
-    title: "Sessao guiada por senioridade",
+    title: "Senior Mode",
     description:
-      "A IA conduz a entrevista como Tech Lead e adapta profundidade para entry, mid ou senior.",
+      "Focusing on high-level system design and leadership signals.",
+    variant: "senior",
+    badge: "Active",
   },
   {
-    step: "03",
-    title: "Feedback final acionavel",
-    description:
-      "No ultimo turno, a plataforma fecha a conversa com um resumo claro de pontos fortes e lacunas.",
+    title: "Streaming",
+    description: "Real-time adaptive questioning based on your last answer.",
+    variant: "stream",
+  },
+  {
+    title: "Tech Review",
+    description: "Detailed breakdown of your technical strengths.",
+    variant: "review",
   },
 ] as const;
 
-const lenses = [
-  "Dominio tecnico e profundidade de raciocinio",
-  "Trade-offs, clareza de comunicacao e ownership",
-  "Lideranca tecnica, estrutura e consistencia nas respostas",
+const topicCards = [
+  { title: "Distributed Consensus", status: "Critical", tone: "critical" },
+  { title: "CAP Theorem", status: "Mastered", tone: "good" },
+  { title: "Kafka Internals", status: "Review", tone: "neutral" },
+  { title: "Query Plan Ops", status: "Mastered", tone: "good" },
+  { title: "LRU Caching", status: "Mastered", tone: "good" },
+  { title: "Binary Search", status: "Mastered", tone: "good" },
 ] as const;
 
-const signals = [
+const orbColors = [
+  "bg-[#1b1b1b]",
+  "orb-gradient",
+  "bg-[#5b6763]",
+  "bg-[linear-gradient(135deg,#14866f_0%,#8be1cf_100%)]",
+  "bg-[#d8ddd9]",
+  "bg-[linear-gradient(135deg,#d85b58_0%,#2f8880_100%)]",
+  "bg-[#e5e2e0]",
+  "bg-[#0b8b73]",
+] as const;
+
+const faqItems = [
   {
-    title: "Structured summary",
-    body: "A IA usa apenas o resumo estruturado do curriculo para manter o contexto limpo e seguro.",
+    question: "What levels does Hone support?",
+    answer:
+      "We support practice tracks from Junior to Staff and Principal, with tailored prompts for backend, frontend, full-stack, and mobile interviews.",
   },
   {
-    title: "Turn control no backend",
-    body: "Nada de extrapolar sessao ou duplicar stream. O servidor governa ownership, limite e encerramento.",
+    question: "Is my interview data private?",
+    answer:
+      "Yes. Sessions are scoped to your account context and are used only to drive the interview flow, final feedback, and review backlog.",
   },
   {
-    title: "Review backlog automatico",
-    body: "Os topicos recorrentes viram itens de revisao persistidos, deduplicados e prontos para estudo.",
+    question: "Can I invite my team?",
+    answer:
+      "Yes. Team practice flows can share curated interview prompts, review patterns, and learning loops across engineers.",
+  },
+  {
+    question: "How does the pricing work?",
+    answer:
+      "Individual practice starts free. Team features and deeper review workflows can be layered in later as premium workspace features.",
   },
 ] as const;
+
+type FeatureCardProps = {
+  title: string;
+  description: string;
+  variant: "resume" | "senior" | "stream" | "review";
+  badge?: string;
+};
+
+function FeatureCard({
+  title,
+  description,
+  variant,
+  badge,
+}: FeatureCardProps) {
+  return (
+    <article
+      className={cn(
+        "landing-panel min-h-[244px] p-6 transition-transform duration-300 hover:-translate-y-1",
+        variant === "senior" && "border-primary/40 shadow-[0_24px_64px_rgba(11,139,115,0.14)]",
+      )}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <h3 className="font-display text-[1.85rem] leading-none tracking-[-0.04em] text-foreground">
+          {title}
+        </h3>
+        {badge ? (
+          <span className="rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary-foreground">
+            {badge}
+          </span>
+        ) : null}
+      </div>
+
+      <div className="mt-6">
+        {variant === "resume" ? (
+          <div className="space-y-3 opacity-70">
+            <div className="h-2.5 rounded-full bg-black/10" />
+            <div className="h-2.5 w-4/5 rounded-full bg-black/10" />
+            <div className="h-2.5 w-1/2 rounded-full bg-primary/20" />
+          </div>
+        ) : null}
+
+        {variant === "senior" ? (
+          <div className="flex h-16 items-end gap-2">
+            <div className="h-4 w-full rounded-t-full bg-primary/10" />
+            <div className="h-8 w-full rounded-t-full bg-primary/20" />
+            <div className="h-11 w-full rounded-t-full bg-primary/35" />
+            <div className="h-14 w-full rounded-t-full bg-primary" />
+          </div>
+        ) : null}
+
+        {variant === "stream" ? (
+          <div className="rounded-[22px] bg-[#f5f1ec] p-4 font-mono text-sm text-muted-foreground">
+            <span className="text-primary">&gt;</span> Getting feedback...
+          </div>
+        ) : null}
+
+        {variant === "review" ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-sm">
+              <span>Concurrency</span>
+              <span className="font-semibold text-primary">92%</span>
+            </div>
+            <div className="h-2 rounded-full bg-black/8">
+              <div className="h-full w-[92%] rounded-full bg-primary" />
+            </div>
+          </div>
+        ) : null}
+      </div>
+
+      <p className="mt-8 max-w-[18rem] text-sm leading-7 text-muted-foreground">
+        {description}
+      </p>
+    </article>
+  );
+}
+
+function TopicPill({ title, status, tone }: (typeof topicCards)[number]) {
+  const toneClass =
+    tone === "critical"
+      ? "bg-[#f8ded9] text-[#b24c3f]"
+      : tone === "good"
+        ? "bg-primary/10 text-primary"
+        : "bg-[#ece9e3] text-[#5f625d]";
+
+  return (
+    <div className="rounded-[24px] bg-white px-4 py-3 shadow-[0_10px_24px_rgba(24,20,18,0.05)]">
+      <p className="text-sm font-semibold tracking-[-0.02em] text-foreground">
+        {title}
+      </p>
+      <span
+        className={cn(
+          "mt-3 inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]",
+          toneClass,
+        )}
+      >
+        {status}
+      </span>
+    </div>
+  );
+}
 
 export default function Home() {
   return (
-    <main className="page-shell hero-grid min-h-screen pb-16">
+    <main className="page-shell hero-grid overflow-x-hidden">
       <MarketingHeader />
 
-      <section className="content-width section-gap grid items-end gap-14 lg:grid-cols-[1.15fr_0.85fr]">
-        <div className="space-y-8">
-          <span className="eyebrow">
-            <Sparkles className="size-3.5 text-primary" />
-            mock interviews com postura de Tech Lead
-          </span>
+      <section
+        id="product"
+        className="content-width relative pt-32 pb-24 md:pt-[10.5rem] md:pb-32"
+      >
+        <div className="mx-auto max-w-4xl text-center">
+          <p className="landing-kicker">Powered by GPT-5 / Built for engineers</p>
+          <h1 className="headline-balance mt-8 font-display text-5xl leading-none tracking-[-0.06em] text-foreground md:text-[5.75rem]">
+            The interview
+            <span className="mt-3 block font-normal italic text-primary">
+              that prepares you
+            </span>
+          </h1>
+        </div>
 
-          <div className="space-y-5">
-            <h1 className="headline-balance max-w-4xl text-5xl font-bold tracking-[-0.045em] text-white md:text-7xl">
-              Treine entrevistas tecnicas com uma IA que cobra profundidade, nao
-              frases prontas.
-            </h1>
-            <p className="max-w-2xl text-lg leading-8 text-muted-foreground md:text-xl">
-              O usuario envia o curriculo, escolhe o nivel de senioridade e
-              entra numa conversa que simula a pressao, o contexto e os
-              trade-offs de uma entrevista real.
+        <div className="relative mx-auto mt-14 max-w-5xl md:mt-16">
+          <div className="landing-panel relative overflow-hidden px-0 pb-0 pt-0">
+            <div className="border-b border-black/6 bg-[#f5f1ec] px-4 py-3">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="size-2.5 rounded-full bg-[#ef8e8e]" />
+                  <span className="size-2.5 rounded-full bg-[#d8bea1]" />
+                  <span className="size-2.5 rounded-full bg-primary/60" />
+                </div>
+                <div className="flex items-center gap-3 rounded-full bg-white px-4 py-1.5 text-[11px] font-medium tracking-[0.02em] text-muted-foreground shadow-[0_8px_20px_rgba(25,20,18,0.06)]">
+                  <span className="relative flex size-2.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/35" />
+                    <span className="relative inline-flex size-2.5 rounded-full bg-primary" />
+                  </span>
+                  Interview Session - Senior Level
+                </div>
+                <div className="w-10" />
+              </div>
+            </div>
+
+            <div className="space-y-6 p-5 md:p-8">
+              <div className="flex gap-4">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/12 text-primary">
+                  <Bot className="size-4" />
+                </div>
+                <div className="max-w-[82%] rounded-[24px] rounded-tl-md bg-[#efe9e2] px-5 py-4 text-sm leading-7 text-[#5d5752] md:text-[15px]">
+                  At Nubank, we handle millions of concurrent transactions. How
+                  would you design a distributed lock mechanism for our credit
+                  card ledger?
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-4">
+                <div className="max-w-[82%] rounded-[24px] rounded-tr-md bg-primary px-5 py-4 text-sm leading-7 text-primary-foreground md:text-[15px]">
+                  I&apos;d start by considering Redis with the Redlock
+                  algorithm, but given the ledger requirements, maybe a
+                  consensus-based approach like Raft...
+                </div>
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#202020] text-white">
+                  <Check className="size-4" />
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/12 text-primary">
+                  <Bot className="size-4" />
+                </div>
+                <div className="rounded-full bg-[#efe9e2] px-4 py-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="size-2 rounded-full bg-[#c3bbb2]" />
+                    <span className="size-2 rounded-full bg-[#c3bbb2]" />
+                    <span className="size-2 rounded-full bg-[#c3bbb2]" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-black/6 bg-white px-5 py-4 md:px-8">
+              <div className="flex items-center gap-3 rounded-full border border-black/8 bg-[#fbfaf8] px-4 py-3 text-sm text-muted-foreground">
+                <Terminal className="size-4 text-muted-foreground" />
+                <span className="truncate">
+                  Explain your architectural decision...
+                </span>
+                <span className="relative ml-auto flex size-2.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/35" />
+                  <span className="relative inline-flex size-2.5 rounded-full bg-primary" />
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="landing-panel animate-float-delayed absolute -left-4 top-20 hidden max-w-[220px] p-5 md:block">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-primary">
+              Context
+            </p>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Analyzing candidate response for consistency versus availability
+              trade-offs.
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="/dashboard"
-              className={cn(
-                buttonVariants({ size: "lg" }),
-                "rounded-[6px] px-6 text-sm font-semibold",
-              )}
-            >
-              Explorar dashboard
-              <ArrowRight className="size-4" />
-            </Link>
-            <Link
-              href="/login"
-              className={cn(
-                buttonVariants({ variant: "outline", size: "lg" }),
-                "rounded-[6px] border-white/10 bg-transparent px-6 text-sm text-white hover:bg-white/6",
-              )}
-            >
-              Entrar para testar
-            </Link>
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-3">
-            {signals.map((signal) => (
-              <div
-                key={signal.title}
-                className="rounded-[8px] border border-white/8 bg-white/[0.03] px-4 py-4"
-              >
-                <p className="text-sm font-semibold tracking-[-0.02em] text-white">
-                  {signal.title}
-                </p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {signal.body}
-                </p>
-              </div>
-            ))}
-          </div>
+          <div className="orb-gradient animate-float-slow absolute -bottom-10 right-0 size-32 rounded-full md:size-40" />
         </div>
 
-        <div className="glass-card relative overflow-hidden rounded-[10px] p-6">
-          <div className="absolute inset-x-6 top-6 h-px shimmer-line" />
-          <div className="space-y-6 pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-                  Interview engine
-                </p>
-                <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">
-                  Arquitetura pronta para entrevistar, fechar feedback e gerar
-                  backlog.
-                </p>
-              </div>
-              <div className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                SSE + LangGraph
-              </div>
-            </div>
-
-            <div className="space-y-3 rounded-[8px] border border-white/8 bg-black/30 p-4">
-              {workflow.map((item) => (
-                <div
-                  key={item.step}
-                  className="grid gap-3 border-b border-white/6 pb-3 last:border-b-0 last:pb-0 md:grid-cols-[64px_1fr]"
-                >
-                  <span className="text-xs font-semibold tracking-[0.24em] text-primary">
-                    {item.step}
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold text-white">
-                      {item.title}
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                      {item.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[8px] border border-white/8 bg-white/[0.03] p-4">
-                <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-                  modelos
-                </p>
-                <p className="mt-2 text-sm text-white">
-                  GPT-5 para entrevista
-                </p>
-                <p className="text-sm text-white">GPT-5 mini para extracao</p>
-              </div>
-              <div className="rounded-[8px] border border-white/8 bg-white/[0.03] p-4">
-                <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-                  persistencia
-                </p>
-                <p className="mt-2 text-sm text-white">
-                  Postgres + PostgresSaver
-                </p>
-                <p className="text-sm text-white">Redis + Cloudflare R2</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="como-funciona" className="content-width section-gap">
-        <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <span className="eyebrow">
-              <FileStack className="size-3.5 text-primary" />
-              como funciona
-            </span>
-            <h2 className="mt-4 max-w-3xl text-3xl font-semibold tracking-[-0.04em] text-white md:text-5xl">
-              Da leitura do curriculo ao feedback final, sem perder o contexto
-              tecnico no meio do caminho.
-            </h2>
-          </div>
-          <p className="max-w-xl text-sm leading-7 text-muted-foreground md:text-base">
-            O fluxo foi desenhado para separar processamento, entrevista e
-            consolidacao de review items. Isso deixa o chat responsivo e a
-            plataforma confiavel.
+        <div className="mt-16 text-center">
+          <Link
+            href="/login"
+            className={cn(
+              buttonVariants({ size: "lg" }),
+              "rounded-full border border-black bg-[#101010] px-7 text-[11px] font-semibold uppercase tracking-[0.24em] text-white hover:bg-[#101010]/90",
+            )}
+          >
+            <Rocket className="size-4" />
+            Start your first session
+          </Link>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Free for individual engineers. No credit card required.
           </p>
         </div>
+      </section>
 
-        <div className="grid gap-4 lg:grid-cols-3">
-          {workflow.map((item) => (
-            <Card
-              key={item.step}
-              className="glass-card rounded-[8px] border-white/8 bg-white/[0.03] py-0"
-            >
-              <CardHeader className="px-5 pt-5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold tracking-[0.24em] text-primary">
-                    {item.step}
-                  </span>
-                </div>
-                <CardTitle className="text-xl tracking-[-0.03em] text-white">
-                  {item.title}
-                </CardTitle>
-                <CardDescription className="text-sm leading-7 text-muted-foreground">
-                  {item.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="px-5 pb-5">
-                <div className="rounded-[8px] border border-white/8 bg-black/25 px-4 py-3 text-sm text-muted-foreground">
-                  Pipeline orientado por fila, ownership garantido no backend e
-                  streaming do turno via SSE.
-                </div>
-              </CardContent>
-            </Card>
+      <section id="features" className="content-width section-gap">
+        <div className="text-center">
+          <h2 className="font-display text-4xl tracking-[-0.05em] text-foreground md:text-[3.35rem]">
+            Do anything with{" "}
+            <span className="font-normal italic text-primary">Hone</span>
+          </h2>
+        </div>
+
+        <div className="mt-16 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {featureCards.map((card) => (
+            <FeatureCard key={card.title} {...card} />
           ))}
+
+          <article className="landing-panel xl:col-span-4 p-7 md:p-10">
+            <div className="grid gap-8 md:grid-cols-[0.9fr_1.1fr] md:items-center">
+              <div>
+                <h3 className="font-display text-[2.4rem] leading-none tracking-[-0.05em] text-foreground md:text-[3.3rem]">
+                  Topic
+                  <span className="block">Tracking</span>
+                </h3>
+                <p className="mt-5 max-w-md text-sm leading-7 text-muted-foreground md:text-base">
+                  Hone monitors 40+ engineering domains to ensure you&apos;re
+                  covered across the entire full-stack spectrum.
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {topicCards.map((card) => (
+                  <TopicPill key={card.title} {...card} />
+                ))}
+              </div>
+            </div>
+          </article>
         </div>
       </section>
 
-      <section id="feedback" className="content-width section-gap grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="glass-card rounded-[10px] p-6">
-          <span className="eyebrow">
-            <BrainCircuit className="size-3.5 text-primary" />
-            o que a IA avalia
-          </span>
-          <div className="mt-6 space-y-4">
-            {lenses.map((lens, index) => (
-              <div
-                key={lens}
-                className="rounded-[8px] border border-white/8 bg-white/[0.03] px-4 py-4"
-              >
-                <p className="text-xs font-semibold tracking-[0.24em] text-primary">
-                  eixo {index + 1}
-                </p>
-                <p className="mt-2 text-base tracking-[-0.02em] text-white">
-                  {lens}
-                </p>
+      <section
+        id="practice"
+        className="relative overflow-hidden bg-[#070808] py-24 md:py-36"
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(11,139,115,0.22),transparent_28%),radial-gradient(circle_at_80%_60%,rgba(91,103,99,0.24),transparent_24%),linear-gradient(180deg,#090909_0%,#060707_100%)]" />
+        <div className="content-width relative z-10 text-center">
+          <h2 className="font-display text-5xl leading-none tracking-[-0.06em] text-white md:text-[5rem]">
+            Your personal Tech Lead
+          </h2>
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-white/60 md:text-base">
+            What can Hone do? Discover everything that can be delegated, from
+            wrangling system architecture to planning your interview roadmap.
+          </p>
+
+          <div className="mx-auto mt-16 max-w-4xl rounded-[30px] border border-white/10 bg-white/86 p-6 text-left shadow-[0_28px_90px_rgba(0,0,0,0.28)] backdrop-blur-xl md:p-8">
+            <h3 className="font-display text-2xl leading-tight tracking-[-0.04em] text-[#181614] md:text-[2.15rem]">
+              Design a highly available notification service that supports 100k
+              requests per second.
+            </h3>
+
+            <div className="mt-12 flex flex-wrap items-center gap-3 border-t border-black/8 pt-6 text-sm text-muted-foreground">
+              <span className="rounded-full border border-black/8 bg-[#f3efe9] px-4 py-2 text-[11px] font-medium uppercase tracking-[0.16em]">
+                Active Session
+              </span>
+              <button className="rounded-full px-3 py-2 transition-colors hover:bg-[#f3efe9]">
+                Junior
+              </button>
+              <button className="rounded-full px-3 py-2 transition-colors hover:bg-[#f3efe9]">
+                Mid-Level
+              </button>
+              <button className="rounded-full bg-primary px-4 py-2 font-medium text-primary-foreground">
+                Senior+
+              </button>
+
+              <div className="ml-auto flex items-center gap-2">
+                <button className="flex size-10 items-center justify-center rounded-full transition-colors hover:bg-[#f3efe9]">
+                  <Paperclip className="size-4" />
+                </button>
+                <button className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105">
+                  <SendHorizontal className="size-4" />
+                </button>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="overflow-hidden py-12 md:py-16">
+        <div className="content-width">
+          <div className="marquee-track pause-on-hover flex w-[calc(200%+2rem)] gap-5">
+            {[...orbColors, ...orbColors].map((orbClass, index) => (
+              <div
+                key={`${orbClass}-${index}`}
+                className={cn(
+                  "size-14 shrink-0 rounded-full shadow-[0_14px_28px_rgba(17,14,12,0.16)] md:size-16",
+                  orbClass,
+                )}
+              />
             ))}
           </div>
         </div>
+      </section>
 
-        <div className="glass-card rounded-[10px] p-6">
-          <span className="eyebrow">
-            <MessageSquareText className="size-3.5 text-primary" />
-            feedback estruturado
-          </span>
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <div className="rounded-[8px] border border-white/8 bg-black/25 p-5">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                ponto forte
+      <section id="about" className="content-width section-gap">
+        <div className="text-center">
+          <p className="font-display text-2xl italic text-primary md:text-[2rem]">
+            Questions
+          </p>
+          <h2 className="mt-2 font-display text-4xl tracking-[-0.05em] text-foreground md:text-[3.25rem]">
+            FAQ
+          </h2>
+        </div>
+
+        <div className="mx-auto mt-14 max-w-3xl">
+          {faqItems.map((item) => (
+            <details
+              key={item.question}
+              className="group border-b border-black/8 py-6"
+            >
+              <summary className="flex list-none items-center justify-between gap-6 text-left [&::-webkit-details-marker]:hidden">
+                <span className="font-display text-[1.4rem] tracking-[-0.04em] text-foreground md:text-[1.6rem]">
+                  {item.question}
+                </span>
+                <span className="flex size-8 items-center justify-center rounded-full border border-black/10 text-muted-foreground transition-transform duration-300 group-open:rotate-45">
+                  <Plus className="size-4" />
+                </span>
+              </summary>
+              <p className="max-w-2xl pt-4 text-sm leading-7 text-muted-foreground md:text-base">
+                {item.answer}
               </p>
-              <p className="mt-3 text-lg font-semibold tracking-[-0.03em] text-white">
-                Boa articulacao de trade-offs
-              </p>
-              <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                A resposta mostra maturidade ao discutir impacto operacional,
-                custo de manutencao e efeitos colaterais de arquitetura.
-              </p>
-            </div>
-            <div className="rounded-[8px] border border-white/8 bg-black/25 p-5">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                ponto de revisao
-              </p>
-              <p className="mt-3 text-lg font-semibold tracking-[-0.03em] text-white">
-                Clareza ao explicar consistencia vs disponibilidade
-              </p>
-              <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                O fechamento da sessao nao para em julgamento. Ele gera um
-                backlog acionavel para estudo continuo.
-              </p>
-            </div>
-          </div>
+            </details>
+          ))}
+        </div>
+
+        <div className="mt-14 flex justify-center">
+          <div className="size-10 rounded-full bg-primary/10" />
         </div>
       </section>
 
-      <section id="revisao" className="content-width section-gap">
-        <div className="glass-card rounded-[10px] p-6 md:p-8">
-          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-            <div>
-              <span className="eyebrow">
-                <Radar className="size-3.5 text-primary" />
-                backlog automatico de revisao
-              </span>
-              <h2 className="mt-5 text-3xl font-semibold tracking-[-0.04em] text-white md:text-4xl">
-                Cada entrevista deixa um rastro util para a proxima.
-              </h2>
-              <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground md:text-base">
-                O backend consolida topicos recorrentes, evita duplicacao cega e
-                transforma feedback em itens que realmente ajudam o usuario a se
-                preparar melhor.
-              </p>
-            </div>
+      <section className="relative overflow-hidden bg-[#060606] py-24 md:py-32">
+        <div className="star-field absolute inset-0 opacity-30" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.12),transparent_16%),radial-gradient(circle_at_70%_40%,rgba(255,255,255,0.08),transparent_18%),linear-gradient(135deg,rgba(255,255,255,0.02),transparent_45%)]" />
+        <div className="content-width relative z-10 text-center">
+          <h2 className="font-display text-5xl leading-none tracking-[-0.06em] text-white md:text-[5rem]">
+            Interview with
+            <span className="mt-2 block font-normal italic text-white">
+              confidence
+            </span>
+          </h2>
 
-            <div className="grid gap-3">
-              {[
-                [
-                  "System design",
-                  "Prioridade alta",
-                  "Explique melhor escolhas de consistencia e cache.",
-                ],
-                [
-                  "Feedback loops",
-                  "Prioridade media",
-                  "Torne mais concretos os exemplos de mentoring e alinhamento.",
-                ],
-                [
-                  "Profiling",
-                  "Prioridade baixa",
-                  "Aprofunde diferenca entre medir e otimizar cedo demais.",
-                ],
-              ].map(([topic, priority, description]) => (
-                <div
-                  key={topic}
-                  className="rounded-[8px] border border-white/8 bg-black/25 px-4 py-4"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold tracking-[-0.02em] text-white">
-                      {topic}
-                    </p>
-                    <span className="rounded-full border border-white/8 bg-white/6 px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                      {priority}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                    {description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <Link
+            href="/login"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "lg" }),
+              "mt-10 rounded-full border-white/20 bg-white text-[#090909] hover:bg-white/90",
+            )}
+          >
+            Download Hone
+            <ArrowRight className="size-4" />
+          </Link>
         </div>
       </section>
+
+      <footer className="border-t border-black/6 py-16">
+        <div className="content-width flex flex-col items-center gap-8 text-center">
+          <Link href="/" className="flex items-center gap-3">
+            <span className="orb-gradient size-7 rounded-full" />
+            <span className="font-display text-xl tracking-[-0.04em] text-foreground">
+              Hone
+            </span>
+          </Link>
+
+          <div className="flex flex-wrap items-center justify-center gap-6 text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground">
+            <Link href="#">X</Link>
+            <Link href="#">LinkedIn</Link>
+            <Link href="#">Instagram</Link>
+            <Link href="#">Legal</Link>
+            <Link href="#">Privacy</Link>
+          </div>
+
+          <div className="space-y-2 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+            <p>(c) 2026 Hone AI. All rights reserved.</p>
+            <p>Cosmic curiosity</p>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
