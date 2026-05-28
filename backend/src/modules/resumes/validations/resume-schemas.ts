@@ -6,7 +6,7 @@ const nonEmptyString = (label: string) =>
 const personalInfoSchema = z.object({
   name: nonEmptyString("Name"),
   title: nonEmptyString("Title"),
-  about: nonEmptyString("About").optional(),
+  about: z.string(),
 });
 
 const experienceSchema = z.object({
@@ -17,9 +17,9 @@ const experienceSchema = z.object({
 
 const projectSchema = z.object({
   name: nonEmptyString("Project name"),
-  description: nonEmptyString("Project description").optional(),
-  technologies: z.array(nonEmptyString("Technology")).optional(),
-  highlights: z.array(nonEmptyString("Highlight")).optional(),
+  description: z.string(),
+  technologies: z.array(nonEmptyString("Technology")),
+  highlights: z.array(nonEmptyString("Highlight")),
 });
 
 export const structuredSummarySchema = z.object({
@@ -27,7 +27,7 @@ export const structuredSummarySchema = z.object({
   skills: z.array(nonEmptyString("Skill")),
   experiences: z.array(experienceSchema),
   projects: z.array(projectSchema),
-  certifications: z.array(nonEmptyString("Certification")).optional(),
+  certifications: z.array(nonEmptyString("Certification")),
 });
 
 export type StructuredSummary = z.infer<typeof structuredSummarySchema>;
