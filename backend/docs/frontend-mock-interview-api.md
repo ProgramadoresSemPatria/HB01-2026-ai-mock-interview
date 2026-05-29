@@ -52,7 +52,8 @@ sequenceDiagram
   end
 
   Note over UI,API: Último turno: closing_feedback (sem nova pergunta)
-  Note over UI,API: Após stream: review items no DB (sem GET ainda)
+  UI->>API: GET /api/review-items
+  API-->>UI: { reviewItems }
 ```
 
 **Ordem recomendada na UI:**
@@ -502,16 +503,36 @@ Após o **último turno** com sucesso, o backend:
 - Gera tópicos `{ topic, description, priority }` com `priority`: `low` | `medium` | `high`.
 - Faz **merge** por usuário + `topic` (sem duplicar; prioridade só sobe).
 
-### Endpoint público
+### Listar itens (`GET /api/review-items`)
 
-**Não há** rota `GET` (nem CRUD) para `review_items` nesta versão.
+| Método | Path | Auth |
+|--------|------|------|
+| `GET` | `/api/review-items` | Bearer |
 
-Os dados existem no PostgreSQL, mas o frontend **não consegue listá-los via API** ainda. Planeje:
+**Resposta `200`:**
 
-- Aba “Itens de revisão” com placeholder / feature flag até o backend expor algo como `GET /api/interview/review-items`, **ou**
-- Alinhar com o time de backend para priorizar esse endpoint.
+```json
+{
+  "reviewItems": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "sessionId": "660e8400-e29b-41d4-a716-446655440001",
+      "topic": "system design",
+      "description": "Practice scalability patterns and trade-offs.",
+      "priority": "high",
+      "createdAt": "2026-05-28T12:00:00.000Z",
+      "updatedAt": "2026-05-29T10:30:00.000Z"
+    }
+  ]
+}
+```
 
-O **CTA** no último turno da IA já menciona essa aba — a UI deve existir ou exibir aviso de “em breve”.
+- `priority`: `low` | `medium` | `high` (badge / cor na UI).
+- Ordenação: **prioridade** (`high` → `medium` → `low`), depois `updatedAt` mais recente.
+- Lista **agregada por usuário** (um tópico por `topic`, merge no backend).
+- Sem itens: `{ "reviewItems": [] }` (não usar `404`).
+
+**Sugestão de UI:** após `meta.isFinished === true` no último stream, chamar este endpoint (ou refetch ao abrir a aba). O CTA no closing feedback já aponta para essa aba.
 
 ---
 
@@ -593,6 +614,7 @@ finished (isFinished)
 | `GET` | `/api/interview/sessions` | Listar sessões |
 | `GET` | `/api/interview/sessions/:sessionId/messages` | Histórico |
 | `POST` | `/api/interview/sessions/:sessionId/stream` | Turno (SSE) |
+| `GET` | `/api/review-items` | Tópicos de estudo do usuário |
 
 ---
 
