@@ -9,7 +9,12 @@ import type {
 import { apiRequest } from "./client";
 
 export const authApi = {
-  signup(body: { name: string; email: string; password: string }) {
+  signup(body: {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+  }) {
     return apiRequest<SignupResponse>("/api/auth/signup", {
       method: "POST",
       body,
