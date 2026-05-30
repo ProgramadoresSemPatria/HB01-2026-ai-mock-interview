@@ -65,7 +65,6 @@ export class InterviewStreamService {
       content,
     });
 
-    let aiContent = "";
     let aborted = false;
 
     const onClose = (): void => {
@@ -109,22 +108,31 @@ export class InterviewStreamService {
           return;
         }
         if (result.done) {
+          if (aborted) {
+            return;
+          }
+
+          const completedAiMessage = result.value;
+          if (!completedAiMessage?.content) {
+            closeWithError("Interview response was not saved");
+            return;
+          }
+
+          await this.messageRepository.createAi({
+            sessionId,
+            userId,
+            content: completedAiMessage.content,
+          });
+
           break;
         }
 
-        aiContent += result.value.content;
         writeEvent(res, "token", { content: result.value.content });
       }
 
       if (aborted) {
         return;
       }
-
-      await this.messageRepository.createAi({
-        sessionId,
-        userId,
-        content: aiContent,
-      });
 
       const updatedSession =
         await this.sessionRepository.incrementTurnCount(sessionId);

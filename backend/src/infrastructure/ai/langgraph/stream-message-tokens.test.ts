@@ -1,7 +1,10 @@
 import { AIMessage, AIMessageChunk } from "@langchain/core/messages";
 import { describe, expect, it } from "vitest";
 
-import { extractStreamTokenFromChunk } from "./stream-message-tokens";
+import {
+  extractStreamTokenFromChunk,
+  resolveCompletedAiMessage,
+} from "./stream-message-tokens";
 
 describe("extractStreamTokenFromChunk", () => {
   it("emits tokens only for interviewer and closing_feedback nodes", () => {
@@ -52,5 +55,27 @@ describe("extractStreamTokenFromChunk", () => {
     ];
 
     expect(extractStreamTokenFromChunk(chunk)).toBeNull();
+  });
+});
+
+describe("resolveCompletedAiMessage", () => {
+  it("returns content and id when the last message is AI", () => {
+    const messages = [
+      new AIMessage({ content: "Complete response", id: "msg-123" }),
+    ];
+
+    expect(resolveCompletedAiMessage(messages)).toEqual({
+      content: "Complete response",
+      langGraphMessageId: "msg-123",
+    });
+  });
+
+  it("returns undefined when the last message is not AI", () => {
+    const messages = [
+      new AIMessage({ content: "Earlier" }),
+      { getType: () => "human", content: "Question" } as never,
+    ];
+
+    expect(resolveCompletedAiMessage(messages)).toBeUndefined();
   });
 });

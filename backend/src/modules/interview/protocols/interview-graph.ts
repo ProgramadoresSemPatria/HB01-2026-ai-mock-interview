@@ -5,6 +5,12 @@ export type InterviewGraphStreamToken = {
   content: string;
 };
 
+/** Final AI message read from the graph checkpointer after the stream completes. */
+export type InterviewGraphStreamCompletion = {
+  content: string;
+  langGraphMessageId?: string;
+};
+
 export type InterviewGraphInput = {
   messages: { role: "human"; content: string }[];
   turnCount: number;
@@ -20,5 +26,8 @@ export interface IInterviewGraph {
   streamMessages(
     input: InterviewGraphInput,
     options: { threadId: string },
-  ): AsyncIterable<InterviewGraphStreamToken>;
+  ): AsyncGenerator<
+    InterviewGraphStreamToken,
+    InterviewGraphStreamCompletion | undefined
+  >;
 }

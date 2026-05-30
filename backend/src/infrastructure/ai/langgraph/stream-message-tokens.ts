@@ -1,4 +1,8 @@
-import { AIMessage, AIMessageChunk } from "@langchain/core/messages";
+import {
+  AIMessage,
+  AIMessageChunk,
+  type BaseMessage,
+} from "@langchain/core/messages";
 
 export const STREAM_TOKEN_NODE_NAMES = [
   "interviewer",
@@ -73,4 +77,57 @@ export function extractStreamTokenFromChunk(chunk: unknown): string | null {
   }
 
   return extractMessageContent(message);
+}
+
+function extractPersistableMessageContent(message: BaseMessage): string {
+  if (typeof message.content === "string") {
+    return message.content;
+  }
+
+  if (Array.isArray(message.content)) {
+    return message.content
+      .map((block) => {
+        if (typeof block === "string") {
+          return block;
+        }
+
+        if (
+          block &&
+          typeof block === "object" &&
+          "text" in block &&
+          typeof block.text === "string"
+        ) {
+          return block.text;
+        }
+
+        return "";
+      })
+      .join("");
+  }
+
+  return "";
+}
+
+/**
+ * Resolves the last AI message from graph state after streaming completes.
+ * Must not be called mid-stream — the checkpointer may hold partial state.
+ */
+export function resolveCompletedAiMessage(
+  messages: BaseMessage[] | undefined,
+): { content: string; langGraphMessageId?: string } | undefined {
+  const aiMessage = messages?.at(-1);
+
+  if (!aiMessage || aiMessage.getType() !== "ai") {
+    return undefined;
+  }
+
+  const content = extractPersistableMessageContent(aiMessage);
+  if (!content) {
+    return undefined;
+  }
+
+  return {
+    content,
+    langGraphMessageId: aiMessage.id,
+  };
 }

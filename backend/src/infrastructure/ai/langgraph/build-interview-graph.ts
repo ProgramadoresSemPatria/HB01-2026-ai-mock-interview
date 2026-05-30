@@ -7,7 +7,6 @@ import type { BaseCheckpointSaver } from "@langchain/langgraph";
 import type {
   IInterviewGraph,
   InterviewGraphInput,
-  InterviewGraphStreamToken,
 } from "@/modules/interview/protocols/interview-graph";
 
 import {
@@ -19,7 +18,10 @@ import { createClosingFeedbackNode } from "./nodes/closing-feedback-node";
 
 import { createInterviewerNode } from "./nodes/interviewer-node";
 
-import { extractStreamTokenFromChunk } from "./stream-message-tokens";
+import {
+  extractStreamTokenFromChunk,
+  resolveCompletedAiMessage,
+} from "./stream-message-tokens";
 
 export type BuildInterviewGraphDeps = {
   checkpointer: BaseCheckpointSaver;
@@ -69,10 +71,12 @@ export function buildInterviewGraph(
       input: InterviewGraphInput,
 
       options: { threadId: string },
-    ): AsyncIterable<InterviewGraphStreamToken> {
+    ) {
       const lastMessage = input.messages.at(-1);
 
       const humanContent = lastMessage?.content ?? "";
+
+      const graphConfig = createInterviewGraphConfig(options.threadId);
 
       const stream = await graph.stream(
         {
@@ -94,7 +98,7 @@ export function buildInterviewGraph(
         },
 
         {
-          ...createInterviewGraphConfig(options.threadId),
+          ...graphConfig,
 
           streamMode: "messages",
         },
@@ -107,6 +111,13 @@ export function buildInterviewGraph(
           yield { content };
         }
       }
+
+      const snapshot = await graph.getState(graphConfig);
+      const completedAiMessage = resolveCompletedAiMessage(
+        snapshot.values.messages,
+      );
+
+      return completedAiMessage;
     },
   };
 }

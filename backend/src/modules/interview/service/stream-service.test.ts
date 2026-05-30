@@ -176,6 +176,7 @@ describe("InterviewStreamService", () => {
       (async function* () {
         yield { content: "Hi " };
         yield { content: "there" };
+        return { content: "Hi there" };
       })(),
     );
     vi.mocked(sessionRepository.incrementTurnCount).mockResolvedValue({
@@ -221,6 +222,7 @@ describe("InterviewStreamService", () => {
     vi.mocked(graph.streamMessages).mockReturnValue(
       (async function* () {
         yield { content: "Final answer" };
+        return { content: "Final answer" };
       })(),
     );
     vi.mocked(sessionRepository.incrementTurnCount).mockResolvedValue({
@@ -362,6 +364,7 @@ describe("InterviewStreamService", () => {
     vi.mocked(graph.streamMessages).mockReturnValue(
       (async function* () {
         yield { content: "Final answer" };
+        return { content: "Final answer" };
       })(),
     );
     vi.mocked(sessionRepository.incrementTurnCount).mockResolvedValue({
