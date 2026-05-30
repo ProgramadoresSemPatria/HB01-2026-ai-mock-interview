@@ -2,7 +2,7 @@ import {
   createSessionSchema,
   streamMessageSchema,
 } from "@/modules/interview/validations/interview-schemas";
-import { validate } from "@/shared";
+import { asyncHandler, validate } from "@/shared";
 import type { Router } from "express";
 
 import { makeInterviewController } from "@/factories/interview/interview-controller-factory";
@@ -13,16 +13,16 @@ export default function interviewRoutes(router: Router): void {
   router.post(
     "/sessions",
     validate(createSessionSchema),
-    controller.createSession,
+    asyncHandler(controller.createSession),
   );
-  router.get("/sessions", controller.listSessions);
+  router.get("/sessions", asyncHandler(controller.listSessions));
   router.post(
     "/sessions/:sessionId/stream",
     validate(streamMessageSchema),
-    controller.stream,
+    asyncHandler(controller.stream),
   );
   router.get(
     "/sessions/:sessionId/messages",
-    controller.getMessages,
+    asyncHandler(controller.getMessages),
   );
 }

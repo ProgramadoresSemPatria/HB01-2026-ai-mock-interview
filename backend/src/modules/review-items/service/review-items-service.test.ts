@@ -1,19 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ReviewRepository } from "@/modules/interview/repository/review-repository";
+import type { ReviewItemRecord } from "@/modules/interview/types/review-item-record";
 
 import { ReviewItemsService } from "./review-items-service";
 
 const baseDate = new Date("2026-01-01T00:00:00.000Z");
 
 function createReviewItem(
-  overrides: Partial<{
-    id: string;
-    topic: string;
-    priority: "low" | "medium" | "high";
-    updatedAt: Date;
-  }> = {},
-) {
+  overrides: Partial<
+    Pick<ReviewItemRecord, "id" | "topic" | "priority" | "updatedAt">
+  > = {},
+): ReviewItemRecord {
   return {
     id: overrides.id ?? "review-id",
     userId: 1,

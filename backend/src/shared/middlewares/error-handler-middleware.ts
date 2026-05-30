@@ -30,12 +30,6 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
       err instanceof Error ? err.message : "Internal Server Error";
     const stack = err instanceof Error ? err.stack : undefined;
     logger.error(logMessage, { stack });
-    console.error("[HTTP ERROR]", statusCode, logMessage);
-    if (err instanceof Error && err.stack) {
-      console.error(err.stack);
-    } else {
-      console.error(err);
-    }
   }
 
   res.status(statusCode).json({ message });

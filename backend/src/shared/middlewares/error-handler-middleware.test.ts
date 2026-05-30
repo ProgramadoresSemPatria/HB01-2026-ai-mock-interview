@@ -1,8 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Request, Response } from "express";
 import { MulterError } from "multer";
 
 import { BadRequestError, NotFoundError } from "../errors/http-errors";
+import { logger } from "../logger";
 import { errorHandler } from "./error-handler-middleware";
 
 function createMockResponse() {
@@ -17,6 +18,10 @@ function createMockResponse() {
 }
 
 describe("errorHandler", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("maps HttpError to its status code and message", () => {
     const res = createMockResponse();
     const next = vi.fn();
@@ -59,6 +64,28 @@ describe("errorHandler", () => {
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ message: "Internal Server Error" });
+  });
+
+  it("logs 500 once via logger.error with stack in meta", () => {
+    const res = createMockResponse();
+    const next = vi.fn();
+    const err = new Error("boom");
+    const errorSpy = vi.spyOn(logger, "error");
+
+    errorHandler(err, {} as Request, res, next);
+
+    expect(errorSpy).toHaveBeenCalledOnce();
+    expect(errorSpy).toHaveBeenCalledWith("boom", { stack: err.stack });
+  });
+
+  it("does not log 4xx HttpError as a server error", () => {
+    const res = createMockResponse();
+    const next = vi.fn();
+    const errorSpy = vi.spyOn(logger, "error");
+
+    errorHandler(new NotFoundError("Resume not found"), {} as Request, res, next);
+
+    expect(errorSpy).not.toHaveBeenCalled();
   });
 
   it("passes through BadRequestError from application code", () => {

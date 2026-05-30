@@ -1,19 +1,25 @@
 import { Worker } from "bullmq";
 
-import type { ResumeProcessResult } from "@/infrastructure/queue/resume-processor";
 import {
   RESUME_QUEUE_NAME,
   redisConnection,
 } from "@/infrastructure/queue/resume-queue";
 import type { ResumeJobData } from "@/infrastructure/queue/resume-queue";
-import { makeResumeProcessor } from "@/factories/resumes/resume-processor-factory";
+import { makeResumeService } from "@/factories/resumes/resume-service-factory";
+import type {
+  ResumeProcessResult,
+  ResumeService,
+} from "@/modules/resumes/service/resume-service";
 import { logger } from "@/shared";
 
-const connection = redisConnection;
+export async function processResumeJob(
+  resumeId: string,
+  resumeService: Pick<ResumeService, "process">,
+): Promise<ResumeProcessResult> {
+  return resumeService.process(resumeId);
+}
 
-const processor = makeResumeProcessor();
-
-function logResumeJobResult(
+export function logResumeJobResult(
   jobId: string | number | undefined,
   result: ResumeProcessResult,
 ): void {
@@ -49,11 +55,15 @@ function logResumeJobResult(
   }
 }
 
+const connection = redisConnection;
+
+const resumeService = makeResumeService();
+
 const worker = new Worker<ResumeJobData>(
   RESUME_QUEUE_NAME,
   async (job) => {
     logger.info("Processing resume job", { jobId: job.id });
-    const result = await processor.process(job.data.resumeId);
+    const result = await processResumeJob(job.data.resumeId, resumeService);
     logResumeJobResult(job.id, result);
   },
   {

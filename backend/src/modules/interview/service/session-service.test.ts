@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { BadRequestError, NotFoundError } from "@/shared";
-import { ResumeStatus } from "../../../../prisma/generated/client";
-import type { Resume } from "../../../../prisma/generated/client";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
+import type { ResumeRecord } from "@/modules/resumes/types/resume-record";
 import type { MessageRepository } from "../repository/message-repository";
 import {
   MAX_TURNS_BY_LEVEL,
@@ -32,7 +31,7 @@ const userId = 1;
 const resumeId = "resume-id";
 const sessionId = "session-id";
 
-function createStubResumeRepository(initialResume: Resume | null = null) {
+function createStubResumeRepository(initialResume: ResumeRecord | null = null) {
   let resume = initialResume;
 
   return {
@@ -43,7 +42,7 @@ function createStubResumeRepository(initialResume: Resume | null = null) {
       resume = value;
     },
     findByIdAndUserId: async () => resume,
-  } as unknown as ResumeRepository & { resume: Resume | null };
+  } as unknown as ResumeRepository & { resume: ResumeRecord | null };
 }
 
 function createStubSessionRepository() {
@@ -161,9 +160,10 @@ describe("SessionService", () => {
       storageKey: "resumes/1/file.pdf",
       structuredSummary: validStructuredSummary,
       rawText: "text",
-      status: ResumeStatus.processing,
+      status: "processing",
       errorMessage: null,
       createdAt: new Date(),
+      updatedAt: new Date(),
     });
     service = new SessionService(
       sessionRepository,
@@ -187,9 +187,10 @@ describe("SessionService", () => {
       storageKey: "resumes/1/file.pdf",
       structuredSummary: validStructuredSummary,
       rawText: "text",
-      status: ResumeStatus.failed,
+      status: "failed",
       errorMessage: "PDF parse error",
       createdAt: new Date(),
+      updatedAt: new Date(),
     });
     service = new SessionService(
       sessionRepository,
@@ -211,9 +212,10 @@ describe("SessionService", () => {
       storageKey: "resumes/1/file.pdf",
       structuredSummary: { personal_info: { name: "Jane" } },
       rawText: "text",
-      status: ResumeStatus.ready,
+      status: "ready",
       errorMessage: null,
       createdAt: new Date(),
+      updatedAt: new Date(),
     });
     service = new SessionService(
       sessionRepository,
@@ -244,9 +246,10 @@ describe("SessionService", () => {
         storageKey: "resumes/1/file.pdf",
         structuredSummary: validStructuredSummary,
         rawText: "text",
-        status: ResumeStatus.ready,
+        status: "ready",
         errorMessage: null,
         createdAt: new Date(),
+        updatedAt: new Date(),
       });
       service = new SessionService(
         sessionRepository,

@@ -1,14 +1,16 @@
-import { createReviewItemsGeneratorNode } from "@/infrastructure/ai/langgraph/nodes/review-items-generator-node";
+import type { createReviewItemsGeneratorNode } from "@/infrastructure/ai/langgraph/nodes/review-items-generator-node";
 import type {
   IReviewItemsGenerator,
   ReviewItemsGeneratorParams,
 } from "@/modules/interview/protocols/review-items-generator";
-import { ReviewRepository } from "@/modules/interview/repository/review-repository";
+import type { ReviewRepository } from "@/modules/interview/repository/review-repository";
 
 export class ReviewItemsGeneratorAdapter implements IReviewItemsGenerator {
   constructor(
-    private readonly generateItems = createReviewItemsGeneratorNode(),
-    private readonly reviewRepository = new ReviewRepository(),
+    private readonly generateItems: ReturnType<
+      typeof createReviewItemsGeneratorNode
+    >,
+    private readonly reviewRepository: ReviewRepository,
   ) {}
 
   async generate(params: ReviewItemsGeneratorParams) {

@@ -5,7 +5,7 @@ import {
   requestPasswordResetSchema,
   signupSchema,
 } from "@/modules/auth";
-import { authRateLimiter, validate } from "@/shared";
+import { asyncHandler, authRateLimiter, validate } from "@/shared";
 import type { Router } from "express";
 
 import { makeAuthController } from "@/factories/auth/auth-controller-factory";
@@ -17,24 +17,28 @@ export default function authRoutes(router: Router): void {
     "/signup",
     authRateLimiter,
     validate(signupSchema),
-    controller.signUp,
+    asyncHandler(controller.signUp),
   );
   router.post(
     "/login",
     authRateLimiter,
     validate(loginSchema),
-    controller.login,
+    asyncHandler(controller.login),
   );
-  router.post("/refresh", validate(refreshSchema), controller.refresh);
+  router.post(
+    "/refresh",
+    validate(refreshSchema),
+    asyncHandler(controller.refresh),
+  );
   router.post(
     "/request-password-reset",
     authRateLimiter,
     validate(requestPasswordResetSchema),
-    controller.requestPasswordReset,
+    asyncHandler(controller.requestPasswordReset),
   );
   router.post(
     "/reset-password",
     validate(passwordResetSchema),
-    controller.resetPassword,
+    asyncHandler(controller.resetPassword),
   );
 }

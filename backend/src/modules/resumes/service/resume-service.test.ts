@@ -1,8 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ResumeStatus } from "../../../../prisma/generated/client";
+import { RESUME_STATUS } from "@/modules/resumes/types/resume-record";
 import type { IObjectStorage } from "@/modules/resumes/protocols/object-storage";
 import type { IResumeQueue } from "@/modules/resumes/protocols/resume-queue";
+import { buildResumeExtractionPrompt } from "@/modules/resumes/prompts/resume-extraction-prompt";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
+import {
+  structuredSummarySchema,
+  type StructuredSummary,
+} from "@/modules/resumes/validations/resume-schemas";
 import {
   BadGatewayError,
   BadRequestError,
@@ -29,9 +34,10 @@ const sampleResume = {
   storageKey: "users/42/resumes/resume-uuid.pdf",
   structuredSummary: null,
   rawText: null,
-  status: ResumeStatus.processing,
+  status: RESUME_STATUS.processing,
   errorMessage: null,
   createdAt: new Date("2026-01-01T00:00:00.000Z"),
+  updatedAt: new Date("2026-01-01T00:00:00.000Z"),
 };
 
 function createPdfFile(
@@ -52,10 +58,36 @@ function createPdfFile(
   };
 }
 
+const rawText = "Jane Doe\nSoftware Engineer";
+
+const structuredSummary: StructuredSummary = {
+  personal_info: { name: "Jane Doe", title: "Engineer", about: "" },
+  skills: ["TypeScript"],
+  experiences: [
+    {
+      company: "Acme",
+      role: "Developer",
+      highlights: ["Built APIs"],
+    },
+  ],
+  projects: [
+    {
+      name: "Portfolio",
+      description: "",
+      technologies: [],
+      highlights: [],
+    },
+  ],
+  certifications: [],
+};
+
 describe("ResumeService", () => {
   let resumeRepository: ResumeRepository;
   let objectStorage: IObjectStorage;
   let resumeQueue: IResumeQueue;
+  let structuredModel: { invoke: ReturnType<typeof vi.fn> };
+  let extractionModel: { withStructuredOutput: ReturnType<typeof vi.fn> };
+  let extractText: ReturnType<typeof vi.fn>;
   let service: ResumeService;
 
   beforeEach(() => {
@@ -65,12 +97,14 @@ describe("ResumeService", () => {
     resumeRepository = {
       createProcessing: vi.fn(),
       updateFailed: vi.fn(),
+      findById: vi.fn(),
       findByIdAndUserId: vi.fn(),
+      updateReady: vi.fn(),
     } as unknown as ResumeRepository;
 
     objectStorage = {
       put: vi.fn().mockResolvedValue(undefined),
-      get: vi.fn(),
+      get: vi.fn().mockResolvedValue(Buffer.from("pdf-bytes")),
       delete: vi.fn(),
     };
 
@@ -78,7 +112,24 @@ describe("ResumeService", () => {
       add: vi.fn().mockResolvedValue(undefined),
     };
 
-    service = new ResumeService(resumeRepository, objectStorage, resumeQueue, 5_242_880);
+    structuredModel = {
+      invoke: vi.fn().mockResolvedValue(structuredSummary),
+    };
+
+    extractionModel = {
+      withStructuredOutput: vi.fn().mockReturnValue(structuredModel),
+    };
+
+    extractText = vi.fn().mockResolvedValue(rawText);
+
+    service = new ResumeService(
+      resumeRepository,
+      objectStorage,
+      resumeQueue,
+      extractionModel as never,
+      extractText,
+      5_242_880,
+    );
   });
 
   describe("uploadPdf", () => {
@@ -105,7 +156,7 @@ describe("ResumeService", () => {
       expect(result).toEqual({
         id: "resume-uuid",
         name: "Jane Doe CV.pdf",
-        status: ResumeStatus.processing,
+        status: RESUME_STATUS.processing,
         createdAt: sampleResume.createdAt,
       });
     });
@@ -174,7 +225,7 @@ describe("ResumeService", () => {
     it("returns resume detail without sensitive fields", async () => {
       const readyResume = {
         ...sampleResume,
-        status: ResumeStatus.ready,
+        status: RESUME_STATUS.ready,
         structuredSummary: {
           personal_info: { name: "Jane", title: "Engineer" },
           skills: ["TypeScript"],
@@ -202,7 +253,7 @@ describe("ResumeService", () => {
       expect(result).toEqual({
         id: "resume-uuid",
         name: "Jane Doe CV.pdf",
-        status: ResumeStatus.ready,
+        status: RESUME_STATUS.ready,
         createdAt: sampleResume.createdAt,
         structuredSummary: readyResume.structuredSummary,
       });
@@ -221,7 +272,7 @@ describe("ResumeService", () => {
       expect(result).toEqual({
         id: "resume-uuid",
         name: "Jane Doe CV.pdf",
-        status: ResumeStatus.processing,
+        status: RESUME_STATUS.processing,
         createdAt: sampleResume.createdAt,
       });
       expect(result).not.toHaveProperty("structuredSummary");
@@ -233,6 +284,93 @@ describe("ResumeService", () => {
       await expect(service.getResume(42, "missing-id")).rejects.toThrow(
         NotFoundError,
       );
+    });
+  });
+
+  describe("process", () => {
+    it("downloads PDF, extracts text, structures with LLM, and marks resume ready", async () => {
+      vi.mocked(resumeRepository.findById).mockResolvedValue(sampleResume);
+      vi.mocked(resumeRepository.updateReady).mockResolvedValue({
+        ...sampleResume,
+        status: RESUME_STATUS.ready,
+        structuredSummary,
+        rawText,
+      });
+
+      const result = await service.process("resume-uuid");
+
+      expect(objectStorage.get).toHaveBeenCalledWith(sampleResume.storageKey);
+      expect(result).toEqual({ status: "ready", resumeId: "resume-uuid" });
+      expect(extractText).toHaveBeenCalledWith(Buffer.from("pdf-bytes"));
+      expect(extractionModel.withStructuredOutput).toHaveBeenCalledWith(
+        structuredSummarySchema,
+      );
+      expect(structuredModel.invoke).toHaveBeenCalledWith([
+        {
+          role: "user",
+          content: buildResumeExtractionPrompt(rawText),
+        },
+      ]);
+      expect(resumeRepository.updateReady).toHaveBeenCalledWith(
+        "resume-uuid",
+        structuredSummary,
+        rawText,
+      );
+      expect(resumeRepository.updateFailed).not.toHaveBeenCalled();
+    });
+
+    it("marks resume failed when PDF has no extractable text", async () => {
+      vi.mocked(resumeRepository.findById).mockResolvedValue(sampleResume);
+      extractText.mockResolvedValue("   \n  ");
+
+      const result = await service.process("resume-uuid");
+
+      expect(result).toEqual({
+        status: "failed",
+        resumeId: "resume-uuid",
+        error: "PDF contains no extractable text",
+        cause: expect.any(Error),
+      });
+      expect(extractionModel.withStructuredOutput).not.toHaveBeenCalled();
+      expect(resumeRepository.updateFailed).toHaveBeenCalledWith(
+        "resume-uuid",
+        "PDF contains no extractable text",
+      );
+      expect(resumeRepository.updateReady).not.toHaveBeenCalled();
+    });
+
+    it("marks resume failed when processing throws", async () => {
+      vi.mocked(resumeRepository.findById).mockResolvedValue(sampleResume);
+      extractText.mockRejectedValue(new Error("PDF parse error"));
+
+      const result = await service.process("resume-uuid");
+
+      expect(result).toEqual({
+        status: "failed",
+        resumeId: "resume-uuid",
+        error: "PDF parse error",
+        cause: expect.any(Error),
+      });
+      expect(resumeRepository.updateFailed).toHaveBeenCalledWith(
+        "resume-uuid",
+        "PDF parse error",
+      );
+      expect(resumeRepository.updateReady).not.toHaveBeenCalled();
+    });
+
+    it("skips processing when resume is not found", async () => {
+      vi.mocked(resumeRepository.findById).mockResolvedValue(null);
+
+      const result = await service.process("missing-id");
+
+      expect(result).toEqual({
+        status: "skipped",
+        resumeId: "missing-id",
+        reason: "not_found",
+      });
+      expect(objectStorage.get).not.toHaveBeenCalled();
+      expect(resumeRepository.updateReady).not.toHaveBeenCalled();
+      expect(resumeRepository.updateFailed).not.toHaveBeenCalled();
     });
   });
 });
