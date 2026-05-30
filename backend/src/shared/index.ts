@@ -21,6 +21,7 @@ export {
   BadGatewayError,
   ServiceUnavailableError,
 } from "./errors/http-errors";
+export { asyncHandler } from "./utils/async-handler";
 export { logger } from "./logger";
 export { errorHandler } from "./middlewares/error-handler-middleware";
 export { authRateLimiter } from "./middlewares/rate-limit-middleware";
