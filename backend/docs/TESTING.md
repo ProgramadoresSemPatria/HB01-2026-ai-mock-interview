@@ -57,7 +57,7 @@ Three contexts run checks at different depth. Use this table to see what runs wh
 Workflow file (repo root): [`.github/workflows/backend-ci.yml`](../../.github/workflows/backend-ci.yml).
 
 - **Triggers**: `pull_request`; `push` to `main` or `master`
-- **Job**: `quality` on `ubuntu-latest`, `working-directory: backend`, `NODE_ENV=test`
+- **Job**: `quality` on `ubuntu-latest`, `working-directory: backend`, `NODE_ENV=test`, dummy `DATABASE_URL` for `prisma generate` on install (no `.env` in CI)
 - **Steps** (in order):
   1. Checkout
   2. Setup Bun (`oven-sh/setup-bun@v2`)

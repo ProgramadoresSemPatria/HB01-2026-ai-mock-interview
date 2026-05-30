@@ -16,6 +16,7 @@ jobs:
     timeout-minutes: 30
     env:
       NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ci
     steps:
       - name: Checkout
         uses: actions/checkout@v4

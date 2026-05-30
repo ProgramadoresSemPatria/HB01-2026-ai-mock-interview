@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: test
+      # prisma generate (postinstall) reads prisma.config.ts; no DB connection at install time
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ci
     steps:
       - name: Checkout
         uses: actions/checkout@v4
