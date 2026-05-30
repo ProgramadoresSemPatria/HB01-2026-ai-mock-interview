@@ -1,7 +1,28 @@
-import type { Resume } from "../../../../prisma/generated/client";
-import { ResumeStatus } from "../../../../prisma/generated/client";
+import type { Resume as PrismaResume } from "../../../../prisma/generated/client";
+import { ResumeStatus as PrismaResumeStatus } from "../../../../prisma/generated/client";
 import prisma from "@/infrastructure/database";
+import type { ResumeRecord, ResumeStatus } from "@/modules/resumes/types/resume-record";
 import { structuredSummarySchema } from "@/modules/resumes/validations/resume-schemas";
+
+function toResumeStatus(status: PrismaResume["status"]): ResumeStatus {
+  return status as ResumeStatus;
+}
+
+function toResumeRecord(row: PrismaResume): ResumeRecord {
+  return {
+    id: row.id,
+    userId: row.userId,
+    name: row.name,
+    status: toResumeStatus(row.status),
+    pdfUrl: row.pdfUrl,
+    storageKey: row.storageKey,
+    structuredSummary: row.structuredSummary,
+    rawText: row.rawText,
+    errorMessage: row.errorMessage,
+    createdAt: row.createdAt,
+    updatedAt: row.createdAt,
+  };
+}
 
 export class ResumeRepository {
   async createProcessing(
@@ -10,59 +31,64 @@ export class ResumeRepository {
     pdfUrl: string,
     storageKey: string,
     id?: string,
-  ): Promise<Resume> {
-    return prisma.resume.create({
+  ): Promise<ResumeRecord> {
+    const row = await prisma.resume.create({
       data: {
         ...(id !== undefined ? { id } : {}),
         userId,
         name,
         pdfUrl,
         storageKey,
-        status: ResumeStatus.processing,
+        status: PrismaResumeStatus.processing,
       },
     });
+    return toResumeRecord(row);
   }
 
   async updateReady(
     id: string,
     structuredSummary: unknown,
     rawText: string,
-  ): Promise<Resume> {
+  ): Promise<ResumeRecord> {
     const parsed = structuredSummarySchema.parse(structuredSummary);
 
-    return prisma.resume.update({
+    const row = await prisma.resume.update({
       where: { id },
       data: {
         structuredSummary: parsed,
         rawText,
-        status: ResumeStatus.ready,
+        status: PrismaResumeStatus.ready,
         errorMessage: null,
       },
     });
+    return toResumeRecord(row);
   }
 
-  async updateFailed(id: string, errorMessage: string): Promise<Resume> {
-    return prisma.resume.update({
+  async updateFailed(id: string, errorMessage: string): Promise<ResumeRecord> {
+    const row = await prisma.resume.update({
       where: { id },
       data: {
-        status: ResumeStatus.failed,
+        status: PrismaResumeStatus.failed,
         errorMessage,
       },
     });
+    return toResumeRecord(row);
   }
 
-  async findById(id: string): Promise<Resume | null> {
-    return prisma.resume.findUnique({
+  async findById(id: string): Promise<ResumeRecord | null> {
+    const row = await prisma.resume.findUnique({
       where: { id },
     });
+    return row ? toResumeRecord(row) : null;
   }
 
   async findByIdAndUserId(
     id: string,
     userId: number,
-  ): Promise<Resume | null> {
-    return prisma.resume.findFirst({
+  ): Promise<ResumeRecord | null> {
+    const row = await prisma.resume.findFirst({
       where: { id, userId },
     });
+    return row ? toResumeRecord(row) : null;
   }
 }

@@ -1,5 +1,4 @@
 import { afterAll, afterEach, describe, expect, it } from "vitest";
-import { ResumeStatus } from "../../../../prisma/generated/client";
 import { disconnectDatabase, resetDatabase } from "@/test/integration/helpers";
 import { UserRepository } from "@/modules/auth/repository/user-repository";
 import { ResumeRepository } from "./resume-repository";
@@ -56,7 +55,7 @@ describe("ResumeRepository (integration)", () => {
       id: resumeId,
       userId: user.id,
       name: "Jane Doe CV.pdf",
-      status: ResumeStatus.processing,
+      status: "processing",
       structuredSummary: null,
       rawText: null,
       errorMessage: null,
@@ -168,7 +167,7 @@ describe("ResumeRepository (integration)", () => {
     ).rejects.toThrow();
 
     const unchanged = await repository.findById(resumeId);
-    expect(unchanged?.status).toBe(ResumeStatus.processing);
+    expect(unchanged?.status).toBe("processing");
   });
 
   it("updateReady sets structured summary, raw text, and ready status", async () => {
@@ -191,14 +190,14 @@ describe("ResumeRepository (integration)", () => {
 
     expect(updated).toMatchObject({
       id: resumeId,
-      status: ResumeStatus.ready,
+      status: "ready",
       rawText,
       errorMessage: null,
     });
     expect(updated.structuredSummary).toEqual(structuredSummary);
 
     const reloaded = await repository.findById(resumeId);
-    expect(reloaded?.status).toBe(ResumeStatus.ready);
+    expect(reloaded?.status).toBe("ready");
   });
 
   it("updateFailed sets failed status and error message", async () => {
@@ -217,7 +216,7 @@ describe("ResumeRepository (integration)", () => {
 
     expect(updated).toMatchObject({
       id: resumeId,
-      status: ResumeStatus.failed,
+      status: "failed",
       errorMessage,
     });
   });
