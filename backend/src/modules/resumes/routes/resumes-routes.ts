@@ -1,4 +1,5 @@
 import { resumeUploadMiddleware } from "@/modules/resumes/middlewares/resume-upload-middleware";
+import { asyncHandler } from "@/shared";
 import type { Router } from "express";
 
 import { makeResumesController } from "@/factories/resumes/resumes-controller-factory";
@@ -9,7 +10,7 @@ export default function resumesRoutes(router: Router): void {
   router.post(
     "/",
     resumeUploadMiddleware.single("file"),
-    controller.upload,
+    asyncHandler(controller.upload),
   );
-  router.get("/:id", controller.getById);
+  router.get("/:id", asyncHandler(controller.getById));
 }
