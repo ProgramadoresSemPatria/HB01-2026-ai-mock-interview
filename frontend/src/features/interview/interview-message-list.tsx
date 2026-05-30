@@ -6,8 +6,7 @@ import type { SessionMessage } from "@/types/interview";
 
 import { InterviewMessageBubble } from "./interview-message-bubble";
 
-const WELCOME_MESSAGE =
-  "Welcome to your mock interview. When you're ready, send your first message to begin.";
+const START_MESSAGE = "Hi, I'm ready for the interview!";
 
 export type DisplayMessage =
   | SessionMessage
@@ -23,11 +22,13 @@ export type DisplayMessage =
 type InterviewMessageListProps = {
   messages: DisplayMessage[];
   showWelcome: boolean;
+  onStart?: () => void;
 };
 
 export function InterviewMessageList({
   messages,
   showWelcome,
+  onStart,
 }: InterviewMessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -42,8 +43,17 @@ export function InterviewMessageList({
       className="flex-1 space-y-4 overflow-y-auto rounded-xl border border-(--border) bg-(--card) p-4"
     >
       {showWelcome && (
-        <div className="rounded-lg bg-(--muted)/50 px-4 py-3 text-sm text-(--muted-foreground)">
-          {WELCOME_MESSAGE}
+        <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+          <p className="text-sm text-(--muted-foreground)">
+            When you're ready, click to start the interview.
+          </p>
+          <button
+            type="button"
+            onClick={onStart}
+            className="rounded-xl bg-(--primary) px-6 py-2.5 text-sm font-medium text-(--primary-foreground) cursor-pointer transition-opacity hover:opacity-90"
+          >
+            {START_MESSAGE}
+          </button>
         </div>
       )}
 

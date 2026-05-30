@@ -163,9 +163,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
       ?.scrollIntoView({ behavior: "smooth" });
   }
 
-  async function handleSend(e: React.FormEvent) {
-    e.preventDefault();
-    const content = draft.trim();
+  async function sendMessage(content: string) {
     if (!content || !canSend) return;
 
     const token = await getAccessToken();
@@ -174,7 +172,6 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
       return;
     }
 
-    setDraft("");
     setPendingHuman({
       id: "pending-human",
       role: "human",
@@ -217,6 +214,17 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
       setPendingHuman(null);
       abortRef.current = null;
     }
+  }
+
+  function handleSend(e: React.FormEvent) {
+    e.preventDefault();
+    const content = draft.trim();
+    setDraft("");
+    void sendMessage(content);
+  }
+
+  function handleStart() {
+    void sendMessage("Hi, I'm ready for the interview!");
   }
 
   if (messagesQuery.isLoading) {
@@ -271,6 +279,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
         <InterviewMessageList
           messages={displayMessages}
           showWelcome={showWelcome}
+          onStart={handleStart}
         />
 
         {isCompleted && (
