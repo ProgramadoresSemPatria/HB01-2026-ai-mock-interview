@@ -13,6 +13,6 @@ export default defineConfig({
     include: ["src/**/*.test.ts"],
     passWithNoTests: true,
     setupFiles: ["./vitest.setup.ts"],
-    exclude: ["src/**/*.e2e.test.ts"],
+    exclude: ["src/**/*.integration.test.ts", "src/**/*.e2e.test.ts"],
   },
 });

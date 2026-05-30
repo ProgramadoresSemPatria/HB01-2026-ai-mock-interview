@@ -41,7 +41,10 @@ describe("extractStreamTokenFromChunk", () => {
   it("supports messages tuple without namespace prefix", () => {
     const chunk = [
       "messages",
-      [new AIMessage({ content: "Hi" }), { langgraph_node: "interviewer" }],
+      [
+        new AIMessageChunk({ content: "Hi" }),
+        { langgraph_node: "interviewer" },
+      ],
     ];
 
     expect(extractStreamTokenFromChunk(chunk)).toBe("Hi");

@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Response } from "express";
 
-import type { IInterviewGraph } from "@/modules/interview/protocols/interview-graph";
+import type {
+  IInterviewGraph,
+  InterviewGraphStreamCompletion,
+  InterviewGraphStreamToken,
+} from "@/modules/interview/protocols/interview-graph";
 import type { IReviewItemsGenerator } from "@/modules/interview/protocols/review-items-generator";
 import type { MessageRepository } from "@/modules/interview/repository/message-repository";
 import type { SessionRepository } from "@/modules/interview/repository/session-repository";
@@ -15,6 +19,7 @@ const structuredSummary = {
   personal_info: {
     name: "Jane Doe",
     title: "Engineer",
+    about: "",
   },
   skills: ["TypeScript"],
   experiences: [
@@ -24,7 +29,15 @@ const structuredSummary = {
       highlights: ["Built APIs"],
     },
   ],
-  projects: [{ name: "Portfolio" }],
+  projects: [
+    {
+      name: "Portfolio",
+      description: "",
+      technologies: [],
+      highlights: [],
+    },
+  ],
+  certifications: [],
 };
 
 const baseSession = {
@@ -44,6 +57,7 @@ function createMockResponse() {
 
   const res = {
     writeHead: vi.fn(),
+    flushHeaders: vi.fn(),
     write: vi.fn((chunk: string) => {
       chunks.push(chunk);
     }),
@@ -292,12 +306,16 @@ describe("InterviewStreamService", () => {
       structuredSummary,
     } as unknown as Awaited<ReturnType<ResumeRepository["findByIdAndUserId"]>>);
     vi.mocked(graph.streamMessages).mockReturnValue(
-      (async function* () {
+      (async function* (): AsyncGenerator<
+        InterviewGraphStreamToken,
+        InterviewGraphStreamCompletion | undefined
+      > {
         yield { content: "Partial" };
         await new Promise<void>((resolve) => {
           resumeSecondChunk = resolve;
         });
         yield { content: "More" };
+        return undefined;
       })(),
     );
     vi.mocked(messageRepository.createHuman).mockResolvedValue({} as never);

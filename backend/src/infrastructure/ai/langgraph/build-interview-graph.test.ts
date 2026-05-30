@@ -108,13 +108,15 @@ describe("routeFromStart", () => {
 
     resumeSummary: {
 
-      personal_info: { name: "A", title: "B" },
+      personal_info: { name: "A", title: "B", about: "" },
 
       skills: [],
 
       experiences: [],
 
       projects: [],
+
+      certifications: [],
 
     },
 

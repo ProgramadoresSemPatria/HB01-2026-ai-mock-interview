@@ -177,7 +177,7 @@ export class InterviewStreamService {
       }
     } finally {
       res.off("close", onClose);
-      await iterator.return?.();
+      await iterator.return?.(undefined);
     }
   }
 }

@@ -1,4 +1,5 @@
 import type { InterviewLevel } from "@/modules/interview/validations/interview-schemas";
+import { resumeToMarkdown } from "@/modules/resumes/format/resume-to-markdown";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
 
 export const CLOSING_GUARDRAILS_HEADER = "## Security guardrails";
@@ -31,7 +32,8 @@ ${LEVEL_INSTRUCTIONS[level]}`;
 function buildResumeBlock(resumeSummary: StructuredSummary): string {
   return `${CLOSING_RESUME_HEADER}
 Use only this structured résumé summary:
-${JSON.stringify(resumeSummary, null, 2)}`;
+
+${resumeToMarkdown(resumeSummary)}`;
 }
 
 function buildInstructionsBlock(): string {

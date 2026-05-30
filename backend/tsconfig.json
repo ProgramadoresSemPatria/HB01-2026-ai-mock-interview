@@ -28,6 +28,10 @@
     "src/**/*",
     "prisma/generated/**/*",
     "vitest.config.ts",
-    "vitest.setup.ts"
+    "vitest.setup.ts",
+    "vitest.integration.config.ts",
+    "vitest.e2e.config.ts",
+    "vitest.e2e.setup.ts",
+    "src/test/vitest-env.d.ts"
   ]
 }

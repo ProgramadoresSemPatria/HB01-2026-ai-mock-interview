@@ -11,7 +11,11 @@ import {
 } from "./interviewer-system-prompt";
 
 const sampleSummary: StructuredSummary = {
-  personal_info: { name: "Alex", title: "Backend Engineer" },
+  personal_info: {
+    name: "Alex",
+    title: "Backend Engineer",
+    about: "",
+  },
   skills: ["TypeScript", "PostgreSQL"],
   experiences: [
     {
@@ -20,7 +24,15 @@ const sampleSummary: StructuredSummary = {
       highlights: ["Built APIs"],
     },
   ],
-  projects: [{ name: "Interview prep app" }],
+  projects: [
+    {
+      name: "Interview prep app",
+      description: "",
+      technologies: [],
+      highlights: [],
+    },
+  ],
+  certifications: [],
 };
 
 describe("buildInterviewerSystemPrompt", () => {
@@ -43,7 +55,7 @@ describe("buildInterviewerSystemPrompt", () => {
     expect(contextIndex).toBeGreaterThan(resumeIndex);
   });
 
-  it("uses structured summary JSON only, not raw PDF text", () => {
+  it("renders résumé as markdown summary, not raw PDF text", () => {
     const prompt = buildInterviewerSystemPrompt({
       level: "entry",
       resumeSummary: sampleSummary,
@@ -51,9 +63,12 @@ describe("buildInterviewerSystemPrompt", () => {
       maxTurns: 5,
     });
 
-    expect(prompt).toContain(JSON.stringify(sampleSummary, null, 2));
+    expect(prompt).toContain("**Name:** Alex");
+    expect(prompt).toContain("**Title:** Backend Engineer");
+    expect(prompt).toContain("TypeScript, PostgreSQL");
     expect(prompt).toContain("structured résumé summary");
     expect(prompt).not.toContain("%PDF-");
+    expect(prompt).not.toContain(JSON.stringify(sampleSummary, null, 2));
   });
 
   it("does not instruct the model to call review-item tools", () => {

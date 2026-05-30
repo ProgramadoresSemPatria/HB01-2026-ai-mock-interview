@@ -45,55 +45,13 @@ import type { Express } from "express";
 
 import { createApp } from "@/config/app";
 import prisma from "@/infrastructure/database";
-import { initializeE2EDatabase, truncateE2ETables } from "./database";
-
-function createSignupPayload(
-  overrides?: Partial<{
-    name: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-  }>,
-) {
-  return {
-    name: "Jane Doe",
-    email: "jane@example.com",
-    password: "secret123",
-    confirmPassword: "secret123",
-    ...overrides,
-  };
-}
-
-async function signUpUser(
-  app: Express,
-  overrides?: Partial<{
-    name: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-  }>,
-) {
-  const payload = createSignupPayload(overrides);
-  const response = await request(app).post("/api/auth/signup").send(payload);
-
-  return { payload, response };
-}
-
-async function loginUser(
-  app: Express,
-  overrides?: Partial<{
-    email: string;
-    password: string;
-  }>,
-) {
-  return request(app)
-    .post("/api/auth/login")
-    .send({
-      email: "jane@example.com",
-      password: "secret123",
-      ...overrides,
-    });
-}
+import {
+  authHeader,
+  createSignupPayload,
+  loginUser,
+  signUpUser,
+} from "@/test/helpers/auth-helpers";
+import { truncateTables } from "@/test/containers/truncate-tables";
 
 function extractResetToken(): string {
   const body = nodemailerMock.sentMails[0]?.body;
@@ -122,7 +80,6 @@ describe("Auth API E2E", () => {
   let app: Express;
 
   beforeAll(async () => {
-    await initializeE2EDatabase();
     app = await createApp();
   });
 
@@ -130,7 +87,7 @@ describe("Auth API E2E", () => {
     nodemailerMock.sentMails.length = 0;
     nodemailerMock.sendMailMock.mockClear();
     nodemailerMock.createTransportMock.mockClear();
-    await truncateE2ETables();
+    await truncateTables();
   });
 
   afterAll(async () => {
@@ -153,13 +110,35 @@ describe("Auth API E2E", () => {
     });
   });
 
+  it("returns 401 for protected path with malformed Authorization header", async () => {
+    const response = await request(app)
+      .get("/api/protected-smoke")
+      .set("Authorization", "Token xyz");
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({
+      message: "Authentication required",
+    });
+  });
+
+  it("returns 401 for protected path with invalid bearer token", async () => {
+    const response = await request(app)
+      .get("/api/protected-smoke")
+      .set("Authorization", "Bearer not-a-jwt");
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({
+      message: "Invalid or expired token",
+    });
+  });
+
   it("allows bearer auth to reach protected path and then returns 404", async () => {
     await signUpUser(app);
     const loginResponse = await loginUser(app);
 
     const response = await request(app)
       .get("/api/protected-smoke")
-      .set("Authorization", `Bearer ${loginResponse.body.accessToken}`);
+      .set(authHeader(loginResponse.body.accessToken));
 
     expect(response.status).toBe(404);
     expect(response.body).toEqual({
@@ -233,6 +212,17 @@ describe("Auth API E2E", () => {
     });
   });
 
+  it("returns 422 when login payload is invalid", async () => {
+    const response = await request(app).post("/api/auth/login").send({
+      email: "not-an-email",
+      password: "",
+    });
+
+    expect(response.status).toBe(422);
+    expect(response.body.message).toBe("Validation failed");
+    expect(response.body.errors).toBeDefined();
+  });
+
   it("rotates refresh token and rejects reused refresh token", async () => {
     await signUpUser(app);
     const loginResponse = await loginUser(app);
@@ -265,6 +255,40 @@ describe("Auth API E2E", () => {
 
     expect(response.status).toBe(422);
     expect(response.body.message).toBe("Validation failed");
+  });
+
+  it("returns 401 when refresh token is invalid or expired", async () => {
+    const response = await request(app).post("/api/auth/refresh").send({
+      refreshToken: "not-a-valid-refresh-token",
+    });
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({
+      message: "Invalid or expired refresh token",
+    });
+  });
+
+  it("returns 422 when request-password-reset payload is invalid", async () => {
+    const response = await request(app)
+      .post("/api/auth/request-password-reset")
+      .send({
+        email: "not-an-email",
+      });
+
+    expect(response.status).toBe(422);
+    expect(response.body.message).toBe("Validation failed");
+    expect(response.body.errors).toBeDefined();
+  });
+
+  it("returns 422 when reset-password payload is invalid", async () => {
+    const response = await request(app).post("/api/auth/reset-password").send({
+      token: "",
+      password: "123",
+    });
+
+    expect(response.status).toBe(422);
+    expect(response.body.message).toBe("Validation failed");
+    expect(response.body.errors).toBeDefined();
   });
 
   it("returns password reset message and sends email for existing user", async () => {
