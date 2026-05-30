@@ -1,4 +1,8 @@
-import { Badge } from "@/components/ui/badge";
+"use client";
+
+import { useState } from "react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,74 +14,132 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/features/auth/session-provider";
+import { ApiError } from "@/lib/api/client";
 
 export default function SignUpForm({
   onSwitchToSignIn,
 }: {
   onSwitchToSignIn: () => void;
 }) {
+  const { signup } = useAuth();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await signup(name, email, password, confirmPassword);
+    } catch (err) {
+      const message =
+        err instanceof ApiError ? err.message : "Failed to create account";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <Card variant="glass" radius="xl">
-      <CardHeader>
-        <Badge tone="success">Preview state</Badge>
-        <CardTitle>Create your practice workspace</CardTitle>
-        <CardDescription>
-          This is still a frontend-only stub, but it now uses the same cards,
-          badges, inputs, and spacing contracts as the public landing page.
-        </CardDescription>
-      </CardHeader>
+      <form onSubmit={handleSubmit}>
+        <CardHeader>
+          <CardTitle>Create your practice workspace</CardTitle>
+          <CardDescription>
+            Upload your resume and start AI mock interviews.
+          </CardDescription>
+        </CardHeader>
 
-      <CardContent className="space-y-5">
-        <div className="grid gap-5 sm:grid-cols-2">
+        <CardContent className="space-y-5">
           <div className="space-y-2">
             <Label htmlFor="signup-name" className="text-text-base">
-              First name
+              Name
             </Label>
-            <Input id="signup-name" type="text" placeholder="Vinicius" />
+            <Input
+              id="signup-name"
+              type="text"
+              placeholder="Your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              autoComplete="name"
+            />
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="signup-role" className="text-text-base">
-              Primary focus
+            <Label htmlFor="signup-email" className="text-text-base">
+              Email
             </Label>
-            <Input id="signup-role" type="text" placeholder="Frontend" />
+            <Input
+              id="signup-email"
+              type="email"
+              placeholder="candidate@hone.ai"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+            />
           </div>
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="signup-email" className="text-text-base">
-            Email
-          </Label>
-          <Input
-            id="signup-email"
-            type="email"
-            placeholder="candidate@hone.ai"
-          />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="signup-password" className="text-text-base">
+              Password
+            </Label>
+            <Input
+              id="signup-password"
+              type="password"
+              placeholder="Create a password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              autoComplete="new-password"
+            />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="signup-password" className="text-text-base">
-            Password
-          </Label>
-          <Input
-            id="signup-password"
-            type="password"
-            placeholder="Create a password"
-          />
-        </div>
-      </CardContent>
+          <div className="space-y-2">
+            <Label htmlFor="signup-confirm" className="text-text-base">
+              Confirm password
+            </Label>
+            <Input
+              id="signup-confirm"
+              type="password"
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={6}
+              autoComplete="new-password"
+            />
+          </div>
+        </CardContent>
 
-      <CardFooter className="flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-        <Button shape="pill" className="flex-1">
-          Create account
-        </Button>
-        <Button
-          variant="link"
-          onClick={onSwitchToSignIn}
-          className="justify-center sm:justify-end"
-        >
-          Already have an account? Sign in
-        </Button>
-      </CardFooter>
+        <CardFooter className="flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+          <Button
+            type="submit"
+            shape="pill"
+            className="flex-1"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Creating…" : "Create account"}
+          </Button>
+          <Button
+            type="button"
+            variant="link"
+            onClick={onSwitchToSignIn}
+            className="justify-center sm:justify-end"
+          >
+            Already have an account? Sign in
+          </Button>
+        </CardFooter>
+      </form>
     </Card>
   );
 }

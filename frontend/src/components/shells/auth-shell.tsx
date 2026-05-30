@@ -23,7 +23,7 @@ const shellCopy = {
     eyebrow: "New account",
     title: "Start with a polished shell while auth is being wired.",
     description:
-      "The account flow is still a stub, but the screen now reflects the same design system that the product will use.",
+      "Sign in or create an account to upload your resume and start practicing.",
     points: [
       "Capture product identity before backend auth lands.",
       "Exercise shared inputs, cards, badges, and CTAs in a real route.",
