@@ -1,8 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ReviewRepository } from "@/modules/interview/repository/review-repository";
+import type { ReviewItemRecord } from "@/modules/interview/types/review-item-record";
 
 import { ReviewMergeService } from "./review-merge-service";
+
+function existingItem(
+  overrides: Partial<ReviewItemRecord> = {},
+): ReviewItemRecord {
+  return {
+    id: "item-1",
+    userId: 1,
+    sessionId: "old-session",
+    topic: "communication",
+    description: "Old",
+    priority: "low",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
 
 describe("ReviewMergeService", () => {
   let reviewRepository: ReviewRepository;
@@ -46,16 +63,7 @@ describe("ReviewMergeService", () => {
   it("uses max priority when LLM raises priority", async () => {
     vi.mocked(
       reviewRepository.findByUserIdAndTopicCaseInsensitive,
-    ).mockResolvedValue({
-      id: "item-1",
-      userId: 1,
-      sessionId: "old-session",
-      topic: "communication",
-      description: "Old",
-      priority: "low",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    ).mockResolvedValue(existingItem({ topic: "communication", priority: "low" }));
 
     await service.upsertItems(1, "session-1", [
       {
@@ -76,16 +84,7 @@ describe("ReviewMergeService", () => {
   it("bumps priority when LLM keeps same priority for existing topic", async () => {
     vi.mocked(
       reviewRepository.findByUserIdAndTopicCaseInsensitive,
-    ).mockResolvedValue({
-      id: "item-1",
-      userId: 1,
-      sessionId: "old-session",
-      topic: "communication",
-      description: "Old",
-      priority: "medium",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    ).mockResolvedValue(existingItem({ topic: "communication", priority: "medium" }));
 
     await service.upsertItems(1, "session-1", [
       {
@@ -105,16 +104,7 @@ describe("ReviewMergeService", () => {
   it("matches existing topics case-insensitively", async () => {
     vi.mocked(
       reviewRepository.findByUserIdAndTopicCaseInsensitive,
-    ).mockResolvedValue({
-      id: "item-1",
-      userId: 1,
-      sessionId: "old-session",
-      topic: "system design",
-      description: "Old",
-      priority: "low",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    ).mockResolvedValue(existingItem({ topic: "system design", priority: "low" }));
 
     await service.upsertItems(1, "session-1", [
       {
@@ -138,16 +128,7 @@ describe("ReviewMergeService", () => {
   it("never decreases priority when LLM sends a lower priority", async () => {
     vi.mocked(
       reviewRepository.findByUserIdAndTopicCaseInsensitive,
-    ).mockResolvedValue({
-      id: "item-1",
-      userId: 1,
-      sessionId: "old-session",
-      topic: "communication",
-      description: "Old",
-      priority: "high",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    ).mockResolvedValue(existingItem({ topic: "communication", priority: "high" }));
 
     await service.upsertItems(1, "session-1", [
       {
@@ -168,16 +149,9 @@ describe("ReviewMergeService", () => {
     vi.mocked(
       reviewRepository.findByUserIdAndTopicCaseInsensitive,
     ).mockResolvedValue(null);
-    vi.mocked(reviewRepository.findSimilarByUserIdAndTopic).mockResolvedValue({
-      id: "item-1",
-      userId: 1,
-      sessionId: "old-session",
-      topic: "distributed systems",
-      description: "Old",
-      priority: "medium",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    vi.mocked(reviewRepository.findSimilarByUserIdAndTopic).mockResolvedValue(
+      existingItem({ topic: "distributed systems", priority: "medium" }),
+    );
 
     await service.upsertItems(1, "session-1", [
       {

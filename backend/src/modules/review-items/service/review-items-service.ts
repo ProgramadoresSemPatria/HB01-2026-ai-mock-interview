@@ -1,7 +1,7 @@
 import type { ReviewRepository } from "@/modules/interview/repository/review-repository";
+import type { ReviewItemRecord } from "@/modules/interview/types/review-item-record";
 import type { ReviewPriority } from "@/modules/interview/validations/interview-schemas";
 import type { ReviewItemResponse } from "@/modules/review-items/validations/review-items-schemas";
-import type { ReviewItem } from "../../../../prisma/generated/client";
 
 const PRIORITY_RANK: Record<ReviewPriority, number> = {
   low: 0,
@@ -9,22 +9,21 @@ const PRIORITY_RANK: Record<ReviewPriority, number> = {
   high: 2,
 };
 
-function toResponse(item: ReviewItem): ReviewItemResponse {
+function toResponse(item: ReviewItemRecord): ReviewItemResponse {
   return {
     id: item.id,
     sessionId: item.sessionId,
     topic: item.topic,
     description: item.description,
-    priority: item.priority as ReviewPriority,
+    priority: item.priority,
     createdAt: item.createdAt.toISOString(),
     updatedAt: item.updatedAt.toISOString(),
   };
 }
 
-function compareReviewItems(a: ReviewItem, b: ReviewItem): number {
+function compareReviewItems(a: ReviewItemRecord, b: ReviewItemRecord): number {
   const priorityDiff =
-    PRIORITY_RANK[b.priority as ReviewPriority] -
-    PRIORITY_RANK[a.priority as ReviewPriority];
+    PRIORITY_RANK[b.priority] - PRIORITY_RANK[a.priority];
 
   if (priorityDiff !== 0) {
     return priorityDiff;
