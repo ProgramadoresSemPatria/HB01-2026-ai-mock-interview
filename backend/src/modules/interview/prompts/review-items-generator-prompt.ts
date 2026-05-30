@@ -1,4 +1,5 @@
 import type { ReviewPriority } from "@/modules/interview/validations/interview-schemas";
+import { resumeToMarkdown } from "@/modules/resumes/format/resume-to-markdown";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
 
 export const TRANSCRIPT_SECTION_HEADER = "## Interview transcript";
@@ -47,7 +48,7 @@ export function buildReviewItemsGeneratorPrompt(
 ${params.transcript}`,
     buildExistingItemsBlock(params.existingItems),
     `${STRUCTURED_SUMMARY_SECTION_HEADER}
-${JSON.stringify(params.structuredSummary, null, 2)}`,
+${resumeToMarkdown(params.structuredSummary)}`,
     buildInstructionsBlock(),
   ].join("\n\n");
 }

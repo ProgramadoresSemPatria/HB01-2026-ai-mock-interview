@@ -82,7 +82,7 @@ describe("buildReviewItemsGeneratorPrompt", () => {
     expect(prompt).not.toContain(`${EXISTING_ITEMS_SECTION_HEADER}\n(none)`);
   });
 
-  it("embeds transcript and structured summary content", () => {
+  it("embeds transcript and structured summary as markdown", () => {
     const prompt = buildReviewItemsGeneratorPrompt({
       transcript: sampleTranscript,
       existingItems: [],
@@ -90,6 +90,8 @@ describe("buildReviewItemsGeneratorPrompt", () => {
     });
 
     expect(prompt).toContain(sampleTranscript);
-    expect(prompt).toContain(JSON.stringify(sampleSummary, null, 2));
+    expect(prompt).toContain("**Name:** Alex");
+    expect(prompt).toContain("**Title:** Backend Engineer");
+    expect(prompt).not.toContain(JSON.stringify(sampleSummary, null, 2));
   });
 });

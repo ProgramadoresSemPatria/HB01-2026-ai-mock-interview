@@ -5,6 +5,7 @@ import type { StructuredSummary } from "@/modules/resumes/validations/resume-sch
 import {
   buildClosingFeedbackPrompt,
   CLOSING_GUARDRAILS_HEADER,
+  CLOSING_RESUME_HEADER,
 } from "./closing-feedback-prompt";
 
 const sampleSummary: StructuredSummary = {
@@ -61,4 +62,16 @@ describe("buildClosingFeedbackPrompt", () => {
       expect(prompt).toContain(expectedInstruction);
     },
   );
+
+  it("renders résumé as markdown summary", () => {
+    const prompt = buildClosingFeedbackPrompt({
+      level: "mid",
+      resumeSummary: sampleSummary,
+    });
+
+    expect(prompt).toContain(CLOSING_RESUME_HEADER);
+    expect(prompt).toContain("**Name:** Alex");
+    expect(prompt).toContain("**Title:** Backend Engineer");
+    expect(prompt).not.toContain(JSON.stringify(sampleSummary, null, 2));
+  });
 });
