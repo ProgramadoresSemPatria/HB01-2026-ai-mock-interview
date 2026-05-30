@@ -1,17 +1,17 @@
 import { Worker } from "bullmq";
 
-import type { ResumeProcessResult } from "@/infrastructure/queue/resume-processor";
 import {
   RESUME_QUEUE_NAME,
   redisConnection,
 } from "@/infrastructure/queue/resume-queue";
 import type { ResumeJobData } from "@/infrastructure/queue/resume-queue";
-import { makeResumeProcessor } from "@/factories/resumes/resume-processor-factory";
+import { makeResumeService } from "@/factories/resumes/resume-service-factory";
+import type { ResumeProcessResult } from "@/modules/resumes/service/resume-service";
 import { logger } from "@/shared";
 
 const connection = redisConnection;
 
-const processor = makeResumeProcessor();
+const resumeService = makeResumeService();
 
 function logResumeJobResult(
   jobId: string | number | undefined,
@@ -53,7 +53,7 @@ const worker = new Worker<ResumeJobData>(
   RESUME_QUEUE_NAME,
   async (job) => {
     logger.info("Processing resume job", { jobId: job.id });
-    const result = await processor.process(job.data.resumeId);
+    const result = await resumeService.process(job.data.resumeId);
     logResumeJobResult(job.id, result);
   },
   {
