@@ -9,8 +9,10 @@ export function writeEvent(
 ): void {
   res.write(`event: ${event}\n`);
   res.write(`data: ${JSON.stringify(data)}\n\n`);
+  (res as any).flush?.();
 }
 
 export function writeDone(res: Response): void {
   res.write("data: [DONE]\n\n");
+  (res as any).flush?.();
 }

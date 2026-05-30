@@ -58,7 +58,7 @@ export class InterviewStreamService {
     const isFinalTurn = session.turnCount + 1 >= session.maxTurns;
 
     res.writeHead(200, SSE_HEADERS);
-
+    res.flushHeaders();
     await this.messageRepository.createHuman({
       sessionId,
       userId,
