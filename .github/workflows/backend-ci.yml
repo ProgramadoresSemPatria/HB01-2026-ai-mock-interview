@@ -1,0 +1,38 @@
+name: Backend CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      # prisma generate (postinstall) reads prisma.config.ts; no DB connection at install time
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ci
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Type check
+        run: bun run check-types
+
+      - name: Unit tests
+        run: bun run test

@@ -1,19 +1,36 @@
 import { randomUUID } from "node:crypto";
 
-import type { Resume } from "../../../../prisma/generated/client";
-import { ResumeStatus } from "../../../../prisma/generated/client";
+import type { ChatOpenAI } from "@langchain/openai";
+
+import {
+  RESUME_STATUS,
+  type ResumeRecord,
+  type ResumeStatus,
+} from "@/modules/resumes/types/resume-record";
 import { env } from "@/config/env";
 import type { IObjectStorage } from "@/modules/resumes/protocols/object-storage";
 import type { IResumeQueue } from "@/modules/resumes/protocols/resume-queue";
+import { buildResumeExtractionPrompt } from "@/modules/resumes/prompts/resume-extraction-prompt";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
-import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
+import {
+  structuredSummarySchema,
+  type StructuredSummary,
+} from "@/modules/resumes/validations/resume-schemas";
 import {
   BadGatewayError,
   BadRequestError,
   NotFoundError,
   ServiceUnavailableError,
 } from "@/shared";
+
 const PDF_MIME_TYPE = "application/pdf";
+
+export type PdfTextExtractor = (buffer: Buffer) => Promise<string>;
+
+export type ResumeProcessResult =
+  | { status: "ready"; resumeId: string }
+  | { status: "failed"; resumeId: string; error: string; cause?: unknown }
+  | { status: "skipped"; resumeId: string; reason: "not_found" };
 
 export type ResumePreview = {
   id: string;
@@ -31,6 +48,8 @@ export class ResumeService {
     private readonly resumeRepository: ResumeRepository,
     private readonly objectStorage: IObjectStorage,
     private readonly resumeQueue: IResumeQueue,
+    private readonly extractionModel: ChatOpenAI,
+    private readonly extractText: PdfTextExtractor,
     private readonly maxBytes: number = env.RESUME_MAX_BYTES,
   ) {}
 
@@ -85,6 +104,46 @@ export class ResumeService {
     return toResumeDetail(resume);
   }
 
+  async process(resumeId: string): Promise<ResumeProcessResult> {
+    const resume = await this.resumeRepository.findById(resumeId);
+
+    if (!resume) {
+      return { status: "skipped", resumeId, reason: "not_found" };
+    }
+
+    try {
+      const pdfBuffer = await this.objectStorage.get(resume.storageKey);
+      const rawText = await this.extractText(pdfBuffer);
+
+      if (!rawText.trim()) {
+        throw new Error("PDF contains no extractable text");
+      }
+
+      const structuredModel = this.extractionModel.withStructuredOutput(
+        structuredSummarySchema,
+      );
+      const structuredSummary = await structuredModel.invoke([
+        {
+          role: "user",
+          content: buildResumeExtractionPrompt(rawText),
+        },
+      ]);
+
+      await this.resumeRepository.updateReady(
+        resumeId,
+        structuredSummary,
+        rawText,
+      );
+      return { status: "ready", resumeId };
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Resume processing failed";
+
+      await this.resumeRepository.updateFailed(resumeId, message);
+      return { status: "failed", resumeId, error: message, cause: error };
+    }
+  }
+
   private validatePdfFile(file: Express.Multer.File): void {
     if (!file) {
       throw new BadRequestError("PDF file is required");
@@ -102,7 +161,7 @@ export class ResumeService {
   }
 }
 
-function toResumePreview(resume: Resume): ResumePreview {
+function toResumePreview(resume: ResumeRecord): ResumePreview {
   return {
     id: resume.id,
     name: resume.name,
@@ -111,10 +170,10 @@ function toResumePreview(resume: Resume): ResumePreview {
   };
 }
 
-function toResumeDetail(resume: Resume): ResumeDetail {
+function toResumeDetail(resume: ResumeRecord): ResumeDetail {
   const preview = toResumePreview(resume);
 
-  if (resume.status !== ResumeStatus.ready || resume.structuredSummary === null) {
+  if (resume.status !== RESUME_STATUS.ready || resume.structuredSummary === null) {
     return preview;
   }
 

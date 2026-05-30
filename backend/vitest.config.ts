@@ -14,5 +14,15 @@ export default defineConfig({
     passWithNoTests: true,
     setupFiles: ["./vitest.setup.ts"],
     exclude: ["src/**/*.integration.test.ts", "src/**/*.e2e.test.ts"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html"],
+      include: ["src/**/*.ts"],
+      exclude: [
+        "src/**/*.test.ts",
+        "src/test/**",
+        "src/docs/**",
+      ],
+    },
   },
 });

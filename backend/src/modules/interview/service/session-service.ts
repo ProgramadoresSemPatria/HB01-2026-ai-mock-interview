@@ -6,7 +6,6 @@ import type {
 } from "@/modules/interview/validations/interview-schemas";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
 import { BadRequestError, NotFoundError } from "@/shared";
-import { ResumeStatus } from "../../../../prisma/generated/client";
 
 export type SessionSummary = {
   id: string;
@@ -45,11 +44,11 @@ export class SessionService {
       throw new NotFoundError();
     }
 
-    if (resume.status !== ResumeStatus.ready) {
+    if (resume.status !== "ready") {
       const message =
-        resume.status === ResumeStatus.processing
+        resume.status === "processing"
           ? "Resume is still being processed"
-          : resume.status === ResumeStatus.failed
+          : resume.status === "failed"
             ? "Resume processing failed"
             : "Resume is not ready for interview";
       throw new BadRequestError(message);

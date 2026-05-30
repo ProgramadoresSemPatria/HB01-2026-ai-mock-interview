@@ -1,6 +1,5 @@
 import type { ReviewRepository } from "@/modules/interview/repository/review-repository";
 import type { ReviewPriority } from "@/modules/interview/validations/interview-schemas";
-import type { ReviewPriority as DbReviewPriority } from "../../../../prisma/generated/client";
 
 export type ReviewItemInput = {
   topic: string;
@@ -60,21 +59,18 @@ export class ReviewMergeService {
           sessionId,
           topic: item.topic,
           description: item.description,
-          priority: item.priority as DbReviewPriority,
+          priority: item.priority,
         });
         continue;
       }
 
-      let priority = maxPriority(
-        existing.priority as ReviewPriority,
-        item.priority,
-      );
+      let priority = maxPriority(existing.priority, item.priority);
 
       if (
         llmTopics.has(existing.topic.toLowerCase()) &&
         priority === existing.priority
       ) {
-        priority = bump(existing.priority as ReviewPriority);
+        priority = bump(existing.priority);
       }
 
       await this.reviewRepository.upsert({
@@ -82,7 +78,7 @@ export class ReviewMergeService {
         sessionId,
         topic: item.topic,
         description: item.description,
-        priority: priority as DbReviewPriority,
+        priority,
       });
     }
   }

@@ -15,7 +15,7 @@ This project uses a **three-suite Vitest pyramid**: unit (fast, no Docker), inte
 | Thin wrappers (e.g. checkpoint singleton) | **None** | — | — |
 | `prompts/`, pure LangGraph helpers | **Unit** | `*.test.ts` | `bun run test` |
 
-Pre-commit (`.husky/pre-commit`) runs **unit tests only** — no Docker required.
+Pre-commit runs **unit tests only** (plus lint) — no Docker. See [CI vs Husky vs local](#ci-vs-husky-vs-local) for the full matrix.
 
 ---
 
@@ -28,6 +28,7 @@ Pre-commit (`.husky/pre-commit`) runs **unit tests only** — no Docker required
 | `bun run test:e2e` | HTTP E2E suites | Yes |
 | `bun run test:all` | All three suites | Yes |
 | `bun run test:watch` | Unit watch mode | No |
+| `bun run test:coverage` | Unit tests + V8 coverage report | No |
 
 Run a single file:
 
@@ -36,6 +37,85 @@ bun run test -- src/modules/auth/validations/auth-schemas.test.ts
 bun run test:integration -- src/modules/auth/repository/user-repository.integration.test.ts
 bun run test:e2e -- src/test/e2e/auth.e2e.test.ts
 ```
+
+---
+
+## CI vs Husky vs local
+
+Three contexts run checks at different depth. Use this table to see what runs where:
+
+| Context | When | Lint | Types | Unit | Integration / E2E | Docker |
+|---------|------|------|-------|------|-------------------|--------|
+| **CI — quality** ([`backend-ci.yml`](../../.github/workflows/backend-ci.yml)) | PR + push to `main` / `master` | Yes | Yes | Yes | No | No |
+| **CI — integration/E2E** ([`backend-integration-e2e.yml`](../../.github/workflows/backend-integration-e2e.yml)) | Push to `main` or manual | No | No | No | Yes | Yes (runner) |
+| **Husky** (`.husky/pre-commit`) | Every commit | Yes | No | Yes | No | No |
+| **Local quick** | Before push (recommended) | Yes | Yes | Yes | No | No |
+| **Local full** | Before release or risky test changes | — | — | Yes | Yes (`test:all`) | Yes |
+
+### GitHub Actions: Backend CI
+
+Workflow file (repo root): [`.github/workflows/backend-ci.yml`](../../.github/workflows/backend-ci.yml).
+
+- **Triggers**: `pull_request`; `push` to `main` or `master`
+- **Job**: `quality` on `ubuntu-latest`, `working-directory: backend`, `NODE_ENV=test`, dummy `DATABASE_URL` for `prisma generate` on install (no `.env` in CI)
+- **Steps** (in order):
+  1. Checkout
+  2. Setup Bun (`oven-sh/setup-bun@v2`)
+  3. `bun install`
+  4. `bun run lint`
+  5. `bun run check-types`
+  6. `bun run test` (unit suite only)
+
+PR **quality** CI does **not** run integration or E2E (no Docker on that job). Use `bun run test:all` locally before release (or when changing repositories, routes, or Testcontainers setup).
+
+### GitHub Actions: Backend Integration & E2E
+
+Workflow file (repo root): [`.github/workflows/backend-integration-e2e.yml`](../../.github/workflows/backend-integration-e2e.yml).
+
+- **Triggers**: `push` to `main` only; `workflow_dispatch` (manual)
+- **Job**: `integration-e2e` on `ubuntu-latest` (Docker available), `working-directory: backend`, `timeout-minutes: 30`, `NODE_ENV=test`
+- **Steps** (in order):
+  1. Checkout
+  2. Setup Bun (`oven-sh/setup-bun@v2`)
+  3. `bun install`
+  4. `bun run test:integration`
+  5. `bun run test:e2e`
+
+This is an **optional / main gate**: it does not run on every PR, only after merge to `main` (or when triggered manually). Run `bun run test:all` locally before relying on this workflow — same suites, faster feedback.
+
+### Pre-commit (Husky)
+
+`.husky/pre-commit` runs:
+
+```bash
+bun run lint && bun run test
+```
+
+Unit tests only — no `check-types`, no Docker. Keeps commits fast while catching lint and unit regressions.
+
+### Local gates
+
+**Quick gate** (matches CI — run from `backend/` at monorepo root):
+
+```bash
+bun run lint && bun run check-types && bun run test
+```
+
+**Full gate** (before release):
+
+```bash
+bun run test:all
+```
+
+Runs unit, then integration, then E2E in sequence. Requires Docker Desktop (or Engine).
+
+### Coverage (local only)
+
+```bash
+bun run test:coverage
+```
+
+Runs the unit suite with `@vitest/coverage-v8` and prints a text summary. An HTML report is written to `coverage/` (gitignored). Coverage is **not** run in CI and has no enforced threshold — use it locally to spot untested code.
 
 ---
 
