@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useAuth } from "@/features/auth/session-provider";
@@ -12,21 +11,20 @@ import { useSessionMessages } from "@/lib/query/hooks/use-session-messages";
 import { useSessions } from "@/lib/query/hooks/use-sessions";
 import { queryKeys } from "@/lib/query/keys";
 import { ApiError } from "@/lib/api/client";
-import { cn } from "@/lib/utils";
-import type { SessionMessage } from "@/types/interview";
+import type {
+  ListMessagesResponse,
+  ListSessionsResponse,
+  SessionMessage,
+  StreamMeta,
+} from "@/types/interview";
 
-const WELCOME_MESSAGE =
-  "Welcome to your mock interview. When you're ready, send your first message to begin.";
-
-type DisplayMessage =
-  | SessionMessage
-  | {
-      id: string;
-      role: "ai";
-      content: string;
-      createdAt: string;
-      streaming?: boolean;
-    };
+import { InterviewChatInput } from "./interview-chat-input";
+import { InterviewCompletionBanner } from "./interview-completion-banner";
+import {
+  InterviewMessageList,
+  type DisplayMessage,
+} from "./interview-message-list";
+import { InterviewReviewPanel } from "./interview-review-panel";
 
 export function InterviewChat({ sessionId }: { sessionId: string }) {
   const { getAccessToken } = useAuth();
@@ -36,26 +34,116 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
   const [draft, setDraft] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
+  const [pendingHuman, setPendingHuman] = useState<SessionMessage | null>(
+    null,
+  );
   const abortRef = useRef<AbortController | null>(null);
+  const streamingContentRef = useRef("");
 
   const session = sessionsQuery.data?.sessions.find((s) => s.id === sessionId);
   const isFinished = session?.isFinished ?? false;
   const atTurnLimit = session != null && session.turnCount >= session.maxTurns;
-  const canSend = !isFinished && !atTurnLimit && !isStreaming;
+  const isCompleted = isFinished || atTurnLimit;
+  const canSend = !isCompleted && !isStreaming;
 
   const serverMessages = messagesQuery.data?.messages ?? [];
-  const showWelcome = serverMessages.length === 0 && !isStreaming;
+  const showWelcome =
+    serverMessages.length === 0 && !isStreaming && !pendingHuman;
 
   const displayMessages: DisplayMessage[] = [...serverMessages];
-  if (isStreaming && streamingContent) {
-    displayMessages.push({
-      id: "streaming",
-      role: "ai",
-      content: streamingContent,
-      createdAt: new Date().toISOString(),
-      streaming: true,
-    });
+
+  if (
+    pendingHuman &&
+    !serverMessages.some(
+      (m) => m.role === "human" && m.content === pendingHuman.content,
+    )
+  ) {
+    displayMessages.push(pendingHuman);
   }
+
+  if (isStreaming) {
+    if (streamingContent) {
+      displayMessages.push({
+        id: "streaming",
+        role: "ai",
+        content: streamingContent,
+        createdAt: new Date().toISOString(),
+        streaming: true,
+      });
+    } else {
+      displayMessages.push({
+        id: "typing",
+        role: "ai",
+        content: "",
+        createdAt: new Date().toISOString(),
+        typing: true,
+      });
+    }
+  }
+
+  const updateSessionMeta = useCallback(
+    (meta: StreamMeta) => {
+      queryClient.setQueryData<ListSessionsResponse>(
+        queryKeys.sessions,
+        (old) => {
+          if (!old) return old;
+          return {
+            sessions: old.sessions.map((s) =>
+              s.id === sessionId
+                ? {
+                    ...s,
+                    turnCount: meta.turnCount,
+                    maxTurns: meta.maxTurns,
+                    isFinished: meta.isFinished,
+                  }
+                : s,
+            ),
+          };
+        },
+      );
+    },
+    [queryClient, sessionId],
+  );
+
+  const mergeStreamedMessages = useCallback(
+    (humanContent: string, aiContent: string) => {
+      queryClient.setQueryData<ListMessagesResponse>(
+        queryKeys.sessionMessages(sessionId),
+        (old) => {
+          const existing = old?.messages ?? [];
+          const withoutPending = existing.filter(
+            (m) => m.id !== "pending-human",
+          );
+
+          const hasHuman = withoutPending.some(
+            (m) => m.role === "human" && m.content === humanContent,
+          );
+          const next: SessionMessage[] = [...withoutPending];
+
+          if (!hasHuman) {
+            next.push({
+              id: "pending-human",
+              role: "human",
+              content: humanContent,
+              createdAt: new Date().toISOString(),
+            });
+          }
+
+          if (aiContent) {
+            next.push({
+              id: `optimistic-ai-${Date.now()}`,
+              role: "ai",
+              content: aiContent,
+              createdAt: new Date().toISOString(),
+            });
+          }
+
+          return { messages: next };
+        },
+      );
+    },
+    [queryClient, sessionId],
+  );
 
   const invalidateAfterTurn = useCallback(() => {
     void queryClient.invalidateQueries({
@@ -69,6 +157,12 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
     return () => abortRef.current?.abort();
   }, []);
 
+  function scrollToReview() {
+    document
+      .getElementById("interview-review")
+      ?.scrollIntoView({ behavior: "smooth" });
+  }
+
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
     const content = draft.trim();
@@ -81,22 +175,33 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
     }
 
     setDraft("");
+    setPendingHuman({
+      id: "pending-human",
+      role: "human",
+      content,
+      createdAt: new Date().toISOString(),
+    });
     setIsStreaming(true);
     setStreamingContent("");
+    streamingContentRef.current = "";
     abortRef.current = new AbortController();
 
     try {
       await streamInterviewTurn(sessionId, content, token, {
         signal: abortRef.current.signal,
         onToken: (chunk) => {
+          streamingContentRef.current += chunk;
           setStreamingContent((prev) => prev + chunk);
         },
         onMeta: (meta) => {
+          updateSessionMeta(meta);
           if (meta.isFinished) {
-            toast.success("Interview finished. Check your review backlog.");
+            toast.success("Interview finished. Review your feedback below.");
           }
         },
       });
+
+      mergeStreamedMessages(content, streamingContentRef.current);
       invalidateAfterTurn();
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
@@ -108,16 +213,37 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
     } finally {
       setIsStreaming(false);
       setStreamingContent("");
+      streamingContentRef.current = "";
+      setPendingHuman(null);
       abortRef.current = null;
     }
   }
 
-  if (messagesQuery.isLoading && sessionsQuery.isLoading) {
+  if (messagesQuery.isLoading) {
     return <p className="text-sm text-(--muted-foreground)">Loading chat…</p>;
   }
 
+  if (messagesQuery.error) {
+    const message =
+      messagesQuery.error instanceof ApiError &&
+      messagesQuery.error.status === 404
+        ? "Interview session not found."
+        : messagesQuery.error instanceof Error
+          ? messagesQuery.error.message
+          : "Failed to load messages";
+
+    return (
+      <div className="mx-auto max-w-3xl space-y-2">
+        <p className="text-sm text-red-600">{message}</p>
+        <Link href="/dashboard" className="text-sm text-(--primary) underline">
+          Back to dashboard
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <div className="mx-auto flex h-[calc(100vh-8rem)] max-w-3xl flex-col">
+    <div className="mx-auto max-w-3xl">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h1 className="text-lg font-semibold text-(--foreground)">
@@ -126,68 +252,46 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
           {session && (
             <p className="text-xs text-(--muted-foreground)">
               Turn {session.turnCount} / {session.maxTurns}
-              {session.isFinished && " · Finished"}
+              {isCompleted && " · Finished"}
             </p>
           )}
         </div>
-        {isFinished && (
-          <Link
-            href="/feedback"
+        {isCompleted && (
+          <button
+            type="button"
+            onClick={scrollToReview}
             className="text-sm font-medium text-(--primary) underline"
           >
-            Review backlog
-          </Link>
+            View review
+          </button>
         )}
       </div>
 
-      <div className="flex-1 space-y-4 overflow-y-auto rounded-xl border border-(--border) bg-(--card) p-4">
-        {showWelcome && (
-          <div className="rounded-lg bg-(--muted)/50 px-4 py-3 text-sm text-(--muted-foreground)">
-            {WELCOME_MESSAGE}
-          </div>
-        )}
-
-        {displayMessages.map((msg) => (
-          <div
-            key={msg.id}
-            className={cn(
-              "max-w-[85%] rounded-xl px-4 py-2.5 text-sm",
-              msg.role === "human"
-                ? "ml-auto bg-(--primary) text-(--primary-foreground)"
-                : "bg-(--muted) text-(--foreground)",
-            )}
-          >
-            {msg.content}
-            {"streaming" in msg && msg.streaming && (
-              <Loader2 className="mt-1 inline h-3 w-3 animate-spin" />
-            )}
-          </div>
-        ))}
-      </div>
-
-      <form onSubmit={handleSend} className="mt-4 flex gap-2">
-        <input
-          type="text"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          placeholder={
-            canSend
-              ? "Type your answer…"
-              : isFinished
-                ? "Interview finished"
-                : "Cannot send right now"
-          }
-          disabled={!canSend}
-          className="flex-1 rounded-lg border border-(--border) bg-(--background) px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-(--primary) disabled:opacity-50"
+      <div className="flex h-[calc(100vh-8rem)] flex-col">
+        <InterviewMessageList
+          messages={displayMessages}
+          showWelcome={showWelcome}
         />
-        <button
-          type="submit"
-          disabled={!canSend || !draft.trim()}
-          className="rounded-lg bg-(--foreground) px-4 py-2.5 text-sm font-medium text-(--background) disabled:opacity-50"
-        >
-          {isStreaming ? "…" : "Send"}
-        </button>
-      </form>
+
+        {isCompleted && (
+          <div className="mt-4">
+            <InterviewCompletionBanner onViewReview={scrollToReview} />
+          </div>
+        )}
+
+        <InterviewChatInput
+          draft={draft}
+          onDraftChange={setDraft}
+          onSubmit={handleSend}
+          canSend={canSend}
+          isStreaming={isStreaming}
+          isFinished={isCompleted}
+        />
+      </div>
+
+      {isCompleted && !isStreaming && (
+        <InterviewReviewPanel sessionId={sessionId} messages={serverMessages} />
+      )}
     </div>
   );
 }
