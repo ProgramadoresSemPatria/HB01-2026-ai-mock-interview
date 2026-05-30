@@ -1,4 +1,8 @@
-import { Badge } from "@/components/ui/badge";
+"use client";
+
+import { useState } from "react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,64 +14,94 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/features/auth/session-provider";
+import { ApiError } from "@/lib/api/client";
 
 export default function SignInForm({
   onSwitchToSignUp,
 }: {
   onSwitchToSignUp: () => void;
 }) {
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await login(email, password);
+    } catch (err) {
+      const message =
+        err instanceof ApiError ? err.message : "Failed to sign in";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <Card variant="glass" radius="xl">
-      <CardHeader>
-        <Badge>Auth stub</Badge>
-        <CardTitle>Welcome back</CardTitle>
-        <CardDescription>
-          The backend auth MVC is still being rewired. This screen now exercises
-          the shared form primitives and page shell while the real flow lands.
-        </CardDescription>
-      </CardHeader>
+      <form onSubmit={handleSubmit}>
+        <CardHeader>
+          <CardTitle>Welcome back</CardTitle>
+          <CardDescription>
+            Sign in to continue your mock interview practice.
+          </CardDescription>
+        </CardHeader>
 
-      <CardContent className="space-y-5">
-        <div className="space-y-2">
-          <Label htmlFor="signin-email" className="text-text-base">
-            Email
-          </Label>
-          <Input
-            id="signin-email"
-            type="email"
-            placeholder="candidate@hone.ai"
-          />
-        </div>
+        <CardContent className="space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="signin-email" className="text-text-base">
+              Email
+            </Label>
+            <Input
+              id="signin-email"
+              type="email"
+              placeholder="candidate@hone.ai"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+            />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="signin-password" className="text-text-base">
-            Password
-          </Label>
-          <Input
-            id="signin-password"
-            type="password"
-            placeholder="Your password"
-          />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="signin-password" className="text-text-base">
+              Password
+            </Label>
+            <Input
+              id="signin-password"
+              type="password"
+              placeholder="Your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+            />
+          </div>
+        </CardContent>
 
-        <div className="rounded-[var(--radius-card)] border border-border-subtle bg-surface-soft px-4 py-3 text-sm leading-6 text-text-muted">
-          Submit is intentionally inert for now. The goal of this route is to
-          validate visual consistency before wiring the backend auth flow.
-        </div>
-      </CardContent>
-
-      <CardFooter className="flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-        <Button shape="pill" className="flex-1">
-          Continue
-        </Button>
-        <Button
-          variant="link"
-          onClick={onSwitchToSignUp}
-          className="justify-center sm:justify-end"
-        >
-          Need an account? Sign up
-        </Button>
-      </CardFooter>
+        <CardFooter className="flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+          <Button
+            type="submit"
+            shape="pill"
+            className="flex-1"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Signing in…" : "Continue"}
+          </Button>
+          <Button
+            type="button"
+            variant="link"
+            onClick={onSwitchToSignUp}
+            className="justify-center sm:justify-end"
+          >
+            Need an account? Sign up
+          </Button>
+        </CardFooter>
+      </form>
     </Card>
   );
 }
