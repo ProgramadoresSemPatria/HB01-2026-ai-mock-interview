@@ -34,8 +34,9 @@ Full-stack TypeScript project for technical mock interviews driven by AI. The re
 ## Frontend direction
 
 - `/` is the public landing page.
-- `/dashboard` is the future authenticated app home, currently kept public on purpose.
-- The UI is aligned to the AI Mock Interview domain and avoids generic dashboard filler.
+- Authenticated routes (`/dashboard`, `/practice`, `/interview/[id]`, `/feedback`) call the backend API (no mocked data).
+- Integration map: [`frontend/docs/api-integration.md`](frontend/docs/api-integration.md).
+- API contract: [`backend/docs/frontend-mock-interview-api.md`](backend/docs/frontend-mock-interview-api.md).
 
 ## Getting started
 
