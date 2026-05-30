@@ -21,7 +21,9 @@ export default function UserMenu() {
       <Link href="/dashboard">
         <Button variant="outline">Dashboard</Button>
       </Link>
-      <span className="hidden text-sm text-text-muted sm:inline">{user?.name}</span>
+      <span className="hidden text-sm text-text-muted sm:inline">
+        {user?.name}
+      </span>
       <Button variant="ghost" size="sm" onClick={logout}>
         Sign out
       </Button>

@@ -47,8 +47,7 @@ export default function PracticePage() {
       setStoredResumeId(preview.id);
       setUploadState("polling");
     } catch (err) {
-      const message =
-        err instanceof ApiError ? err.message : "Upload failed";
+      const message = err instanceof ApiError ? err.message : "Upload failed";
       setError(message);
       setUploadState("error");
       toast.error(message);

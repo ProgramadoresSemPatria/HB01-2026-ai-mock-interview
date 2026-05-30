@@ -4,8 +4,8 @@ The frontend treats the backend as the single source of truth. Contract details 
 
 ## Environment
 
-| Variable | Purpose |
-|----------|---------|
+| Variable                 | Purpose                                          |
+| ------------------------ | ------------------------------------------------ |
 | `NEXT_PUBLIC_SERVER_URL` | Backend origin (default `http://localhost:3000`) |
 
 Frontend dev server runs on port **3001**. Ensure `CORS_ORIGIN` on the backend includes `http://localhost:3001`.
@@ -22,14 +22,14 @@ pages (App Router)
 
 ## Routes
 
-| Route | Backend APIs |
-|-------|----------------|
-| `/login` | `POST /api/auth/signup`, `POST /api/auth/login` |
-| `/dashboard` | `GET /api/interview/sessions`, `GET /api/review-items` |
-| `/practice` | `POST /api/resumes`, `GET /api/resumes/:id` (poll) |
-| `/practice/new` | `POST /api/interview/sessions` |
-| `/interview/[sessionId]` | `GET .../messages`, `POST .../stream` (SSE) |
-| `/feedback` | `GET /api/review-items` |
+| Route                    | Backend APIs                                           |
+| ------------------------ | ------------------------------------------------------ |
+| `/login`                 | `POST /api/auth/signup`, `POST /api/auth/login`        |
+| `/dashboard`             | `GET /api/interview/sessions`, `GET /api/review-items` |
+| `/practice`              | `POST /api/resumes`, `GET /api/resumes/:id` (poll)     |
+| `/practice/new`          | `POST /api/interview/sessions`                         |
+| `/interview/[sessionId]` | `GET .../messages`, `POST .../stream` (SSE)            |
+| `/feedback`              | `GET /api/review-items`                                |
 
 ## Auth storage
 

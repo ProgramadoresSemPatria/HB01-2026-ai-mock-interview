@@ -16,7 +16,10 @@ export function SessionsTable({ sessions }: { sessions: SessionSummary[] }) {
     return (
       <p className="text-sm text-(--muted-foreground)">
         No sessions yet.{" "}
-        <Link href="/practice" className="font-medium text-(--primary) underline">
+        <Link
+          href="/practice"
+          className="font-medium text-(--primary) underline"
+        >
           Upload a resume and start practicing
         </Link>
         .

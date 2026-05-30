@@ -17,7 +17,8 @@ const PRIORITY_STYLES: Record<
     label: "medium priority",
   },
   low: {
-    badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+    badge:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
     label: "low priority",
   },
 };
@@ -34,7 +35,8 @@ export function ReviewItemsGrid({
   if (visible.length === 0) {
     return (
       <p className="text-sm text-(--muted-foreground)">
-        No review items yet. Complete an interview to generate your study backlog.
+        No review items yet. Complete an interview to generate your study
+        backlog.
       </p>
     );
   }

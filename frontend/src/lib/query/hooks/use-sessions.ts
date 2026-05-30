@@ -12,8 +12,7 @@ export function useSessions() {
 
   return useQuery({
     queryKey: queryKeys.sessions,
-    queryFn: () =>
-      fetchWithAuth((token) => interviewApi.listSessions(token)),
+    queryFn: () => fetchWithAuth((token) => interviewApi.listSessions(token)),
     enabled: isAuthenticated,
   });
 }

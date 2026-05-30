@@ -23,8 +23,7 @@ const LEVELS: { value: InterviewLevel; label: string; description: string }[] =
 function NewSessionContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const resumeId =
-    searchParams.get("resumeId") ?? getStoredResumeId() ?? "";
+  const resumeId = searchParams.get("resumeId") ?? getStoredResumeId() ?? "";
   const { fetchWithAuth } = useAuth();
   const [level, setLevel] = useState<InterviewLevel>("mid");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -124,7 +123,9 @@ function NewSessionContent() {
 export default function NewSessionPage() {
   return (
     <AppShell>
-      <Suspense fallback={<p className="text-sm text-(--muted-foreground)">Loading…</p>}>
+      <Suspense
+        fallback={<p className="text-sm text-(--muted-foreground)">Loading…</p>}
+      >
         <NewSessionContent />
       </Suspense>
     </AppShell>

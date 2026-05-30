@@ -82,7 +82,11 @@ function notifySessionChange() {
 
 const emptySnapshot = null as AuthSession | null;
 
-export function AuthSessionProvider({ children }: { children: React.ReactNode }) {
+export function AuthSessionProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const session = useSyncExternalStore(
     subscribeSession,

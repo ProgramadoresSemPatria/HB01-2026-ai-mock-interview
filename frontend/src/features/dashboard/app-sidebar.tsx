@@ -2,12 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Dumbbell,
-  MessageSquare,
-  LogOut,
-} from "lucide-react";
+import { LayoutDashboard, Dumbbell, MessageSquare, LogOut } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/session-provider";
@@ -31,8 +26,7 @@ export function AppSidebar() {
 
       <nav className="flex-1 space-y-0.5 px-3">
         {NAV_ITEMS.map(({ icon: Icon, label, href }) => {
-          const active =
-            pathname === href || pathname.startsWith(`${href}/`);
+          const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
               key={href}

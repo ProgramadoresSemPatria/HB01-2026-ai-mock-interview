@@ -18,13 +18,15 @@ import type { SessionMessage } from "@/types/interview";
 const WELCOME_MESSAGE =
   "Welcome to your mock interview. When you're ready, send your first message to begin.";
 
-type DisplayMessage = SessionMessage | {
-  id: string;
-  role: "ai";
-  content: string;
-  createdAt: string;
-  streaming?: boolean;
-};
+type DisplayMessage =
+  | SessionMessage
+  | {
+      id: string;
+      role: "ai";
+      content: string;
+      createdAt: string;
+      streaming?: boolean;
+    };
 
 export function InterviewChat({ sessionId }: { sessionId: string }) {
   const { getAccessToken } = useAuth();
@@ -38,8 +40,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
 
   const session = sessionsQuery.data?.sessions.find((s) => s.id === sessionId);
   const isFinished = session?.isFinished ?? false;
-  const atTurnLimit =
-    session != null && session.turnCount >= session.maxTurns;
+  const atTurnLimit = session != null && session.turnCount >= session.maxTurns;
   const canSend = !isFinished && !atTurnLimit && !isStreaming;
 
   const serverMessages = messagesQuery.data?.messages ?? [];
@@ -102,9 +103,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
         invalidateAfterTurn();
         return;
       }
-      toast.error(
-        err instanceof ApiError ? err.message : "Stream failed",
-      );
+      toast.error(err instanceof ApiError ? err.message : "Stream failed");
       invalidateAfterTurn();
     } finally {
       setIsStreaming(false);
