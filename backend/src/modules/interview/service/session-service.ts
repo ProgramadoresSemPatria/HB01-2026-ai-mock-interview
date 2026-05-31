@@ -97,4 +97,20 @@ export class SessionService {
       createdAt: message.createdAt,
     }));
   }
+
+  async deleteSession(
+    userId: number,
+    sessionId: string,
+  ): Promise<void> {
+    const session = await this.sessionRepository.findByIdAndUserId(
+      sessionId,
+      userId,
+    );
+
+    if (!session) {
+      throw new NotFoundError();
+    }
+
+    await this.sessionRepository.deleteByIdAndUserId(sessionId, userId);
+  }
 }

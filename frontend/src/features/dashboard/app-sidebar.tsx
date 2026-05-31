@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Dumbbell, MessageSquare, LogOut } from "lucide-react";
+import { LayoutDashboard, Dumbbell, MessageSquare, LogOut, FileText, User } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/session-provider";
@@ -11,6 +11,8 @@ const NAV_ITEMS = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
   { icon: Dumbbell, label: "Practice", href: "/practice" },
   { icon: MessageSquare, label: "Feedback", href: "/feedback" },
+  { icon: FileText, label: "Resumes", href: "/resumes" },
+  { icon: User, label: "Profile", href: "/profile" },
 ] as const;
 
 export function AppSidebar() {

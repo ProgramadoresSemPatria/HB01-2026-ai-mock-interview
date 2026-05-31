@@ -91,4 +91,27 @@ export class ResumeRepository {
     });
     return row ? toResumeRecord(row) : null;
   }
+
+  async findAllByUserId(userId: number): Promise<ResumeRecord[]> {
+    const rows = await prisma.resume.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
+    return rows.map(toResumeRecord);
+  }
+
+  async deleteByIdAndUserId(
+    id: string,
+    userId: number,
+  ): Promise<ResumeRecord | null> {
+    const row = await prisma.resume.findFirst({
+      where: { id, userId },
+    });
+    if (!row) return null;
+
+    await prisma.resume.delete({
+      where: { id },
+    });
+    return toResumeRecord(row);
+  }
 }

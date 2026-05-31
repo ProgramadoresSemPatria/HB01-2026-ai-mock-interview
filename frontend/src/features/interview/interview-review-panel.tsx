@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
 import { ArrowRight } from "lucide-react";
 
 import { ReviewItemsGrid } from "@/features/dashboard/review-items-grid";
@@ -58,8 +59,8 @@ export function InterviewReviewPanel({
           <h3 className="text-xs font-semibold uppercase tracking-wider text-(--muted-foreground)">
             General feedback
           </h3>
-          <div className="rounded-lg bg-(--muted)/40 px-4 py-3 text-sm leading-relaxed text-(--foreground) whitespace-pre-wrap">
-            {closingFeedback}
+          <div className="rounded-lg bg-(--muted)/40 px-4 py-3 text-sm leading-relaxed text-(--foreground) prose prose-sm max-w-none space-y-2 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5">
+            <ReactMarkdown>{closingFeedback}</ReactMarkdown>
           </div>
         </div>
       )}
@@ -69,7 +70,7 @@ export function InterviewReviewPanel({
           Topics to review
         </h3>
         {isLoading && (
-          <p className="text-sm text-(--muted-foreground)">Loading topics…</p>
+          <p className="text-sm text-(--muted-foreground)">Seus itens estão sendo gerados, estarão disponíveis em breve</p>
         )}
         {error && (
           <p className="text-sm text-red-600">

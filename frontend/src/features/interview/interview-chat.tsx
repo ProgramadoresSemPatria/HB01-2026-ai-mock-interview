@@ -11,6 +11,7 @@ import { useSessionMessages } from "@/lib/query/hooks/use-session-messages";
 import { useSessions } from "@/lib/query/hooks/use-sessions";
 import { queryKeys } from "@/lib/query/keys";
 import { ApiError } from "@/lib/api/client";
+import { cn } from "@/lib/utils";
 import type {
   ListMessagesResponse,
   ListSessionsResponse,
@@ -39,6 +40,11 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
   );
   const abortRef = useRef<AbortController | null>(null);
   const streamingContentRef = useRef("");
+  const [viewMode, setViewMode] = useState<"chat" | "review">("chat");
+
+  useEffect(() => {
+    setViewMode("chat");
+  }, [sessionId]);
 
   const session = sessionsQuery.data?.sessions.find((s) => s.id === sessionId);
   const isFinished = session?.isFinished ?? false;
@@ -251,23 +257,53 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
+    <div className="flex flex-col h-full w-full min-h-0">
+      <div className="mb-4 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3">
           <h1 className="text-lg font-semibold text-(--foreground)">
             Mock interview
           </h1>
           {session && (
-            <p className="text-xs text-(--muted-foreground)">
+            <p className="text-xs text-(--muted-foreground) mr-2">
               Turn {session.turnCount} / {session.maxTurns}
               {isCompleted && " · Finished"}
             </p>
           )}
+
+          {isCompleted && (
+            <div className="flex rounded-lg border border-(--border) bg-(--muted)/20 p-0.5">
+              <button
+                type="button"
+                onClick={() => setViewMode("chat")}
+                className={cn(
+                  "px-3 py-1 text-xs font-semibold rounded-md transition-colors",
+                  viewMode === "chat"
+                    ? "bg-(--foreground) text-(--background)"
+                    : "text-(--muted-foreground) hover:text-(--foreground)"
+                )}
+              >
+                Chat
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("review")}
+                className={cn(
+                  "px-3 py-1 text-xs font-semibold rounded-md transition-colors",
+                  viewMode === "review"
+                    ? "bg-(--foreground) text-(--background)"
+                    : "text-(--muted-foreground) hover:text-(--foreground)"
+                )}
+              >
+                Review
+              </button>
+            </div>
+          )}
         </div>
-        {isCompleted && (
+
+        {isCompleted && viewMode === "chat" && (
           <button
             type="button"
-            onClick={scrollToReview}
+            onClick={() => setViewMode("review")}
             className="text-sm font-medium text-(--primary) underline"
           >
             View review
@@ -275,31 +311,33 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
         )}
       </div>
 
-      <div className="flex h-[calc(100vh-8rem)] flex-col">
-        <InterviewMessageList
-          messages={displayMessages}
-          showWelcome={showWelcome}
-          onStart={handleStart}
-        />
+      {viewMode === "chat" ? (
+        <div className="flex-1 flex flex-col min-h-0">
+          <InterviewMessageList
+            messages={displayMessages}
+            showWelcome={showWelcome}
+            onStart={handleStart}
+          />
 
-        {isCompleted && (
-          <div className="mt-4">
-            <InterviewCompletionBanner onViewReview={scrollToReview} />
-          </div>
-        )}
+          {isCompleted && (
+            <div className="mt-4 shrink-0">
+              <InterviewCompletionBanner onViewReview={() => setViewMode("review")} />
+            </div>
+          )}
 
-        <InterviewChatInput
-          draft={draft}
-          onDraftChange={setDraft}
-          onSubmit={handleSend}
-          canSend={canSend}
-          isStreaming={isStreaming}
-          isFinished={isCompleted}
-        />
-      </div>
-
-      {isCompleted && !isStreaming && (
-        <InterviewReviewPanel sessionId={sessionId} messages={serverMessages} />
+          <InterviewChatInput
+            draft={draft}
+            onDraftChange={setDraft}
+            onSubmit={handleSend}
+            canSend={canSend}
+            isStreaming={isStreaming}
+            isFinished={isCompleted}
+          />
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <InterviewReviewPanel sessionId={sessionId} messages={serverMessages} />
+        </div>
       )}
     </div>
   );

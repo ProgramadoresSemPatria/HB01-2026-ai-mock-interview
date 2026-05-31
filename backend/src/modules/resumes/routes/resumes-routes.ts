@@ -12,5 +12,7 @@ export default function resumesRoutes(router: Router): void {
     resumeUploadMiddleware.single("file"),
     asyncHandler(controller.upload),
   );
+  router.get("/", asyncHandler(controller.list));
   router.get("/:id", asyncHandler(controller.getById));
+  router.delete("/:id", asyncHandler(controller.delete));
 }

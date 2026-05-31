@@ -79,3 +79,44 @@ export async function getResume(
 
   return data as ResumeDetail;
 }
+
+export async function listResumes(
+  token: string,
+): Promise<{ resumes: ResumePreview[] }> {
+  const res = await fetch(`${env.NEXT_PUBLIC_SERVER_URL}/api/resumes/`, {
+    headers: { Authorization: `Bearer ${token}` },
+    credentials: "include",
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const message =
+      typeof data === "object" && data && "message" in data
+        ? String((data as { message: unknown }).message)
+        : res.statusText;
+    throw new ApiError(message, res.status, data);
+  }
+
+  return data as { resumes: ResumePreview[] };
+}
+
+export async function deleteResume(
+  id: string,
+  token: string,
+): Promise<void> {
+  const res = await fetch(`${env.NEXT_PUBLIC_SERVER_URL}/api/resumes/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    const message =
+      typeof data === "object" && data && "message" in data
+        ? String((data as { message: unknown }).message)
+        : res.statusText;
+    throw new ApiError(message, res.status, data);
+  }
+}

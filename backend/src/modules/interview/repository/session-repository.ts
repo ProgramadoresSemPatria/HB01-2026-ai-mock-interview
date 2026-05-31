@@ -58,4 +58,19 @@ export class SessionRepository {
       data: { isFinished: true },
     });
   }
+
+  async deleteByIdAndUserId(
+    id: string,
+    userId: number,
+  ): Promise<InterviewSession | null> {
+    const row = await prisma.interviewSession.findFirst({
+      where: { id, userId },
+    });
+    if (!row) return null;
+
+    await prisma.interviewSession.delete({
+      where: { id },
+    });
+    return row;
+  }
 }
