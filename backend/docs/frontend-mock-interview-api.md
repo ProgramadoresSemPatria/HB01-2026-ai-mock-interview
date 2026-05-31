@@ -480,8 +480,10 @@ flowchart LR
 
 | Turno | O que o usuário vê na bolha `ai` |
 |-------|----------------------------------|
-| 1 … N-1 | Pergunta do entrevistador |
-| N (último) | Feedback de encerramento + orientação para aba de revisão |
+| 1 … N-1 | Pergunta do entrevistador (texto simples) |
+| N (último) | Feedback de encerramento em **Markdown** (CommonMark: parágrafo + `##` + listas `-`) + CTA em texto simples |
+
+No último turno, `content` é uma string Markdown compatível com **remark** / `react-markdown`. Acumule os tokens do SSE e renderize após o stream (remark não é incremental). O CTA fixo em inglês vem após `\n\n` e renderiza como parágrafo normal.
 
 **Não espere** uma pergunta do entrevistador no último turno.
 

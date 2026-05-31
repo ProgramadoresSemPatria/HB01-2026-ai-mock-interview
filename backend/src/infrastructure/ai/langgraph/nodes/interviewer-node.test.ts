@@ -53,7 +53,9 @@ describe("createInterviewerNode", () => {
   });
 
   it("invokes with closing feedback prompt when runReview is true", async () => {
-    const { invoke, model } = createMockModel("What you did well:\n- Good depth");
+    const { invoke, model } = createMockModel(
+      "## What you did well\n\n- Good depth",
+    );
     const node = createInterviewerNode({ model });
 
     await node({ ...baseState, runReview: true });

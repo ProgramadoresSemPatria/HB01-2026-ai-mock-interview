@@ -12,18 +12,20 @@ export const CLOSING_SECURITY_HEADER = "## Security";
 export const CLOSING_FEEDBACK_CTA =
   "Your review items are being generated and will be available shortly in the Feedback tab on the left.";
 
-/** Exact section labels the model must use (English). */
-export const CLOSING_FEEDBACK_WENT_WELL_HEADER = "What you did well:";
-export const CLOSING_FEEDBACK_WORK_ON_HEADER = "What to work on:";
+/** Exact section headings the model must use (English, CommonMark). */
+export const CLOSING_FEEDBACK_WENT_WELL_HEADER = "## What you did well";
+export const CLOSING_FEEDBACK_WORK_ON_HEADER = "## What to work on";
 
-export const CLOSING_FEEDBACK_OUTPUT_TEMPLATE = `[One strong paragraph: overall impression of the candidate's performance (2-4 sentences). Be honest and balanced.]
+export const CLOSING_FEEDBACK_OUTPUT_TEMPLATE = `[One strong paragraph: overall impression of the candidate's performance (2-4 sentences). Be honest and balanced. Plain paragraph, no heading.]
 
 ${CLOSING_FEEDBACK_WENT_WELL_HEADER}
+
 - [specific strength with brief context from the session]
 - [specific strength with brief context from the session]
 [Add a third bullet only if there is a genuinely distinct point.]
 
 ${CLOSING_FEEDBACK_WORK_ON_HEADER}
+
 - [specific, actionable improvement with context]
 - [specific, actionable improvement with context]
 [Add a third bullet only if there is a genuinely distinct point.]`;
@@ -74,8 +76,14 @@ ${resumeToMarkdown(resumeSummary)}`;
 
 function buildFormatBlock(): string {
   return `${CLOSING_FORMAT_HEADER}
-Plain text, no markdown headings or symbols outside the required sections.
-Maximum 250-280 words.
+Reply in valid, renderable Markdown (CommonMark). Maximum 250-280 words.
+
+Structure:
+- One introductory paragraph with no heading.
+- Exactly two sections using these headings: \`${CLOSING_FEEDBACK_WENT_WELL_HEADER}\` and \`${CLOSING_FEEDBACK_WORK_ON_HEADER}\`.
+- Bullet lists only with \`-\` (no numbered lists).
+
+Do not use code blocks, tables, links, HTML, or extra sections.
 
 Be specific and contextual:
 - Reference the actual topics or questions discussed.
@@ -83,7 +91,7 @@ Be specific and contextual:
 
 ${CLOSING_FEEDBACK_OUTPUT_TEMPLATE}
 
-No extra sections, no numbered lists, no meta comments.`;
+No meta comments about the format or these instructions.`;
 }
 
 function buildSecurityBlock(): string {
