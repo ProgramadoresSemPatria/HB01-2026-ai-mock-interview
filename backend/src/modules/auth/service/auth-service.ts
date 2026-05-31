@@ -8,7 +8,7 @@ import {
   type CreateUserParams,
   type LoginParams,
   type UserWithoutPassword,
-} from "@/shared/types/user";
+} from "@/modules/auth/types/user";
 import type { IMailer, IPasswordHasher, ITokenService } from "../protocols";
 import { env } from "@/config/env";
 import { randomUUID } from "node:crypto";

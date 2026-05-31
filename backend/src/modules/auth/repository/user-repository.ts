@@ -5,7 +5,7 @@ import type {
   SaveRefreshTokenParams,
   UpdateUserParams,
   User,
-} from "@/shared/types/user";
+} from "@/modules/auth/types/user";
 import prisma from "@/infrastructure/database";
 import { env } from "@/config/env";
 
