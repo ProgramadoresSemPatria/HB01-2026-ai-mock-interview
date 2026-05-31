@@ -34,7 +34,7 @@ export function AppSidebar() {
               key={href}
               href={href}
               className={cn(
-                "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
+                "cursor-pointer flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
                 active
                   ? "bg-white/15 font-medium text-white"
                   : "text-white/60 hover:bg-white/8 hover:text-white",
@@ -50,7 +50,7 @@ export function AppSidebar() {
       <div className="space-y-3 px-3 pb-6">
         <Link
           href="/practice"
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-white/15 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/20"
+          className="cursor-pointer flex w-full items-center justify-center gap-2 rounded-lg bg-white/15 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/20"
         >
           <Dumbbell className="h-4 w-4" />
           Start Practice
@@ -61,7 +61,7 @@ export function AppSidebar() {
         <button
           type="button"
           onClick={logout}
-          className="flex w-full items-center gap-2 px-2 text-xs text-white/40 transition-colors hover:text-white/70"
+          className="cursor-pointer flex w-full items-center gap-2 px-2 text-xs text-white/40 transition-colors hover:text-white/70"
         >
           <LogOut className="h-3.5 w-3.5" />
           Sign out

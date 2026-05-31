@@ -18,7 +18,7 @@ export function SessionsTable({ sessions }: { sessions: SessionSummary[] }) {
         No sessions yet.{" "}
         <Link
           href="/practice"
-          className="font-medium text-(--primary) underline"
+          className="cursor-pointer font-medium text-(--primary) underline"
         >
           Upload a resume and start practicing
         </Link>
@@ -65,7 +65,7 @@ export function SessionsTable({ sessions }: { sessions: SessionSummary[] }) {
               <td className="px-5 py-4">
                 <Link
                   href={`/interview/${session.id}`}
-                  className="whitespace-nowrap text-xs font-semibold text-(--primary) transition-opacity hover:opacity-70"
+                  className="cursor-pointer whitespace-nowrap text-xs font-semibold text-(--primary) transition-opacity hover:opacity-70"
                 >
                   {session.isFinished ? "View history" : "Continue"}
                 </Link>

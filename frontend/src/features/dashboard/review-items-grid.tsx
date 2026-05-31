@@ -84,7 +84,7 @@ export function ReviewItemsSectionHeader() {
       </div>
       <Link
         href="/feedback"
-        className="flex items-center gap-1.5 text-sm font-medium text-(--primary) transition-opacity hover:opacity-75"
+        className="cursor-pointer flex items-center gap-1.5 text-sm font-medium text-(--primary) transition-opacity hover:opacity-75"
       >
         View all
         <ArrowRight className="h-3.5 w-3.5" />
