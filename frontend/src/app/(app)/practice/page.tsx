@@ -9,6 +9,7 @@ import { AppShell } from "@/features/dashboard/app-shell";
 import { useAuth } from "@/features/auth/session-provider";
 import {
   clearStoredResumeId,
+  getStoredResumeId,
   setStoredResumeId,
 } from "@/features/auth/session-storage";
 import { uploadResume } from "@/lib/api/resumes";
@@ -22,7 +23,7 @@ export default function PracticePage() {
   const { getAccessToken } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [resumeId, setResumeId] = useState<string | null>(null);
+  const [resumeId, setResumeId] = useState<string | null>(() => getStoredResumeId());
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [error, setError] = useState<string | null>(null);
 

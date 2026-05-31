@@ -39,13 +39,13 @@ export function clearStoredSession(): void {
 
 export function getStoredResumeId(): string | null {
   if (typeof window === "undefined") return null;
-  return sessionStorage.getItem(RESUME_ID_KEY);
+  return localStorage.getItem(RESUME_ID_KEY);
 }
 
 export function setStoredResumeId(resumeId: string): void {
-  sessionStorage.setItem(RESUME_ID_KEY, resumeId);
+  localStorage.setItem(RESUME_ID_KEY, resumeId);
 }
 
 export function clearStoredResumeId(): void {
-  sessionStorage.removeItem(RESUME_ID_KEY);
+  localStorage.removeItem(RESUME_ID_KEY);
 }
