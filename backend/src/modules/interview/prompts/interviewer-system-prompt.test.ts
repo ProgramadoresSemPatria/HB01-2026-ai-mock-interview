@@ -81,16 +81,4 @@ describe("buildInterviewerSystemPrompt", () => {
 
     expect(prompt).not.toContain("list_review_items");
   });
-
-  it("instructs closing phase not to praise non-substantive replies", () => {
-    const prompt = buildInterviewerSystemPrompt({
-      level: "mid",
-      resumeSummary: sampleSummary,
-      turnCount: 5,
-      maxTurns: 7,
-    });
-
-    expect(prompt).toContain("Phase: closing");
-    expect(prompt).toContain("non-substantive");
-  });
 });

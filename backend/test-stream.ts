@@ -12,7 +12,7 @@ async function testStream() {
         Accept: "text/event-stream",
         Authorization: `Bearer ${TOKEN}`,
       },
-      body: JSON.stringify({ content: "teste" }),
+      body: JSON.stringify({ content: "test" }),
     },
   );
 
@@ -20,7 +20,7 @@ async function testStream() {
 
   if (!response.ok) {
     const err = await response.text();
-    console.error("Erro:", err);
+    console.error("Error:", err);
     return;
   }
 

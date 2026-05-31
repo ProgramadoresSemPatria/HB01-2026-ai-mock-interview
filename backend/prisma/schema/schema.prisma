@@ -9,6 +9,6 @@ datasource db {
   provider = "postgresql"
 }
 
-// Importa os modelos de usuário e refresh tokens
-// Os modelos estão definidos em user.prisma
-// DATABASE_URL é configurado via prisma.config.ts
+// Imports user and refresh token models
+// Models are defined in user.prisma
+// DATABASE_URL is configured via prisma.config.ts

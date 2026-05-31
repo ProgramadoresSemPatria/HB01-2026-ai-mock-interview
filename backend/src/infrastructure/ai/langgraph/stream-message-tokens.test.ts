@@ -20,7 +20,7 @@ describe("extractStreamTokenFromChunk", () => {
       [],
       "messages",
       [
-        new AIMessageChunk({ content: "Obrigado" }),
+        new AIMessageChunk({ content: "Thanks" }),
         { langgraph_node: "closing_feedback" },
       ],
     ];
@@ -34,7 +34,7 @@ describe("extractStreamTokenFromChunk", () => {
     ];
 
     expect(extractStreamTokenFromChunk(interviewerChunk)).toBe("Hello");
-    expect(extractStreamTokenFromChunk(closingChunk)).toBe("Obrigado");
+    expect(extractStreamTokenFromChunk(closingChunk)).toBe("Thanks");
     expect(extractStreamTokenFromChunk(toolChunk)).toBeNull();
   });
 

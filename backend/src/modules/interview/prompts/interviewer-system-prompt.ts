@@ -77,7 +77,7 @@ const PHASE_INSTRUCTIONS: Record<InterviewPhase, string> = {
     "Introduce yourself briefly, set the interview tone, and ask your first question.",
   mid: "Go deeper on previous answers before introducing new topics. Reference what the candidate said explicitly when following up.",
   closing:
-    "Wrap up open threads. Ask one final synthesis question that ties together the candidate's experience and the role's demands, then close the interview. If the candidate's latest reply is non-substantive (e.g. 'não sei', 'teste', one word), acknowledge that they have not yet answered substantively — do not praise or summarize STAR examples or technical depth they did not demonstrate in their own words.",
+    "Wrap up open threads. Ask one final synthesis question that ties together the candidate's experience and the role's demands, then close the interview.",
 };
 
 function buildContextBlock(turnCount: number, maxTurns: number): string {

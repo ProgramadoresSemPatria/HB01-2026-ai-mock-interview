@@ -29,18 +29,18 @@ function isAiMessageChunk(value: unknown): boolean {
 function parseMessageStreamTuple(chunk: unknown): MessageStreamTuple | null {
   if (!Array.isArray(chunk)) return null;
 
-  // Formato: ["messages", [mensagem, metadata]] — wrapper extra
+  // Format: ["messages", [message, metadata]] — extra wrapper
   if (chunk.length >= 3 && chunk[1] === "messages" && Array.isArray(chunk[2])) {
     return chunk[2] as MessageStreamTuple;
   }
 
-  // Formato: ["messages", [mensagem, metadata]]
+  // Format: ["messages", [message, metadata]]
   if (chunk.length >= 2 && chunk[0] === "messages" && Array.isArray(chunk[1])) {
     return chunk[1] as MessageStreamTuple;
   }
 
-  // Formato real do LangGraph streamMode:"messages":
-  // [AIMessageChunk_serializado, metadata] — corrigido aqui
+  // Actual LangGraph streamMode:"messages" format:
+  // [serialized AIMessageChunk, metadata] — handled here
   if (
     chunk.length >= 2 &&
     typeof chunk[1] === "object" &&
@@ -64,12 +64,12 @@ function extractMessageContent(message: unknown): string | null {
 
   const obj = message as Record<string, unknown>;
 
-  // Instância real: message.content
+  // Live instance: message.content
   if (typeof obj["content"] === "string" && obj["content"].length > 0) {
     return obj["content"];
   }
 
-  // Formato serializado: message.kwargs.content
+  // Serialized format: message.kwargs.content
   const kwargs = obj["kwargs"];
   if (
     kwargs &&
@@ -84,17 +84,17 @@ function extractMessageContent(message: unknown): string | null {
 }
 
 function isChunkMessage(value: unknown): boolean {
-  // Instância real de AIMessageChunk
+  // Live AIMessageChunk instance
   if (AIMessageChunk.isInstance(value)) return true;
 
-  // Formato serializado — só passa se o último id for "AIMessageChunk"
+  // Serialized format — only passes when the last id is "AIMessageChunk"
   if (!value || typeof value !== "object") return false;
   const obj = value as Record<string, unknown>;
   return (
     obj["lc"] === 1 &&
     obj["type"] === "constructor" &&
     Array.isArray(obj["id"]) &&
-    (obj["id"] as string[]).at(-1) === "AIMessageChunk" // "AIMessage" cai fora aqui
+    (obj["id"] as string[]).at(-1) === "AIMessageChunk" // excludes plain "AIMessage"
   );
 }
 
@@ -109,7 +109,7 @@ export function extractStreamTokenFromChunk(chunk: unknown): string | null {
     return null;
   }
 
-  if (!isChunkMessage(message)) return null; // bloqueia o AIMessage completo
+  if (!isChunkMessage(message)) return null; // blocks full AIMessage payloads
 
   return extractMessageContent(message);
 }
