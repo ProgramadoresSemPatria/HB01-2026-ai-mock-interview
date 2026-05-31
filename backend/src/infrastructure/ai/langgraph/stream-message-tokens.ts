@@ -4,10 +4,7 @@ import {
   type BaseMessage,
 } from "@langchain/core/messages";
 
-export const STREAM_TOKEN_NODE_NAMES = [
-  "interviewer",
-  "closing_feedback",
-] as const;
+export const STREAM_TOKEN_NODE_NAMES = ["interviewer"] as const;
 
 export type StreamTokenNodeName = (typeof STREAM_TOKEN_NODE_NAMES)[number];
 

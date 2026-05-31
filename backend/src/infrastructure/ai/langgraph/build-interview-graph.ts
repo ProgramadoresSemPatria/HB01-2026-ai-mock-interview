@@ -9,14 +9,14 @@ import type {
   InterviewGraphInput,
 } from "@/modules/interview/protocols/interview-graph";
 
-import {
-  InterviewGraphStateAnnotation,
-  type InterviewGraphState,
-} from "./interview-state";
-
-import { createClosingFeedbackNode } from "./nodes/closing-feedback-node";
+import { InterviewGraphStateAnnotation } from "./interview-state";
 
 import { createInterviewerNode } from "./nodes/interviewer-node";
+
+import {
+  appendClosingFeedbackCta,
+  closingFeedbackCtaStreamSuffix,
+} from "@/modules/interview/prompts/closing-feedback-prompt";
 
 import {
   extractStreamTokenFromChunk,
@@ -27,29 +27,11 @@ export type BuildInterviewGraphDeps = {
   checkpointer: BaseCheckpointSaver;
 };
 
-function routeFromStart(
-  state: InterviewGraphState,
-): "interviewer" | "closing_feedback" {
-  return state.runReview ? "closing_feedback" : "interviewer";
-}
-
 function buildCompiledGraph(deps: BuildInterviewGraphDeps) {
   return new StateGraph(InterviewGraphStateAnnotation)
-
     .addNode("interviewer", createInterviewerNode())
-
-    .addNode("closing_feedback", createClosingFeedbackNode())
-
-    .addConditionalEdges(START, routeFromStart, [
-      "interviewer",
-
-      "closing_feedback",
-    ])
-
+    .addEdge(START, "interviewer")
     .addEdge("interviewer", END)
-
-    .addEdge("closing_feedback", END)
-
     .compile({ checkpointer: deps.checkpointer });
 }
 
@@ -117,7 +99,16 @@ export function buildInterviewGraph(
         snapshot.values.messages,
       );
 
-      return completedAiMessage;
+      if (!input.runReview || !completedAiMessage) {
+        return completedAiMessage;
+      }
+
+      yield { content: closingFeedbackCtaStreamSuffix() };
+
+      return {
+        ...completedAiMessage,
+        content: appendClosingFeedbackCta(completedAiMessage.content),
+      };
     },
   };
 }
@@ -131,7 +122,3 @@ export function buildInterviewGraphForTest(
 ): CompiledInterviewGraph {
   return buildCompiledGraph(deps);
 }
-
-/** @internal Exported for graph structure tests */
-
-export { routeFromStart };

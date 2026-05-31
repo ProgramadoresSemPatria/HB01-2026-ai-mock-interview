@@ -51,7 +51,7 @@ sequenceDiagram
     API-->>UI: SSE tokens + meta
   end
 
-  Note over UI,API: Último turno: closing_feedback (sem nova pergunta)
+  Note over UI,API: Último turno: interviewer + prompt de closing (sem nova pergunta)
   UI->>API: GET /api/review-items
   API-->>UI: { reviewItems }
 ```
@@ -454,9 +454,9 @@ Quando `turnCount + 1 < maxTurns`:
 Quando `turnCount + 1 >= maxTurns` (critério interno: `runReview: true`):
 
 1. Backend persiste mensagem `human`.
-2. Grafo executa **`closing_feedback`** — **não** executa `interviewer`.
+2. Grafo executa o nó **`interviewer`** com o prompt de **closing feedback** (`runReview: true`).
 3. A IA envia **feedback geral** da entrevista (sem nova pergunta).
-4. O texto inclui CTA em português para abrir a **aba de itens de revisão** (conteúdo gerado pelo modelo; não é um evento SSE separado).
+4. O backend acrescenta um **CTA fixo em inglês** sobre a aba de review items após o texto gerado pela IA (não é gerado pelo modelo).
 5. Mensagem `ai` salva; `turnCount` incrementa.
 6. Backend gera **itens de revisão estruturados** (LLM separado), faz merge no banco e marca `isFinished: true`.
 7. SSE `meta` com `isFinished: true` + `[DONE]`.
@@ -469,8 +469,8 @@ flowchart LR
   end
 
   subgraph ultimo_turno
-    H2[POST stream] --> C[closing_feedback]
-    C --> T2[SSE tokens: feedback + CTA]
+    H2[POST stream] --> I2[interviewer + closing prompt]
+    I2 --> T2[SSE tokens: feedback + CTA]
     T2 --> R[review items no DB]
     R --> F[isFinished true]
   end

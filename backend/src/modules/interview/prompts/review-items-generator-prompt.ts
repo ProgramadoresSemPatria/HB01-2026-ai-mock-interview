@@ -4,8 +4,8 @@ import type { StructuredSummary } from "@/modules/resumes/validations/resume-sch
 
 export const TRANSCRIPT_SECTION_HEADER = "## Interview transcript";
 export const EXISTING_ITEMS_SECTION_HEADER = "## Existing review items";
-export const STRUCTURED_SUMMARY_SECTION_HEADER = "## Candidate structured summary";
-export const REVIEW_INSTRUCTIONS_SECTION_HEADER = "## Review generation instructions";
+export const CANDIDATE_RESUME_SECTION_HEADER = "## Candidate résumé";
+export const INSTRUCTIONS_SECTION_HEADER = "## Instructions";
 
 export type ExistingReviewItemForPrompt = {
   topic: string;
@@ -32,12 +32,13 @@ ${JSON.stringify(existingItems, null, 2)}`;
 }
 
 function buildInstructionsBlock(): string {
-  return `${REVIEW_INSTRUCTIONS_SECTION_HEADER}
-- Identify gaps and weaknesses from the interview; emit one object per distinct topic.
-- For topics not in the existing list, return a new topic, description, and appropriate priority.
-- When a weakness matches an existing item, reuse the exact topic string from the list, update the description, and raise priority when the interview reinforces the gap (low→medium or high, medium→high; keep high if already high).
-- Do not emit duplicate topics in one response.
-- Do not lower priority for an existing topic.`;
+  return `${INSTRUCTIONS_SECTION_HEADER}
+Identify gaps and weaknesses from the interview. Emit one item per distinct topic.
+
+- New topic (not in existing list): create with an appropriate priority.
+- Existing topic match: reuse the exact topic string, update the description, and raise priority
+  if the interview reinforces the gap (low to medium or high; medium to high; never lower an existing priority).
+- No duplicate topics in a single response.`;
 }
 
 export function buildReviewItemsGeneratorPrompt(
@@ -47,7 +48,7 @@ export function buildReviewItemsGeneratorPrompt(
     `${TRANSCRIPT_SECTION_HEADER}
 ${params.transcript}`,
     buildExistingItemsBlock(params.existingItems),
-    `${STRUCTURED_SUMMARY_SECTION_HEADER}
+    `${CANDIDATE_RESUME_SECTION_HEADER}
 ${resumeToMarkdown(params.structuredSummary)}`,
     buildInstructionsBlock(),
   ].join("\n\n");

@@ -6,21 +6,14 @@ import {
   buildInterviewGraph,
   buildInterviewGraphForTest,
   createInterviewGraphConfig,
-  routeFromStart,
 } from "./build-interview-graph";
-
-import { createInitialInterviewState } from "./interview-state";
 
 vi.mock("./nodes/interviewer-node", () => ({
   createInterviewerNode: () => async () => ({ messages: [] }),
 }));
 
-vi.mock("./nodes/closing-feedback-node", () => ({
-  createClosingFeedbackNode: () => async () => ({ messages: [] }),
-}));
-
 describe("buildInterviewGraph", () => {
-  it("compiles a graph with interviewer and closing_feedback nodes only", () => {
+  it("compiles a graph with only the interviewer LLM node", () => {
     const checkpointer = new MemorySaver();
 
     const graph = buildInterviewGraphForTest({ checkpointer });
@@ -31,7 +24,7 @@ describe("buildInterviewGraph", () => {
 
     expect(nodeIds.has("interviewer")).toBe(true);
 
-    expect(nodeIds.has("closing_feedback")).toBe(true);
+    expect(nodeIds.has("closing_feedback")).toBe(false);
 
     expect(nodeIds.has("tool_executor")).toBe(false);
 
@@ -50,41 +43,5 @@ describe("buildInterviewGraph", () => {
     const adapter = buildInterviewGraph(new MemorySaver());
 
     expect(typeof adapter.streamMessages).toBe("function");
-  });
-});
-
-describe("routeFromStart", () => {
-  const baseState = createInitialInterviewState({
-    turnCount: 0,
-
-    maxTurns: 5,
-
-    level: "entry",
-
-    userId: 1,
-
-    resumeSummary: {
-      personal_info: { name: "A", title: "B", about: "" },
-
-      skills: [],
-
-      experiences: [],
-
-      projects: [],
-
-      certifications: [],
-    },
-  });
-
-  it("routes to closing_feedback when runReview is true", () => {
-    expect(routeFromStart({ ...baseState, runReview: true })).toBe(
-      "closing_feedback",
-    );
-  });
-
-  it("routes to interviewer when runReview is false", () => {
-    expect(routeFromStart({ ...baseState, runReview: false })).toBe(
-      "interviewer",
-    );
   });
 });
