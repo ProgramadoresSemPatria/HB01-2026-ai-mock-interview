@@ -185,7 +185,7 @@ function FeedbackContent() {
               <p>No finished interview feedbacks found yet.</p>
               <a
                 href="/practice"
-                className="inline-block mt-2 rounded bg-(--foreground) px-3 py-1 text-[10px] font-semibold text-(--background)"
+                className="cursor-pointer inline-block mt-2 rounded bg-(--foreground) px-3 py-1 text-[10px] font-semibold text-(--background)"
               >
                 Go Practice
               </a>
@@ -224,7 +224,7 @@ function FeedbackContent() {
                     type="button"
                     disabled={deletingId === sess.id}
                     onClick={(e) => handleDeleteSession(sess.id, e)}
-                    className="p-1.5 rounded-lg border border-(--border) text-red-600 hover:bg-red-500/10 transition-colors disabled:opacity-50 shrink-0"
+                    className="cursor-pointer p-1.5 rounded-lg border border-(--border) text-red-600 hover:bg-red-500/10 transition-colors disabled:opacity-50 shrink-0"
                     title="Delete feedback"
                   >
                     {deletingId === sess.id ? (

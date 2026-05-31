@@ -44,7 +44,7 @@ export function InterviewChatInput({
         <button
           type="submit"
           disabled={!canSend || !draft.trim()}
-          className="flex min-w-[5.5rem] items-center justify-center gap-1.5 rounded-lg bg-(--foreground) px-4 py-2.5 text-sm font-medium text-(--background) disabled:opacity-50"
+          className="cursor-pointer flex min-w-[5.5rem] items-center justify-center gap-1.5 rounded-lg bg-(--foreground) px-4 py-2.5 text-sm font-medium text-(--background) disabled:opacity-50 disabled:pointer-events-none"
         >
           {isStreaming ? (
             <>

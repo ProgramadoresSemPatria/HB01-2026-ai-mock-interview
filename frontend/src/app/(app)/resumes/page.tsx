@@ -161,7 +161,7 @@ export default function ResumesPage() {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               className={cn(
-                "flex w-full flex-col items-center gap-3 rounded-xl border-2 border-dashed border-(--border) p-8 transition-colors hover:border-(--primary)/50",
+                "cursor-pointer flex w-full flex-col items-center gap-3 rounded-xl border-2 border-dashed border-(--border) p-8 transition-colors hover:border-(--primary)/50",
                 file && "border-(--primary) bg-(--accent)/20",
               )}
             >
@@ -195,7 +195,7 @@ export default function ResumesPage() {
             <button
               type="submit"
               disabled={!file || uploadState === "uploading"}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-(--foreground) px-4 py-2.5 text-sm font-medium text-(--background) transition-opacity hover:opacity-85 disabled:opacity-50 disabled:pointer-events-none"
+              className="cursor-pointer flex w-full items-center justify-center gap-2 rounded-xl bg-(--foreground) px-4 py-2.5 text-sm font-medium text-(--background) transition-opacity hover:opacity-85 disabled:opacity-50 disabled:pointer-events-none"
             >
               {uploadState === "uploading" && (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -282,7 +282,7 @@ export default function ResumesPage() {
                           type="button"
                           onClick={() => handleSetActive(resume.id)}
                           className={cn(
-                            "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors",
+                            "cursor-pointer flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors",
                             isActive
                               ? "bg-(--primary) text-(--primary-foreground) border-transparent"
                               : "border-(--border) text-(--foreground) hover:bg-(--muted)",
@@ -297,7 +297,7 @@ export default function ResumesPage() {
                         type="button"
                         disabled={deletingId === resume.id}
                         onClick={() => handleDelete(resume.id)}
-                        className="p-1.5 rounded-lg border border-(--border) text-red-600 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                        className="cursor-pointer p-1.5 rounded-lg border border-(--border) text-red-600 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                         title="Delete resume"
                       >
                         {deletingId === resume.id ? (

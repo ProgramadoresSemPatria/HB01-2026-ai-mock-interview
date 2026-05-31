@@ -76,7 +76,7 @@ export default function ProfilePage() {
                 id="resume-select"
                 value={selectedResumeId ?? ""}
                 onChange={(e) => setSelectedResumeId(e.target.value)}
-                className="rounded-lg border border-(--border) bg-(--background) px-3 py-1.5 text-sm font-medium text-(--foreground) focus:outline-none focus:ring-2 focus:ring-(--primary)"
+                className="cursor-pointer rounded-lg border border-(--border) bg-(--background) px-3 py-1.5 text-sm font-medium text-(--foreground) focus:outline-none focus:ring-2 focus:ring-(--primary)"
               >
                 {readyResumes.map((r) => (
                   <option key={r.id} value={r.id}>
@@ -106,7 +106,7 @@ export default function ProfilePage() {
             </div>
             <a
               href="/resumes"
-              className="mt-2 rounded-lg bg-(--foreground) px-4 py-2 text-xs font-medium text-(--background) transition-opacity hover:opacity-85"
+              className="cursor-pointer mt-2 rounded-lg bg-(--foreground) px-4 py-2 text-xs font-medium text-(--background) transition-opacity hover:opacity-85"
             >
               Go to Resumes
             </a>
@@ -126,7 +126,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={() => setActiveTab(tab.value)}
                     className={cn(
-                      "flex items-center gap-2 pb-3 text-sm font-medium border-b-2 transition-colors shrink-0 px-1",
+                      "cursor-pointer flex items-center gap-2 pb-3 text-sm font-medium border-b-2 transition-colors shrink-0 px-1",
                       active
                         ? "border-(--primary) text-(--primary)"
                         : "border-transparent text-(--muted-foreground) hover:text-(--foreground)",

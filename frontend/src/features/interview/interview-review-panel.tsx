@@ -47,7 +47,7 @@ export function InterviewReviewPanel({
         </div>
         <Link
           href="/feedback"
-          className="flex shrink-0 items-center gap-1 text-xs font-medium text-(--primary) hover:opacity-75"
+          className="cursor-pointer flex shrink-0 items-center gap-1 text-xs font-medium text-(--primary) hover:opacity-75"
         >
           Full backlog
           <ArrowRight className="h-3.5 w-3.5" />

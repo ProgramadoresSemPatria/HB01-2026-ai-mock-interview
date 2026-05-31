@@ -249,7 +249,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
     return (
       <div className="mx-auto max-w-3xl space-y-2">
         <p className="text-sm text-red-600">{message}</p>
-        <Link href="/dashboard" className="text-sm text-(--primary) underline">
+        <Link href="/dashboard" className="cursor-pointer text-sm text-(--primary) underline">
           Back to dashboard
         </Link>
       </div>
@@ -276,7 +276,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
                 type="button"
                 onClick={() => setViewMode("chat")}
                 className={cn(
-                  "px-3 py-1 text-xs font-semibold rounded-md transition-colors",
+                  "cursor-pointer px-3 py-1 text-xs font-semibold rounded-md transition-colors",
                   viewMode === "chat"
                     ? "bg-(--foreground) text-(--background)"
                     : "text-(--muted-foreground) hover:text-(--foreground)"
@@ -288,7 +288,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
                 type="button"
                 onClick={() => setViewMode("review")}
                 className={cn(
-                  "px-3 py-1 text-xs font-semibold rounded-md transition-colors",
+                  "cursor-pointer px-3 py-1 text-xs font-semibold rounded-md transition-colors",
                   viewMode === "review"
                     ? "bg-(--foreground) text-(--background)"
                     : "text-(--muted-foreground) hover:text-(--foreground)"
@@ -304,7 +304,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
           <button
             type="button"
             onClick={() => setViewMode("review")}
-            className="text-sm font-medium text-(--primary) underline"
+            className="cursor-pointer text-sm font-medium text-(--primary) underline"
           >
             View review
           </button>

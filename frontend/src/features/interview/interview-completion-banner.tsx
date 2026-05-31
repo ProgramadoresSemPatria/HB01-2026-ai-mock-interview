@@ -22,7 +22,7 @@ export function InterviewCompletionBanner({
           <button
             type="button"
             onClick={onViewReview}
-            className="mt-2 text-xs font-medium text-(--primary) underline"
+            className="cursor-pointer mt-2 text-xs font-medium text-(--primary) underline"
           >
             Jump to review
           </button>

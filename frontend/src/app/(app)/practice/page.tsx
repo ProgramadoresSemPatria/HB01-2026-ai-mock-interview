@@ -145,7 +145,7 @@ function PracticeContent() {
                 <AlertCircle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                 <div className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
                   No ready CV found.{" "}
-                  <a href="/resumes" className="underline font-bold">
+                  <a href="/resumes" className="cursor-pointer underline font-bold">
                     Upload one
                   </a>{" "}
                   first to practice.
@@ -158,7 +158,7 @@ function PracticeContent() {
                   setStoredResumeId(e.target.value);
                   setActiveResumeId(e.target.value);
                 }}
-                className="w-full rounded-lg border border-(--border) bg-(--background) px-3 py-2 text-sm font-medium text-(--foreground) focus:outline-none focus:ring-2 focus:ring-(--primary)"
+                className="cursor-pointer w-full rounded-lg border border-(--border) bg-(--background) px-3 py-2 text-sm font-medium text-(--foreground) focus:outline-none focus:ring-2 focus:ring-(--primary)"
               >
                 {readyResumes.map((r) => (
                   <option key={r.id} value={r.id}>
@@ -181,7 +181,7 @@ function PracticeContent() {
                   type="button"
                   onClick={() => setLevel(opt.value)}
                   className={cn(
-                    "flex flex-col items-center justify-center py-2 px-1 border rounded-lg text-center transition-all",
+                    "flex flex-col items-center justify-center py-2 px-1 border rounded-lg text-center transition-all cursor-pointer",
                     level === opt.value
                       ? "border-(--primary) bg-(--accent)/20 text-(--primary) font-semibold"
                       : "border-(--border) text-(--foreground) hover:bg-(--muted)/40",
@@ -199,7 +199,7 @@ function PracticeContent() {
             type="button"
             disabled={isCreatingSession || readyResumes.length === 0}
             onClick={handleStartNewInterview}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-(--foreground) px-4 py-2.5 text-sm font-medium text-(--background) transition-opacity hover:opacity-85 disabled:opacity-50 disabled:pointer-events-none"
+            className="cursor-pointer flex w-full items-center justify-center gap-2 rounded-xl bg-(--foreground) px-4 py-2.5 text-sm font-medium text-(--background) transition-opacity hover:opacity-85 disabled:opacity-50 disabled:pointer-events-none"
           >
             {isCreatingSession ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -241,7 +241,7 @@ function PracticeContent() {
                     type="button"
                     onClick={() => handleSelectSession(sess.id)}
                     className={cn(
-                      "w-full text-left p-3.5 flex flex-col gap-1 transition-colors hover:bg-(--muted)/20",
+                      "cursor-pointer w-full text-left p-3.5 flex flex-col gap-1 transition-colors hover:bg-(--muted)/20",
                       isActive && "bg-(--accent)/15 border-l-4 border-(--primary) pl-2.5",
                     )}
                   >
@@ -302,7 +302,7 @@ function PracticeContent() {
                 {readyResumes.length === 0 && (
                   <a
                     href="/resumes"
-                    className="inline-flex mx-auto items-center gap-1.5 rounded-lg bg-(--foreground) px-4 py-2 text-xs font-semibold text-(--background) transition-opacity hover:opacity-85"
+                    className="cursor-pointer inline-flex mx-auto items-center gap-1.5 rounded-lg bg-(--foreground) px-4 py-2 text-xs font-semibold text-(--background) transition-opacity hover:opacity-85"
                   >
                     Go to Resumes
                   </a>
