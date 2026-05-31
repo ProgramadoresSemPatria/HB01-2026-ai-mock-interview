@@ -19,4 +19,15 @@ export class ResumesController {
     const detail = await this.resumeService.getResume(req.userId!, id);
     res.status(200).json(detail);
   };
+
+  list = async (req: Request, res: Response): Promise<void> => {
+    const previews = await this.resumeService.listResumes(req.userId!);
+    res.status(200).json({ resumes: previews });
+  };
+
+  delete = async (req: Request, res: Response): Promise<void> => {
+    const id = String(req.params.id);
+    await this.resumeService.deleteResume(req.userId!, id);
+    res.status(204).send();
+  };
 }

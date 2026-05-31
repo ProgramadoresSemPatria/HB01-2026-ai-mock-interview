@@ -31,4 +31,11 @@ export const interviewApi = {
       { token },
     );
   },
+
+  deleteSession(sessionId: string, token: string) {
+    return apiRequest<void>(`/api/interview/sessions/${sessionId}`, {
+      method: "DELETE",
+      token,
+    });
+  },
 };

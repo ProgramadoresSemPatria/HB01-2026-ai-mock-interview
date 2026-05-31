@@ -40,7 +40,7 @@ export default function DashboardPage() {
             type="button"
             onClick={() => setActiveTab(tab)}
             className={cn(
-              "pb-0.5 text-sm transition-colors",
+              "pb-0.5 text-sm transition-colors cursor-pointer",
               activeTab === tab
                 ? "border-b-2 border-(--primary) font-semibold text-(--foreground)"
                 : "text-(--muted-foreground) hover:text-(--foreground)",
@@ -86,13 +86,13 @@ export default function DashboardPage() {
               <div className="flex gap-3 pt-1">
                 <Link
                   href="/practice"
-                  className="rounded-lg bg-(--foreground) px-4 py-2 text-sm font-medium text-(--background) transition-opacity hover:opacity-85"
+                  className="cursor-pointer rounded-lg bg-(--foreground) px-4 py-2 text-sm font-medium text-(--background) transition-opacity hover:opacity-85"
                 >
                   Start practice
                 </Link>
                 <Link
                   href="/feedback"
-                  className="rounded-lg border border-(--border) px-4 py-2 text-sm font-medium text-(--foreground) transition-colors hover:bg-(--muted)"
+                  className="cursor-pointer rounded-lg border border-(--border) px-4 py-2 text-sm font-medium text-(--foreground) transition-colors hover:bg-(--muted)"
                 >
                   View feedback
                 </Link>

@@ -25,4 +25,8 @@ export default function interviewRoutes(router: Router): void {
     "/sessions/:sessionId/messages",
     asyncHandler(controller.getMessages),
   );
+  router.delete(
+    "/sessions/:sessionId",
+    asyncHandler(controller.deleteSession),
+  );
 }

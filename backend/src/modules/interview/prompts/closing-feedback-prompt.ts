@@ -10,11 +10,11 @@ export const CLOSING_FORMAT_HEADER = "## Format";
 export const CLOSING_SECURITY_HEADER = "## Security";
 
 export const CLOSING_FEEDBACK_CTA =
-  "Your review items are being generated and will be available shortly in the Feedback tab on the left.";
+  "Seus itens estão sendo gerados, estarão disponíveis em breve";
 
-/** Exact section headings the model must use (English, CommonMark). */
-export const CLOSING_FEEDBACK_WENT_WELL_HEADER = "## What you did well";
-export const CLOSING_FEEDBACK_WORK_ON_HEADER = "## What to work on";
+/** Exact section headings the model must use (Portuguese, CommonMark). */
+export const CLOSING_FEEDBACK_WENT_WELL_HEADER = "## O que você fez bem";
+export const CLOSING_FEEDBACK_WORK_ON_HEADER = "## O que precisa trabalhar";
 
 export const CLOSING_FEEDBACK_OUTPUT_TEMPLATE = `[One strong paragraph: overall impression of the candidate's performance (2-4 sentences). Be honest and balanced. Plain paragraph, no heading.]
 
@@ -76,7 +76,7 @@ ${resumeToMarkdown(resumeSummary)}`;
 
 function buildFormatBlock(): string {
   return `${CLOSING_FORMAT_HEADER}
-Reply in valid, renderable Markdown (CommonMark). Maximum 250-280 words.
+Reply in Portuguese. Write in valid, renderable Markdown (CommonMark). Maximum 250-280 words.
 
 Structure:
 - One introductory paragraph with no heading.
@@ -84,10 +84,11 @@ Structure:
 - Bullet lists only with \`-\` (no numbered lists).
 
 Do not use code blocks, tables, links, HTML, or extra sections.
+Ensure there is absolutely no repetition or overlap between sections.
 
 Be specific and contextual:
 - Reference the actual topics or questions discussed.
-- Example: "When asked about designing a rate limiter..." instead of generic comments.
+- Example: "Quando perguntado sobre o design de um limitador de taxa..." instead of generic comments.
 
 ${CLOSING_FEEDBACK_OUTPUT_TEMPLATE}
 

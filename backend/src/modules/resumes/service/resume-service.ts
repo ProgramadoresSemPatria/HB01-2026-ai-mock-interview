@@ -104,6 +104,30 @@ export class ResumeService {
     return toResumeDetail(resume);
   }
 
+  async listResumes(userId: number): Promise<ResumePreview[]> {
+    const resumes = await this.resumeRepository.findAllByUserId(userId);
+    return resumes.map(toResumePreview);
+  }
+
+  async deleteResume(userId: number, id: string): Promise<void> {
+    const resume = await this.resumeRepository.findByIdAndUserId(id, userId);
+
+    if (!resume) {
+      throw new NotFoundError("Resume not found");
+    }
+
+    await this.resumeRepository.deleteByIdAndUserId(id, userId);
+
+    try {
+      await this.objectStorage.delete(resume.storageKey);
+    } catch (error) {
+      console.error(
+        `Failed to delete resume file ${resume.storageKey} from storage:`,
+        error,
+      );
+    }
+  }
+
   async process(resumeId: string): Promise<ResumeProcessResult> {
     const resume = await this.resumeRepository.findById(resumeId);
 

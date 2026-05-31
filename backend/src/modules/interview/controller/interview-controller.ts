@@ -40,4 +40,10 @@ export class InterviewController {
     );
     res.status(200).json({ messages });
   };
+
+  deleteSession = async (req: Request, res: Response): Promise<void> => {
+    const sessionId = String(req.params.sessionId);
+    await this.sessionService.deleteSession(req.userId!, sessionId);
+    res.status(204).send();
+  };
 }

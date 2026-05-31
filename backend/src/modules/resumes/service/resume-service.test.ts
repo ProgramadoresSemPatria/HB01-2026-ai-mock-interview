@@ -100,6 +100,8 @@ describe("ResumeService", () => {
       findById: vi.fn(),
       findByIdAndUserId: vi.fn(),
       updateReady: vi.fn(),
+      findAllByUserId: vi.fn(),
+      deleteByIdAndUserId: vi.fn(),
     } as unknown as ResumeRepository;
 
     objectStorage = {
@@ -284,6 +286,59 @@ describe("ResumeService", () => {
       await expect(service.getResume(42, "missing-id")).rejects.toThrow(
         NotFoundError,
       );
+    });
+  });
+
+  describe("listResumes", () => {
+    it("returns a list of resume previews for the user", async () => {
+      vi.mocked(resumeRepository.findAllByUserId).mockResolvedValue([
+        sampleResume,
+      ]);
+
+      const result = await service.listResumes(42);
+
+      expect(resumeRepository.findAllByUserId).toHaveBeenCalledWith(42);
+      expect(result).toEqual([
+        {
+          id: "resume-uuid",
+          name: "Jane Doe CV.pdf",
+          status: RESUME_STATUS.processing,
+          createdAt: sampleResume.createdAt,
+        },
+      ]);
+    });
+  });
+
+  describe("deleteResume", () => {
+    it("deletes the resume and clears object storage when found", async () => {
+      vi.mocked(resumeRepository.findByIdAndUserId).mockResolvedValue(
+        sampleResume,
+      );
+
+      await service.deleteResume(42, "resume-uuid");
+
+      expect(resumeRepository.findByIdAndUserId).toHaveBeenCalledWith(
+        "resume-uuid",
+        42,
+      );
+      expect(resumeRepository.deleteByIdAndUserId).toHaveBeenCalledWith(
+        "resume-uuid",
+        42,
+      );
+      expect(objectStorage.delete).toHaveBeenCalledWith(
+        sampleResume.storageKey,
+      );
+    });
+
+    it("throws NotFoundError if resume to delete is not found", async () => {
+      vi.mocked(resumeRepository.findByIdAndUserId).mockResolvedValue(null);
+
+      await expect(
+        service.deleteResume(42, "missing-id"),
+      ).rejects.toThrow(NotFoundError);
+
+      expect(resumeRepository.deleteByIdAndUserId).not.toHaveBeenCalled();
+      expect(objectStorage.delete).not.toHaveBeenCalled();
     });
   });
 

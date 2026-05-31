@@ -53,7 +53,7 @@ model InterviewSession {
   createdAt  DateTime       @default(now()) @map("created_at")
 
   user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  resume      Resume             @relation(fields: [resumeId], references: [id])
+  resume      Resume             @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   messages    InterviewMessage[]
   reviewItems ReviewItem[]
 
@@ -87,7 +87,7 @@ model ReviewItem {
   createdAt   DateTime       @default(now()) @map("created_at")
   updatedAt   DateTime       @updatedAt @map("updated_at")
 
-  session InterviewSession @relation(fields: [sessionId], references: [id])
+  session InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("review_items")
