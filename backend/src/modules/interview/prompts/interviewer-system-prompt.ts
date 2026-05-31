@@ -2,7 +2,7 @@ import type { InterviewLevel } from "@/modules/interview/validations/interview-s
 import { resumeToMarkdown } from "@/modules/resumes/format/resume-to-markdown";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
 
-export const DEFAULT_INTERVIEWER_NAME = "Alex";
+export const DEFAULT_INTERVIEWER_NAME = "Heno";
 
 export const PERSONA_SECTION_HEADER = "## Role";
 export const LANGUAGE_SECTION_HEADER = "## Language";

@@ -13,7 +13,7 @@ import { createInitialInterviewState } from "../interview-state";
 import { createInterviewerNode } from "./interviewer-node";
 
 const sampleResumeSummary = {
-  personal_info: { name: "Alex", title: "Engineer", about: "" },
+  personal_info: { name: "Heno", title: "Engineer", about: "" },
   skills: ["TypeScript"],
   experiences: [
     { company: "Acme", role: "Dev", highlights: ["APIs"] },
