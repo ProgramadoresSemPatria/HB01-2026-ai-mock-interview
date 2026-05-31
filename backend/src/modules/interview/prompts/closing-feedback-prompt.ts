@@ -10,7 +10,7 @@ export const CLOSING_FORMAT_HEADER = "## Format";
 export const CLOSING_SECURITY_HEADER = "## Security";
 
 export const CLOSING_FEEDBACK_CTA =
-  "Your review items are being generated and will be available shortly in the Review Items tab on the left.";
+  "Your review items are being generated and will be available shortly in the Feedback tab on the left.";
 
 /** Exact section labels the model must use (English). */
 export const CLOSING_FEEDBACK_WENT_WELL_HEADER = "What you did well:";
