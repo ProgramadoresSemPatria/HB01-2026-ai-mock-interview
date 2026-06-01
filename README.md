@@ -2,6 +2,17 @@
 
 Full-stack TypeScript project for technical mock interviews driven by AI. The repository contains a production-oriented backend for resume processing and interview orchestration, plus a frontend shell for the public landing page and app dashboard.
 
+## Problem
+
+Developers preparing for technical interviews often lack realistic, personalized practice that reflects their résumé and seniority level, plus structured feedback they can revisit over time.
+
+## Main features
+
+- **Authentication** — register, login, JWT refresh, and password reset
+- **Résumé processing** — PDF upload to R2, async extraction, and structured summary via worker queue
+- **AI mock interview** — sessions by level (`entry`, `mid`, `senior`), streamed turns over SSE, server-side turn limits
+- **Closing feedback & study backlog** — final-turn feedback via LangGraph and persisted review topics per user
+
 ## Repository layout
 
 | Path | Purpose |
@@ -281,6 +292,15 @@ bun run lint && bun run check-types && bun run test
 
 ## Frontend
 
+### Frontend stack
+
+| Concern | Technology |
+| --- | --- |
+| Framework | Next.js 16 (App Router) |
+| UI | React 19, Base UI, Tailwind CSS 4, shadcn |
+| Data & forms | TanStack Query, TanStack Form, Zod |
+| Runtime | Bun |
+
 - `/` is the public landing page.
 - Authenticated routes (`/dashboard`, `/practice`, `/interview/[id]`, `/feedback`) call the backend API (no mocked data).
 - Integration map: [`frontend/docs/api-integration.md`](frontend/docs/api-integration.md).
@@ -365,6 +385,13 @@ bun run lint
 bun run check-types
 bun run build
 ```
+
+## Team
+
+| Area | Contributors |
+| --- | --- |
+| Backend | Guilherme |
+| Frontend | Nathan, Pablo |
 
 ## Current constraints
 
