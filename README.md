@@ -1,4 +1,91 @@
-# AI Mock Interview
+# Hone — AI Mock Interview
+
+Hone is an AI-powered mock interview platform that helps software engineers prepare for technical interviews through personalized, resume-aware practice sessions with real-time feedback.
+
+## Live Demo
+
+**[https://frontend-five-virid-83.vercel.app](https://frontend-five-virid-83.vercel.app)**
+
+## Problem
+
+Most engineers practice coding in isolation but struggle in real interviews because they lack structured feedback on communication, depth of answers, and topic coverage. Hone fills that gap by simulating realistic technical interviews driven by your own resume, giving you actionable feedback and a study backlog to close your knowledge gaps.
+
+## Main Features
+
+- **Resume-aware interviews** — upload your PDF resume and the AI tailors questions to your actual experience
+- **Streaming AI responses** — real-time Server-Sent Events (SSE) for a natural conversation feel
+- **Three difficulty levels** — Entry (5 turns), Mid (7 turns), Senior (8 turns)
+- **Automatic feedback** — closing feedback and a review items list generated at the end of each session
+- **Session history** — all past interview sessions and messages persisted per user
+- **Auth system** — JWT + refresh token with automatic token renewal
+
+## Tech Stack
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, shadcn/ui |
+| Backend | Bun, Express 5, Prisma 7, PostgreSQL (Neon), BullMQ, Redis (Upstash) |
+| AI | OpenAI GPT, LangChain JS, LangGraph JS, PostgreSQL checkpointing |
+| Storage | Cloudflare R2 |
+| Infra | Railway (API + Worker), Vercel (Frontend) |
+
+## How to Run Locally
+
+### Prerequisites
+
+- [Bun](https://bun.sh) installed
+- Docker (for PostgreSQL and Redis)
+- OpenAI API key
+
+### 1. Clone and install dependencies
+
+```bash
+git clone <repo-url>
+cd backend && bun install
+cd ../frontend && bun install
+```
+
+### 2. Configure environment variables
+
+```bash
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local
+```
+
+Fill in `backend/.env` with your OpenAI key, R2 credentials, and SMTP settings.
+
+### 3. Start infrastructure and run migrations
+
+```bash
+cd backend
+bun run db:start   # starts PostgreSQL + Redis via Docker
+bun run db:migrate
+```
+
+### 4. Run the apps
+
+```bash
+# Terminal 1 — API server
+cd backend && bun run dev
+
+# Terminal 2 — Resume processing worker
+cd backend && bun run dev:worker
+
+# Terminal 3 — Frontend
+cd frontend && bun run dev
+```
+
+Frontend runs on **http://localhost:3001**, API on **http://localhost:3000**.
+
+## Team Credits
+
+| Name | Role |
+| --- | --- |
+| Pablo Cruz | Frontend & Integration |
+| Vini Nathan | Backend & AI Orchestration |
+| Guilherme | Backend & AI Orchestration |
+
+---
 
 Full-stack TypeScript project for technical mock interviews driven by AI. The repository contains a production-oriented backend for resume processing and interview orchestration, plus a frontend shell for the public landing page and app dashboard.
 
