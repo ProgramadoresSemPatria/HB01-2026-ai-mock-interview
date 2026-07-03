@@ -1,4 +1,4 @@
-import { HumanMessage } from "@langchain/core/messages";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
 import type { ChatOpenAI } from "@langchain/openai";
 
 import { createReviewModel } from "@/infrastructure/ai/openai-models";
@@ -39,13 +39,17 @@ export function createReviewItemsGeneratorNode(
   return async function reviewItemsGeneratorNode(
     input: ReviewItemsGeneratorInput,
   ): Promise<ReviewItemsGeneratorOutput> {
-    const prompt = buildReviewItemsGeneratorPrompt({
+    const promptText = buildReviewItemsGeneratorPrompt({
       transcript: input.transcript,
       existingItems: input.existingItems,
       structuredSummary: input.structuredSummary,
     });
 
-    const raw = await structuredModel.invoke([new HumanMessage(prompt)]);
+    const promptTemplate = ChatPromptTemplate.fromMessages([
+      ["human", promptText],
+    ]);
+    const chain = promptTemplate.pipe(structuredModel);
+    const raw = await chain.invoke({});
     return reviewItemsGeneratorOutputSchema.parse(raw);
   };
 }

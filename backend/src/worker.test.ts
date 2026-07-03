@@ -15,10 +15,7 @@ vi.mock("bullmq", () => ({
   Worker: vi.fn().mockImplementation(() => ({ on: vi.fn() })),
 }));
 
-import {
-  logResumeJobResult,
-  processResumeJob,
-} from "./worker";
+import { logResumeJobResult, processResumeJob } from "./worker";
 
 describe("processResumeJob", () => {
   afterEach(() => {

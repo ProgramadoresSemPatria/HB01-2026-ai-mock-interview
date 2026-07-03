@@ -6,11 +6,12 @@ O backend usa **4 prompts de LLM** (todos em `src/modules/*/prompts/`). Há tamb
 
 ## Visão geral
 
-| #   | Prompt                         | Arquivo                            | Onde é invocado                                                       | Modelo (env)             | Papel na mensagem |
-| --- | ------------------------------ | ---------------------------------- | --------------------------------------------------------------------- | ------------------------ | ----------------- |
-| 1   | Entrevistador (mock interview) | `interviewer-system-prompt.ts`     | `interviewer-node.ts` → grafo LangGraph                               | `OPENAI_MODEL_INTERVIEW` | `SystemMessage`   |
-| 2   | Feedback final                 | `closing-feedback-prompt.ts`       | `interviewer-node.ts` (último turno, `runReview`) → grafo LangGraph   | `OPENAI_MODEL_INTERVIEW` | `SystemMessage`   |
-| 3   | Review items                   | `review-items-generator-prompt.ts` | `review-items-generator-node.ts` → `stream-service.ts` (último turno) | `OPENAI_MODEL_REVIEW`    | `HumanMessage`    |
+| #   | Prompt                         | Arquivo                            | Onde é invocado                                                       | Modelo (env)             | Composição (pós-migração)                                      |
+| --- | ------------------------------ | ---------------------------------- | --------------------------------------------------------------------- | ------------------------ | -------------------------------------------------------------- |
+| 1   | Entrevistador (mock interview) | `interviewer-system-prompt.ts`     | `interviewer-node.ts` → grafo LangGraph                               | `OPENAI_MODEL_INTERVIEW` | `ChatPromptTemplate`: `system` + `MessagesPlaceholder("history")` |
+| 2   | Feedback final                 | `closing-feedback-prompt.ts`       | `interviewer-node.ts` (último turno, `runReview`) → grafo LangGraph   | `OPENAI_MODEL_INTERVIEW` | `ChatPromptTemplate`: `system` + `MessagesPlaceholder("history")` |
+| 3   | Review items                   | `review-items-generator-prompt.ts` | `review-items-generator-node.ts` → `stream-service.ts` (último turno) | `OPENAI_MODEL_REVIEW`    | `ChatPromptTemplate`: `human` → `.pipe(withStructuredOutput(...))` |
+| 4   | Extração de currículo          | `resume-extraction-prompt.ts`      | `resume-service.ts` (worker)                                          | `OPENAI_MODEL_EXTRACTION` | `ChatPromptTemplate`: `user` → `.pipe(withStructuredOutput(...))` |
 
 **Fluxo:** upload PDF → extração → sessão de entrevista (prompt 1 a cada turno) → último turno: feedback (prompt 2) + review items em paralelo (prompt 3).
 
@@ -19,9 +20,10 @@ O backend usa **4 prompts de LLM** (todos em `src/modules/*/prompts/`). Há tamb
 | Área              | Antes                                      | Depois                                      |
 | ----------------- | ------------------------------------------ | ------------------------------------------- |
 | Segurança (1 e 2) | Bloco no topo do prompt                    | `## Security` no **fim** do prompt          |
-| Entrevistador     | Fases rígidas + "Earlier you mentioned X"  | `PHASE_HINT` leve; mid sem hint extra       |
-| Feedback          | Exatamente 3 bullets; "What you can improve" | 2–3 bullets; `What to work on:`           |
-| Review items      | Seção longa de instruções                  | Bloco compacto em `## Instructions`         |
+| Composição LCEL   | `SystemMessage` / `HumanMessage` manual  | `ChatPromptTemplate.fromMessages` + `.pipe(model)` |
+| Entrevistador     | Fases rígidas + "Earlier you mentioned X"  | `PHASE_HINT` leve; `## Format` referencia conduta |
+| Review items      | Seção longa de instruções                  | `## Role` (persona Tech Lead) + `## Instructions` |
+| Extração PDF      | Texto monolítico                           | `## Role`, `## Task`, `## Output format`, `## Résumé text` |
 
 ---
 
@@ -30,8 +32,8 @@ O backend usa **4 prompts de LLM** (todos em `src/modules/*/prompts/`). Há tamb
 ### Onde é usado
 
 - **Arquivo:** `src/modules/interview/prompts/interviewer-system-prompt.ts`
-- **Função:** `buildInterviewerSystemPrompt()`
-- **Chamada:** `src/infrastructure/ai/langgraph/nodes/interviewer-node.ts`
+- **Função:** `buildInterviewerSystemPrompt()` / `buildInterviewerChatPromptTemplate()`
+- **Chamada:** `interviewer-node.ts` — `promptTemplate.pipe(model).invoke({ history: state.messages })`
 - **Grafo:** `build-interview-graph.ts` — nó `interviewer` quando `runReview === false` (prompt de entrevista)
 
 ### Por quê
@@ -63,6 +65,9 @@ English only throughout the session.
 - At most one follow-up on the same original question. If the candidate still isn't making progress, acknowledge briefly and move to a new question or topic — do not linger or repeat the same angle.
 - You are interviewing, not teaching. Never deliver model answers, architecture walkthroughs, numbered designs, or long explanations. A nudge is at most one short orienting question (e.g. "What would you check first?"), never the solution.
 - Don't coach beyond that nudge. Let topic changes feel natural; don't announce that you're moving on.
+
+## Format
+Keep each reply short (2–4 sentences plus your question) and ask exactly one focused question per turn, as described in ## Conduct.
 
 ## Interview level: {{level}}
 {{LEVEL_INSTRUCTIONS}}
@@ -217,6 +222,10 @@ Gera/atualiza itens de revisão (`topic`, `description`, `priority`) a partir do
 ### Texto completo (template)
 
 ```markdown
+## Role
+You are a Tech Lead reviewing an interview to identify learning gaps.
+Focus on what the candidate demonstrated — and what they did not — relative to the role and résumé.
+
 ## Interview transcript
 {{TRANSCRIPT}}
 
@@ -234,6 +243,31 @@ Identify gaps and weaknesses from the interview. Emit one item per distinct topi
   if the interview reinforces the gap (low to medium or high; medium to high; never lower an existing priority).
 - No duplicate topics in a single response.
 ```
+
+---
+
+## 4. Prompt de extração de currículo (user)
+
+### Onde é usado
+
+- **Arquivo:** `src/modules/resumes/prompts/resume-extraction-prompt.ts`
+- **Função:** `buildResumeExtractionPrompt()`
+- **Chamada:** `resume-service.ts` — `ChatPromptTemplate.fromMessages([["user", promptText]]).pipe(withStructuredOutput(...))`
+
+### Seções
+
+- `## Role` — persona parser de currículos técnicos
+- `## Task` — regras de extração
+- `## Output format` — schema estruturado esperado
+- `## Résumé text` — texto bruto do PDF
+
+---
+
+## Métricas de qualidade de IA
+
+Definições de métricas de negócio (turn-limit, formato do feedback final, retry-exhaustion): [`docs/ai-quality-metrics.md`](./ai-quality-metrics.md).
+
+Testes rule-based de qualidade: `src/test/quality/` (tone/conciseness, alignment/security, edge cases).
 
 ---
 

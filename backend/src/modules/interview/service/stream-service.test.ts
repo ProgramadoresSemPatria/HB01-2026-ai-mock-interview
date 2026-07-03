@@ -322,12 +322,7 @@ describe("InterviewStreamService", () => {
 
     const res = createMockResponse();
 
-    const streamPromise = service.streamTurn(
-      1,
-      baseSession.id,
-      "Hello",
-      res,
-    );
+    const streamPromise = service.streamTurn(1, baseSession.id, "Hello", res);
 
     await vi.waitFor(() => {
       expect(res.chunks.join("")).toContain("Partial");

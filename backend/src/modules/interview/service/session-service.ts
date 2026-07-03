@@ -98,10 +98,7 @@ export class SessionService {
     }));
   }
 
-  async deleteSession(
-    userId: number,
-    sessionId: string,
-  ): Promise<void> {
+  async deleteSession(userId: number, sessionId: string): Promise<void> {
     const session = await this.sessionRepository.findByIdAndUserId(
       sessionId,
       userId,

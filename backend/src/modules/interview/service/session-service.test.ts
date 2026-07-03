@@ -173,9 +173,7 @@ describe("SessionService", () => {
 
     await expect(
       service.createSession(userId, { resumeId, level: "entry" }),
-    ).rejects.toThrow(
-      new BadRequestError("Resume is still being processed"),
-    );
+    ).rejects.toThrow(new BadRequestError("Resume is still being processed"));
   });
 
   it("throws BadRequestError when the resume processing failed", async () => {

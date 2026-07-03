@@ -1,7 +1,10 @@
 import type { Resume as PrismaResume } from "../../../../prisma/generated/client";
 import { ResumeStatus as PrismaResumeStatus } from "../../../../prisma/generated/client";
 import prisma from "@/infrastructure/database";
-import type { ResumeRecord, ResumeStatus } from "@/modules/resumes/types/resume-record";
+import type {
+  ResumeRecord,
+  ResumeStatus,
+} from "@/modules/resumes/types/resume-record";
 import { structuredSummarySchema } from "@/modules/resumes/validations/resume-schemas";
 
 function toResumeStatus(status: PrismaResume["status"]): ResumeStatus {

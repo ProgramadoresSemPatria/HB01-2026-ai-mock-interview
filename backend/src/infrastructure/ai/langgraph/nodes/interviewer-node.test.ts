@@ -1,13 +1,20 @@
-import { AIMessage } from "@langchain/core/messages";
+import { AIMessage, type BaseMessage } from "@langchain/core/messages";
+import type { ChatPromptValue } from "@langchain/core/prompt_values";
+import { RunnableLambda } from "@langchain/core/runnables";
 import type { ChatOpenAI } from "@langchain/openai";
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  buildClosingFeedbackPrompt,
   CLOSING_EVALUATE_HEADER,
   CLOSING_FEEDBACK_CTA,
   CLOSING_FORMAT_HEADER,
 } from "@/modules/interview/prompts/closing-feedback-prompt";
-import { CONDUCT_SECTION_HEADER } from "@/modules/interview/prompts/interviewer-system-prompt";
+import {
+  buildInterviewerSystemPrompt,
+  CONDUCT_SECTION_HEADER,
+  FORMAT_SECTION_HEADER,
+} from "@/modules/interview/prompts/interviewer-system-prompt";
 
 import { createInitialInterviewState } from "../interview-state";
 import { createInterviewerNode } from "./interviewer-node";
@@ -15,19 +22,36 @@ import { createInterviewerNode } from "./interviewer-node";
 const sampleResumeSummary = {
   personal_info: { name: "Heno", title: "Engineer", about: "" },
   skills: ["TypeScript"],
-  experiences: [
-    { company: "Acme", role: "Dev", highlights: ["APIs"] },
-  ],
+  experiences: [{ company: "Acme", role: "Dev", highlights: ["APIs"] }],
   projects: [],
   certifications: [],
 };
 
 function createMockModel(content = "Model output") {
   const invoke = vi.fn().mockResolvedValue(new AIMessage({ content }));
+  const model = RunnableLambda.from(invoke) as unknown as ChatOpenAI;
   return {
     invoke,
-    model: { invoke } as unknown as ChatOpenAI,
+    model,
   };
+}
+
+function getChainInputMessages(input: unknown): BaseMessage[] {
+  if (
+    input &&
+    typeof input === "object" &&
+    "toChatMessages" in input &&
+    typeof input.toChatMessages === "function"
+  ) {
+    return (input as ChatPromptValue).toChatMessages();
+  }
+
+  return input as BaseMessage[];
+}
+
+function getRenderedSystemContent(messages: BaseMessage[]): string {
+  const firstMessage = messages[0];
+  return typeof firstMessage?.content === "string" ? firstMessage.content : "";
 }
 
 describe("createInterviewerNode", () => {
@@ -42,13 +66,23 @@ describe("createInterviewerNode", () => {
   it("invokes with interviewer system prompt when runReview is false", async () => {
     const { invoke, model } = createMockModel("Next question?");
     const node = createInterviewerNode({ model });
+    const state = { ...baseState, runReview: false };
 
-    await node({ ...baseState, runReview: false });
+    await node(state);
 
-    const messages = invoke.mock.calls[0]?.[0] as Array<{ content: string }>;
-    const systemContent = messages[0]?.content ?? "";
+    const expectedSystemPrompt = buildInterviewerSystemPrompt({
+      level: state.level,
+      resumeSummary: state.resumeSummary,
+      turnCount: state.turnCount,
+      maxTurns: state.maxTurns,
+    });
+    const systemContent = getRenderedSystemContent(
+      getChainInputMessages(invoke.mock.calls[0]?.[0]),
+    );
 
+    expect(systemContent).toBe(expectedSystemPrompt);
     expect(systemContent).toContain(CONDUCT_SECTION_HEADER);
+    expect(systemContent).toContain(FORMAT_SECTION_HEADER);
     expect(systemContent).not.toContain(CLOSING_EVALUATE_HEADER);
   });
 
@@ -57,19 +91,26 @@ describe("createInterviewerNode", () => {
       "## What you did well\n\n- Good depth",
     );
     const node = createInterviewerNode({ model });
+    const state = { ...baseState, runReview: true };
 
-    await node({ ...baseState, runReview: true });
+    await node(state);
 
-    const messages = invoke.mock.calls[0]?.[0] as Array<{ content: string }>;
-    const systemContent = messages[0]?.content ?? "";
+    const expectedSystemPrompt = buildClosingFeedbackPrompt({
+      level: state.level,
+      resumeSummary: state.resumeSummary,
+    });
+    const systemContent = getRenderedSystemContent(
+      getChainInputMessages(invoke.mock.calls[0]?.[0]),
+    );
 
+    expect(systemContent).toBe(expectedSystemPrompt);
     expect(systemContent).toContain(CLOSING_EVALUATE_HEADER);
     expect(systemContent).toContain(CLOSING_FORMAT_HEADER);
     expect(systemContent).not.toContain(CONDUCT_SECTION_HEADER);
   });
 
   it("appends closing CTA to AI message when runReview is true", async () => {
-    const model = createMockModel("Session feedback body");
+    const { model } = createMockModel("Session feedback body");
     const node = createInterviewerNode({ model });
 
     const result = await node({ ...baseState, runReview: true });
@@ -79,7 +120,7 @@ describe("createInterviewerNode", () => {
   });
 
   it("does not append closing CTA when runReview is false", async () => {
-    const model = createMockModel("What trade-offs did you consider?");
+    const { model } = createMockModel("What trade-offs did you consider?");
     const node = createInterviewerNode({ model });
 
     const result = await node({ ...baseState, runReview: false });
@@ -88,5 +129,17 @@ describe("createInterviewerNode", () => {
       "What trade-offs did you consider?",
     );
     expect(result.messages[0]?.content).not.toContain(CLOSING_FEEDBACK_CTA);
+  });
+
+  it("propagates rejected model.invoke errors with the original message", async () => {
+    const failure = new Error("OpenAI request failed after retries");
+    const invoke = vi.fn().mockRejectedValue(failure);
+    const model = RunnableLambda.from(invoke) as unknown as ChatOpenAI;
+    const node = createInterviewerNode({ model });
+
+    await expect(node({ ...baseState, runReview: false })).rejects.toBe(
+      failure,
+    );
+    expect(failure.message).toBe("OpenAI request failed after retries");
   });
 });

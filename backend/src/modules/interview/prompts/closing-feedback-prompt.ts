@@ -1,3 +1,5 @@
+import { createInterviewChatPromptTemplate } from "@/modules/interview/prompts/interviewer-system-prompt";
+
 import type { InterviewLevel } from "@/modules/interview/validations/interview-schemas";
 import { resumeToMarkdown } from "@/modules/resumes/format/resume-to-markdown";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
@@ -132,4 +134,10 @@ export function buildClosingFeedbackPrompt(
     buildFormatBlock(),
     buildSecurityBlock(),
   ].join("\n\n");
+}
+
+export function buildClosingFeedbackChatPromptTemplate(
+  params: BuildClosingFeedbackPromptParams,
+) {
+  return createInterviewChatPromptTemplate(buildClosingFeedbackPrompt(params));
 }

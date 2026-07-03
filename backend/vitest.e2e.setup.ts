@@ -13,6 +13,8 @@ const e2eEnvDefaults: Record<string, string> = {
   MAIL_FROM: "user@example.com",
   RATE_LIMIT_WINDOW_MS: "900000",
   RATE_LIMIT_MAX: "500",
+  RATE_LIMIT_AI_WINDOW_MS: "900000",
+  RATE_LIMIT_AI_MAX: "500",
   OPENAI_API_KEY: "test-openai-key",
   OPENAI_MODEL_INTERVIEW: "gpt-5",
   OPENAI_MODEL_EXTRACTION: "gpt-5-mini",
@@ -36,3 +38,5 @@ process.env.RATE_LIMIT_WINDOW_MS = e2eEnvDefaults.RATE_LIMIT_WINDOW_MS;
 
 // vitest.setup.ts sets a low default; E2E suites issue many auth requests per file.
 process.env.RATE_LIMIT_MAX = e2eEnvDefaults.RATE_LIMIT_MAX;
+process.env.RATE_LIMIT_AI_WINDOW_MS = e2eEnvDefaults.RATE_LIMIT_AI_WINDOW_MS;
+process.env.RATE_LIMIT_AI_MAX = e2eEnvDefaults.RATE_LIMIT_AI_MAX;

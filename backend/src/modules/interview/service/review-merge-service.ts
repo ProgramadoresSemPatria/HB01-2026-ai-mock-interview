@@ -23,10 +23,7 @@ function bump(priority: ReviewPriority): ReviewPriority {
   return "high";
 }
 
-function maxPriority(
-  a: ReviewPriority,
-  b: ReviewPriority,
-): ReviewPriority {
+function maxPriority(a: ReviewPriority, b: ReviewPriority): ReviewPriority {
   return RANK[a] >= RANK[b] ? a : b;
 }
 
@@ -38,16 +35,14 @@ export class ReviewMergeService {
     sessionId: string,
     items: ReviewItemInput[],
   ): Promise<void> {
-    const llmTopics = new Set(
-      items.map((item) => item.topic.toLowerCase()),
-    );
+    const llmTopics = new Set(items.map((item) => item.topic.toLowerCase()));
 
     for (const item of items) {
       const existing =
-        await this.reviewRepository.findByUserIdAndTopicCaseInsensitive(
+        (await this.reviewRepository.findByUserIdAndTopicCaseInsensitive(
           userId,
           item.topic,
-        ) ??
+        )) ??
         (await this.reviewRepository.findSimilarByUserIdAndTopic(
           userId,
           item.topic,

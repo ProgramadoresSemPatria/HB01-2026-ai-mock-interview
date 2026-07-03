@@ -9,7 +9,8 @@ model User {
   refreshTokens     RefreshToken[]
   resumes           Resume[]
   interviewSessions InterviewSession[]
-  reviewItems       ReviewItem[]
+  reviewItems        ReviewItem[]
+  interviewFeedbacks InterviewFeedback[]
 
   @@map("users")
 }

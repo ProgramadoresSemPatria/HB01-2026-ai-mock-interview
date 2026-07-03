@@ -1,14 +1,14 @@
-import { AIMessage, SystemMessage } from "@langchain/core/messages";
-
+import { AIMessage } from "@langchain/core/messages";
+import { StringOutputParser } from "@langchain/core/output_parsers";
+import type { RunnableConfig } from "@langchain/core/runnables";
 import type { ChatOpenAI } from "@langchain/openai";
 
 import { createInterviewModel } from "@/infrastructure/ai/openai-models";
-
 import {
   appendClosingFeedbackCta,
-  buildClosingFeedbackPrompt,
+  buildClosingFeedbackChatPromptTemplate,
 } from "@/modules/interview/prompts/closing-feedback-prompt";
-import { buildInterviewerSystemPrompt } from "@/modules/interview/prompts/interviewer-system-prompt";
+import { buildInterviewerChatPromptTemplate } from "@/modules/interview/prompts/interviewer-system-prompt";
 
 import type { InterviewGraphState } from "../interview-state";
 
@@ -18,31 +18,26 @@ export type InterviewerNodeDeps = {
 
 export function createInterviewerNode(deps: InterviewerNodeDeps = {}) {
   const model = deps.model ?? createInterviewModel();
+  const outputParser = new StringOutputParser();
 
   return async function interviewerNode(
     state: InterviewGraphState,
+    config?: RunnableConfig,
   ): Promise<Pick<InterviewGraphState, "messages">> {
-    const systemPrompt = state.runReview
-      ? buildClosingFeedbackPrompt({
+    const promptTemplate = state.runReview
+      ? buildClosingFeedbackChatPromptTemplate({
           level: state.level,
           resumeSummary: state.resumeSummary,
         })
-      : buildInterviewerSystemPrompt({
+      : buildInterviewerChatPromptTemplate({
           level: state.level,
           resumeSummary: state.resumeSummary,
           turnCount: state.turnCount,
           maxTurns: state.maxTurns,
         });
 
-    const response = await model.invoke([
-      new SystemMessage(systemPrompt),
-      ...state.messages,
-    ]);
-
-    const rawContent =
-      typeof response.content === "string"
-        ? response.content
-        : JSON.stringify(response.content);
+    const chain = promptTemplate.pipe(model).pipe(outputParser);
+    const rawContent = await chain.invoke({ history: state.messages }, config);
 
     const content = state.runReview
       ? appendClosingFeedbackCta(rawContent)

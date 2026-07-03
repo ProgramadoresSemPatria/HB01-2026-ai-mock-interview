@@ -458,4 +458,201 @@ describe("Interview API E2E", () => {
       expect(interviewGraphMock.streamMessages).not.toHaveBeenCalled();
     });
   });
+
+  describe("AI rate limiting", () => {
+    let rateLimitedApp: Express;
+    let previousMax: string | undefined;
+    let previousWindow: string | undefined;
+
+    async function flushAiRateLimitKeys(): Promise<void> {
+      const { redisConnection } =
+        await import("@/infrastructure/queue/resume-queue");
+      const redis = redisConnection as import("ioredis").default;
+      const keys = await redis.keys("rl:ai:*");
+      if (keys.length > 0) {
+        await redis.del(...keys);
+      }
+    }
+
+    function createSession(
+      appInstance: Express,
+      token: string,
+      resumeId: string,
+    ) {
+      return request(appInstance)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send({ resumeId, level: "entry" });
+    }
+
+    beforeAll(async () => {
+      previousMax = process.env.RATE_LIMIT_AI_MAX;
+      previousWindow = process.env.RATE_LIMIT_AI_WINDOW_MS;
+      process.env.RATE_LIMIT_AI_MAX = "2";
+      process.env.RATE_LIMIT_AI_WINDOW_MS = "60000";
+      vi.resetModules();
+      await flushAiRateLimitKeys();
+
+      const { createApp: createAppWithRateLimit } =
+        await import("@/config/app");
+      rateLimitedApp = await createAppWithRateLimit();
+    });
+
+    beforeEach(async () => {
+      await flushAiRateLimitKeys();
+    });
+
+    afterAll(() => {
+      process.env.RATE_LIMIT_AI_MAX = previousMax;
+      process.env.RATE_LIMIT_AI_WINDOW_MS = previousWindow;
+      vi.resetModules();
+    });
+
+    it("returns 429 when exceeding RATE_LIMIT_AI_MAX", async () => {
+      const { token, userId } = await authenticate(rateLimitedApp);
+      const resume = await seedReadyResume(userId);
+
+      await createSession(rateLimitedApp, token, resume.id).expect(201);
+      await createSession(rateLimitedApp, token, resume.id).expect(201);
+
+      const response = await createSession(
+        rateLimitedApp,
+        token,
+        resume.id,
+      );
+
+      expect(response.status).toBe(429);
+      expect(response.body).toEqual({
+        message: "Too many requests, please try again later.",
+      });
+    });
+
+    it("isolates rate limits per authenticated user", async () => {
+      const { token: tokenA, userId: userIdA } =
+        await authenticate(rateLimitedApp);
+      const resumeA = await seedReadyResume(userIdA);
+
+      await createSession(rateLimitedApp, tokenA, resumeA.id).expect(201);
+      await createSession(rateLimitedApp, tokenA, resumeA.id).expect(201);
+      await createSession(rateLimitedApp, tokenA, resumeA.id).expect(429);
+
+      const { response: signUpB } = await signUpUser(rateLimitedApp, {
+        email: "rate-limit-user-b@example.com",
+        name: "Rate Limit User B",
+      });
+      const userIdB = signUpB.body.user.id as number;
+      const loginB = await loginUser(rateLimitedApp, {
+        email: "rate-limit-user-b@example.com",
+      });
+      const tokenB = loginB.body.accessToken as string;
+      const resumeB = await seedReadyResume(userIdB);
+
+      await createSession(rateLimitedApp, tokenB, resumeB.id).expect(201);
+      await createSession(rateLimitedApp, tokenB, resumeB.id).expect(201);
+
+      const response = await createSession(
+        rateLimitedApp,
+        tokenB,
+        resumeB.id,
+      );
+
+      expect(response.status).toBe(429);
+    });
+
+    it("does not rate limit GET /sessions after AI route returns 429", async () => {
+      const { token, userId } = await authenticate(rateLimitedApp);
+      const resume = await seedReadyResume(userId);
+
+      await createSession(rateLimitedApp, token, resume.id).expect(201);
+      await createSession(rateLimitedApp, token, resume.id).expect(201);
+      await createSession(rateLimitedApp, token, resume.id).expect(429);
+
+      const response = await request(rateLimitedApp)
+        .get("/api/interview/sessions")
+        .set(authHeader(token));
+
+      expect(response.status).toBe(200);
+      expect(response.body.sessions).toHaveLength(2);
+    });
+  });
+
+  describe("POST /api/interview/sessions/:sessionId/feedback", () => {
+    it("returns 201 when submitting feedback for own session", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send({ resumeId: resume.id, level: "entry" });
+
+      const sessionId = createResponse.body.id as string;
+
+      const response = await request(app)
+        .post(`/api/interview/sessions/${sessionId}/feedback`)
+        .set(authHeader(token))
+        .send({ rating: "up", comment: "Helpful session" });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toMatchObject({
+        sessionId,
+        userId,
+        rating: "up",
+        comment: "Helpful session",
+      });
+    });
+
+    it("returns 404 when submitting feedback for another user's session", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send({ resumeId: resume.id, level: "entry" });
+
+      const sessionId = createResponse.body.id as string;
+
+      await request(app)
+        .post("/api/auth/signup")
+        .send(
+          createSignupPayload({
+            email: "feedback-other@example.com",
+            name: "Feedback Other User",
+          }),
+        );
+      const otherLogin = await loginUser(app, {
+        email: "feedback-other@example.com",
+      });
+      const otherToken = otherLogin.body.accessToken as string;
+
+      const response = await request(app)
+        .post(`/api/interview/sessions/${sessionId}/feedback`)
+        .set(authHeader(otherToken))
+        .send({ rating: "down" });
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({ message: "Not Found" });
+    });
+
+    it("returns 422 for invalid feedback body", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send({ resumeId: resume.id, level: "entry" });
+
+      const sessionId = createResponse.body.id as string;
+
+      const response = await request(app)
+        .post(`/api/interview/sessions/${sessionId}/feedback`)
+        .set(authHeader(token))
+        .send({ rating: "invalid" });
+
+      expect(response.status).toBe(422);
+      expect(response.body.message).toBe("Validation failed");
+    });
+  });
 });

@@ -1,8 +1,14 @@
+﻿import { HumanMessage } from "@langchain/core/messages";
+import { RunnableLambda } from "@langchain/core/runnables";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RESUME_STATUS } from "@/modules/resumes/types/resume-record";
 import type { IObjectStorage } from "@/modules/resumes/protocols/object-storage";
 import type { IResumeQueue } from "@/modules/resumes/protocols/resume-queue";
-import { buildResumeExtractionPrompt } from "@/modules/resumes/prompts/resume-extraction-prompt";
+import {
+  buildResumeExtractionPrompt,
+  PERSONA_SECTION_HEADER,
+  RESUME_TEXT_SECTION_HEADER,
+} from "@/modules/resumes/prompts/resume-extraction-prompt";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
 import {
   structuredSummarySchema,
@@ -40,9 +46,7 @@ const sampleResume = {
   updatedAt: new Date("2026-01-01T00:00:00.000Z"),
 };
 
-function createPdfFile(
-  overrides: Partial<UploadedFile> = {},
-): UploadedFile {
+function createPdfFile(overrides: Partial<UploadedFile> = {}): UploadedFile {
   return {
     fieldname: "file",
     originalname: "resume.pdf",
@@ -85,7 +89,7 @@ describe("ResumeService", () => {
   let resumeRepository: ResumeRepository;
   let objectStorage: IObjectStorage;
   let resumeQueue: IResumeQueue;
-  let structuredModel: { invoke: ReturnType<typeof vi.fn> };
+  let structuredModelInvoke: ReturnType<typeof vi.fn>;
   let extractionModel: { withStructuredOutput: ReturnType<typeof vi.fn> };
   let extractText: ReturnType<typeof vi.fn>;
   let service: ResumeService;
@@ -114,9 +118,8 @@ describe("ResumeService", () => {
       add: vi.fn().mockResolvedValue(undefined),
     };
 
-    structuredModel = {
-      invoke: vi.fn().mockResolvedValue(structuredSummary),
-    };
+    structuredModelInvoke = vi.fn().mockResolvedValue(structuredSummary);
+    const structuredModel = RunnableLambda.from(structuredModelInvoke);
 
     extractionModel = {
       withStructuredOutput: vi.fn().mockReturnValue(structuredModel),
@@ -182,10 +185,7 @@ describe("ResumeService", () => {
 
     it("throws BadRequestError when file exceeds max bytes", async () => {
       await expect(
-        service.uploadPdf(
-          42,
-          createPdfFile({ size: 5_242_881 }),
-        ),
+        service.uploadPdf(42, createPdfFile({ size: 5_242_881 })),
       ).rejects.toThrow(BadRequestError);
     });
 
@@ -333,9 +333,9 @@ describe("ResumeService", () => {
     it("throws NotFoundError if resume to delete is not found", async () => {
       vi.mocked(resumeRepository.findByIdAndUserId).mockResolvedValue(null);
 
-      await expect(
-        service.deleteResume(42, "missing-id"),
-      ).rejects.toThrow(NotFoundError);
+      await expect(service.deleteResume(42, "missing-id")).rejects.toThrow(
+        NotFoundError,
+      );
 
       expect(resumeRepository.deleteByIdAndUserId).not.toHaveBeenCalled();
       expect(objectStorage.delete).not.toHaveBeenCalled();
@@ -360,12 +360,25 @@ describe("ResumeService", () => {
       expect(extractionModel.withStructuredOutput).toHaveBeenCalledWith(
         structuredSummarySchema,
       );
-      expect(structuredModel.invoke).toHaveBeenCalledWith([
-        {
-          role: "user",
-          content: buildResumeExtractionPrompt(rawText),
-        },
-      ]);
+      expect(structuredModelInvoke).toHaveBeenCalledOnce();
+      const invokeArg = structuredModelInvoke.mock.calls[0]?.[0];
+      const messages =
+        invokeArg &&
+        typeof invokeArg === "object" &&
+        "toChatMessages" in invokeArg &&
+        typeof invokeArg.toChatMessages === "function"
+          ? invokeArg.toChatMessages()
+          : invokeArg &&
+              typeof invokeArg === "object" &&
+              "messages" in invokeArg
+            ? (invokeArg as { messages: HumanMessage[] }).messages
+            : (invokeArg as HumanMessage[]);
+      expect(messages[0]).toBeInstanceOf(HumanMessage);
+      const promptContent = messages[0]?.content as string;
+      expect(promptContent).toBe(buildResumeExtractionPrompt(rawText));
+      expect(promptContent).toContain(PERSONA_SECTION_HEADER);
+      expect(promptContent).toContain(RESUME_TEXT_SECTION_HEADER);
+      expect(promptContent).toContain(rawText);
       expect(resumeRepository.updateReady).toHaveBeenCalledWith(
         "resume-uuid",
         structuredSummary,
@@ -410,6 +423,32 @@ describe("ResumeService", () => {
         "resume-uuid",
         "PDF parse error",
       );
+      expect(resumeRepository.updateReady).not.toHaveBeenCalled();
+    });
+
+    it("marks resume failed with clean error message when structured extraction exhausts retries", async () => {
+      vi.mocked(resumeRepository.findById).mockResolvedValue(sampleResume);
+      const retryExhaustedError = new Error("429 Rate limit exceeded");
+      retryExhaustedError.stack =
+        "Error: 429 Rate limit exceeded\n    at OpenAI.makeRequest (internal.js:42:11)";
+      structuredModelInvoke.mockRejectedValue(retryExhaustedError);
+
+      const result = await service.process("resume-uuid");
+
+      expect(result).toEqual({
+        status: "failed",
+        resumeId: "resume-uuid",
+        error: "429 Rate limit exceeded",
+        cause: retryExhaustedError,
+      });
+      expect(resumeRepository.updateFailed).toHaveBeenCalledWith(
+        "resume-uuid",
+        "429 Rate limit exceeded",
+      );
+      const storedErrorMessage = vi.mocked(resumeRepository.updateFailed).mock
+        .calls[0]?.[1];
+      expect(storedErrorMessage).not.toContain("at OpenAI.makeRequest");
+      expect(storedErrorMessage).not.toContain("\n");
       expect(resumeRepository.updateReady).not.toHaveBeenCalled();
     });
 

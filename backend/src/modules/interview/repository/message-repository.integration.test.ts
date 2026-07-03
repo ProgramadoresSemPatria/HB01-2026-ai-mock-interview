@@ -1,10 +1,7 @@
 import { afterAll, afterEach, describe, expect, it } from "vitest";
 import prisma from "@/infrastructure/database";
 import { MessageRole } from "../../../../prisma/generated/client";
-import {
-  disconnectDatabase,
-  resetDatabase,
-} from "@/test/integration/helpers";
+import { disconnectDatabase, resetDatabase } from "@/test/integration/helpers";
 import { MessageRepository } from "./message-repository";
 
 async function seedSession() {

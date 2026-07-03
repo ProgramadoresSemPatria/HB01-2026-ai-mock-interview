@@ -13,7 +13,10 @@ export async function extractPdfText(buffer: Buffer): Promise<string> {
   try {
     const loader = new PDFLoader(tmpPath);
     const docs = await loader.load();
-    return docs.map((doc) => doc.pageContent).join("\n\n").trim();
+    return docs
+      .map((doc) => doc.pageContent)
+      .join("\n\n")
+      .trim();
   } finally {
     await unlink(tmpPath).catch(() => undefined);
   }

@@ -269,6 +269,23 @@ export type EnumReviewPriorityWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumReviewPriorityFilter<$PrismaModel>
 }
 
+export type EnumFeedbackRatingFilter<$PrismaModel = never> = {
+  equals?: $Enums.FeedbackRating | Prisma.EnumFeedbackRatingFieldRefInput<$PrismaModel>
+  in?: $Enums.FeedbackRating[] | Prisma.ListEnumFeedbackRatingFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FeedbackRating[] | Prisma.ListEnumFeedbackRatingFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFeedbackRatingFilter<$PrismaModel> | $Enums.FeedbackRating
+}
+
+export type EnumFeedbackRatingWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FeedbackRating | Prisma.EnumFeedbackRatingFieldRefInput<$PrismaModel>
+  in?: $Enums.FeedbackRating[] | Prisma.ListEnumFeedbackRatingFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FeedbackRating[] | Prisma.ListEnumFeedbackRatingFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFeedbackRatingWithAggregatesFilter<$PrismaModel> | $Enums.FeedbackRating
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFeedbackRatingFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFeedbackRatingFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -508,6 +525,23 @@ export type NestedEnumReviewPriorityWithAggregatesFilter<$PrismaModel = never> =
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumReviewPriorityFilter<$PrismaModel>
   _max?: Prisma.NestedEnumReviewPriorityFilter<$PrismaModel>
+}
+
+export type NestedEnumFeedbackRatingFilter<$PrismaModel = never> = {
+  equals?: $Enums.FeedbackRating | Prisma.EnumFeedbackRatingFieldRefInput<$PrismaModel>
+  in?: $Enums.FeedbackRating[] | Prisma.ListEnumFeedbackRatingFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FeedbackRating[] | Prisma.ListEnumFeedbackRatingFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFeedbackRatingFilter<$PrismaModel> | $Enums.FeedbackRating
+}
+
+export type NestedEnumFeedbackRatingWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FeedbackRating | Prisma.EnumFeedbackRatingFieldRefInput<$PrismaModel>
+  in?: $Enums.FeedbackRating[] | Prisma.ListEnumFeedbackRatingFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FeedbackRating[] | Prisma.ListEnumFeedbackRatingFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFeedbackRatingWithAggregatesFilter<$PrismaModel> | $Enums.FeedbackRating
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFeedbackRatingFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFeedbackRatingFilter<$PrismaModel>
 }
 
 

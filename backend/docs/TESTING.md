@@ -268,6 +268,20 @@ Reuse is **not enabled in CI** — keep it as a local-only optimization document
 | Nodemailer | Mock transport | N/A | `vi.mock("nodemailer")` |
 | R2 storage | Mock | N/A | `vi.mock` r2-client |
 | BullMQ | Mock | N/A | `vi.mock` resume-queue |
+| `aiRateLimiter` store | Injected `MemoryStore` (never `RedisStore`) | N/A | Real `RedisStore` (same Testcontainers Redis as BullMQ) |
+
+### AI rate limiting (`aiRateLimiter`)
+
+`aiRateLimiter` (wired via `makeAiRateLimiter()` from `@/factories/shared/ai-rate-limiter-factory`) keys counters by **`req.userId`**, not client IP — two users behind the same IP each get independent quotas.
+
+- **Unit** (`rate-limit-middleware.test.ts`): test `aiRateLimitKeyGenerator` and `makeAiRateLimiter(store)` with an injected **`MemoryStore`** from `express-rate-limit`. Do not use a real **`RedisStore`** in unit tests; Redis/Lua script behavior is validated in E2E only.
+- **E2E** (`interview.e2e.test.ts`, `resumes.e2e.test.ts`): the factory's `RedisStore` uses the **same Testcontainers Redis** already started for BullMQ (no extra container). Tests temporarily set `RATE_LIMIT_AI_MAX` / `RATE_LIMIT_AI_WINDOW_MS` inside `describe("AI rate limiting")` blocks.
+
+---
+
+## AI quality metrics
+
+Business definitions for turn-limit adherence, closing-feedback format, and retry-exhaustion rate (log query fields, formulas, data sources) are documented in [`ai-quality-metrics.md`](./ai-quality-metrics.md). Automated quality tests under `src/test/quality/` will implement rule-based evaluators referenced there.
 
 ---
 

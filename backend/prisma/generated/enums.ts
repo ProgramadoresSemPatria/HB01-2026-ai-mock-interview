@@ -42,3 +42,11 @@ export const ReviewPriority = {
 } as const
 
 export type ReviewPriority = (typeof ReviewPriority)[keyof typeof ReviewPriority]
+
+
+export const FeedbackRating = {
+  up: 'up',
+  down: 'down'
+} as const
+
+export type FeedbackRating = (typeof FeedbackRating)[keyof typeof FeedbackRating]

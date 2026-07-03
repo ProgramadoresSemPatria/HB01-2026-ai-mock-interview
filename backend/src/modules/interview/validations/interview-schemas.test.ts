@@ -4,6 +4,7 @@ import {
   createSessionSchema,
   reviewItemsGeneratorOutputSchema,
   streamMessageSchema,
+  submitFeedbackSchema,
 } from "./interview-schemas";
 
 const validResumeId = "550e8400-e29b-41d4-a716-446655440000";
@@ -21,17 +22,14 @@ describe("createSessionSchema", () => {
     }
   });
 
-  it.each(["entry", "mid", "senior"] as const)(
-    "accepts level %s",
-    (level) => {
-      const result = createSessionSchema.safeParse({
-        resumeId: validResumeId,
-        level,
-      });
+  it.each(["entry", "mid", "senior"] as const)("accepts level %s", (level) => {
+    const result = createSessionSchema.safeParse({
+      resumeId: validResumeId,
+      level,
+    });
 
-      expect(result.success).toBe(true);
-    },
-  );
+    expect(result.success).toBe(true);
+  });
 
   it("rejects invalid resumeId", () => {
     const result = createSessionSchema.safeParse({
@@ -52,10 +50,12 @@ describe("createSessionSchema", () => {
   });
 
   it("rejects missing fields", () => {
-    expect(createSessionSchema.safeParse({ resumeId: validResumeId }).success).toBe(
+    expect(
+      createSessionSchema.safeParse({ resumeId: validResumeId }).success,
+    ).toBe(false);
+    expect(createSessionSchema.safeParse({ level: "entry" }).success).toBe(
       false,
     );
-    expect(createSessionSchema.safeParse({ level: "entry" }).success).toBe(false);
   });
 });
 
@@ -94,6 +94,19 @@ describe("streamMessageSchema", () => {
     const result = streamMessageSchema.safeParse({ content: "   " });
 
     expect(result.success).toBe(false);
+  });
+
+  it("rejects content over 10000 characters", () => {
+    const result = streamMessageSchema.safeParse({
+      content: "x".repeat(10_001),
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toBe(
+        "Message content is too long",
+      );
+    }
   });
 
   it("rejects missing content", () => {
@@ -164,6 +177,58 @@ describe("reviewItemsGeneratorOutputSchema", () => {
 
   it("rejects missing items field", () => {
     const result = reviewItemsGeneratorOutputSchema.safeParse({});
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("submitFeedbackSchema", () => {
+  it("accepts valid rating with optional comment", () => {
+    const result = submitFeedbackSchema.safeParse({
+      rating: "up",
+      comment: "Great interview experience.",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual({
+        rating: "up",
+        comment: "Great interview experience.",
+      });
+    }
+  });
+
+  it("accepts rating without comment", () => {
+    const result = submitFeedbackSchema.safeParse({ rating: "down" });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual({ rating: "down" });
+    }
+  });
+
+  it("rejects missing rating", () => {
+    const result = submitFeedbackSchema.safeParse({
+      comment: "No rating provided.",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects invalid rating value", () => {
+    const result = submitFeedbackSchema.safeParse({
+      rating: "neutral",
+      comment: "Not sure.",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects comment over the length limit", () => {
+    const result = submitFeedbackSchema.safeParse({
+      rating: "up",
+      comment: "a".repeat(1001),
+    });
 
     expect(result.success).toBe(false);
   });

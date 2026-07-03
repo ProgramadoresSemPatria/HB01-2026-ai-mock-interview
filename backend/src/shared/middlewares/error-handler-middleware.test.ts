@@ -26,7 +26,12 @@ describe("errorHandler", () => {
     const res = createMockResponse();
     const next = vi.fn();
 
-    errorHandler(new NotFoundError("Resume not found"), {} as Request, res, next);
+    errorHandler(
+      new NotFoundError("Resume not found"),
+      {} as Request,
+      res,
+      next,
+    );
 
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({ message: "Resume not found" });
@@ -83,7 +88,12 @@ describe("errorHandler", () => {
     const next = vi.fn();
     const errorSpy = vi.spyOn(logger, "error");
 
-    errorHandler(new NotFoundError("Resume not found"), {} as Request, res, next);
+    errorHandler(
+      new NotFoundError("Resume not found"),
+      {} as Request,
+      res,
+      next,
+    );
 
     expect(errorSpy).not.toHaveBeenCalled();
   });
