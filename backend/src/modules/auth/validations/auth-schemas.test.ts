@@ -87,7 +87,8 @@ describe("signupSchema", () => {
   });
 
   it("rejects missing confirmPassword", () => {
-    const { confirmPassword: _confirmPassword, ...withoutConfirm } = validSignup;
+    const { confirmPassword: _confirmPassword, ...withoutConfirm } =
+      validSignup;
     const result = signupSchema.safeParse(withoutConfirm);
 
     expect(result.success).toBe(false);
@@ -208,9 +209,7 @@ describe("passwordResetSchema", () => {
   });
 
   it("rejects missing fields", () => {
-    expect(
-      passwordResetSchema.safeParse({ token: "abc" }).success,
-    ).toBe(false);
+    expect(passwordResetSchema.safeParse({ token: "abc" }).success).toBe(false);
     expect(
       passwordResetSchema.safeParse({ password: "newpass1" }).success,
     ).toBe(false);

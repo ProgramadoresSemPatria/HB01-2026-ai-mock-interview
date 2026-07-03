@@ -388,6 +388,7 @@ export const ModelName = {
   InterviewSession: 'InterviewSession',
   InterviewMessage: 'InterviewMessage',
   ReviewItem: 'ReviewItem',
+  InterviewFeedback: 'InterviewFeedback',
   User: 'User',
   RefreshToken: 'RefreshToken'
 } as const
@@ -405,7 +406,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "resume" | "interviewSession" | "interviewMessage" | "reviewItem" | "user" | "refreshToken"
+    modelProps: "resume" | "interviewSession" | "interviewMessage" | "reviewItem" | "interviewFeedback" | "user" | "refreshToken"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -705,6 +706,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    InterviewFeedback: {
+      payload: Prisma.$InterviewFeedbackPayload<ExtArgs>
+      fields: Prisma.InterviewFeedbackFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InterviewFeedbackFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InterviewFeedbackPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InterviewFeedbackFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InterviewFeedbackPayload>
+        }
+        findFirst: {
+          args: Prisma.InterviewFeedbackFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InterviewFeedbackPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InterviewFeedbackFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InterviewFeedbackPayload>
+        }
+        findMany: {
+          args: Prisma.InterviewFeedbackFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InterviewFeedbackPayload>[]
+        }
+        create: {
+          args: Prisma.InterviewFeedbackCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InterviewFeedbackPayload>
+        }
+        createMany: {
+          args: Prisma.InterviewFeedbackCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InterviewFeedbackCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InterviewFeedbackPayload>[]
+        }
+        delete: {
+          args: Prisma.InterviewFeedbackDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InterviewFeedbackPayload>
+        }
+        update: {
+          args: Prisma.InterviewFeedbackUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InterviewFeedbackPayload>
+        }
+        deleteMany: {
+          args: Prisma.InterviewFeedbackDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InterviewFeedbackUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InterviewFeedbackUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InterviewFeedbackPayload>[]
+        }
+        upsert: {
+          args: Prisma.InterviewFeedbackUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InterviewFeedbackPayload>
+        }
+        aggregate: {
+          args: Prisma.InterviewFeedbackAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInterviewFeedback>
+        }
+        groupBy: {
+          args: Prisma.InterviewFeedbackGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InterviewFeedbackGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InterviewFeedbackCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InterviewFeedbackCountAggregateOutputType> | number
+        }
+      }
+    }
     User: {
       payload: Prisma.$UserPayload<ExtArgs>
       fields: Prisma.UserFieldRefs
@@ -948,6 +1023,19 @@ export const ReviewItemScalarFieldEnum = {
 export type ReviewItemScalarFieldEnum = (typeof ReviewItemScalarFieldEnum)[keyof typeof ReviewItemScalarFieldEnum]
 
 
+export const InterviewFeedbackScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  userId: 'userId',
+  rating: 'rating',
+  comment: 'comment',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InterviewFeedbackScalarFieldEnum = (typeof InterviewFeedbackScalarFieldEnum)[keyof typeof InterviewFeedbackScalarFieldEnum]
+
+
 export const UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -1138,6 +1226,20 @@ export type ListEnumReviewPriorityFieldRefInput<$PrismaModel> = FieldRefInputTyp
 
 
 /**
+ * Reference to a field of type 'FeedbackRating'
+ */
+export type EnumFeedbackRatingFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FeedbackRating'>
+    
+
+
+/**
+ * Reference to a field of type 'FeedbackRating[]'
+ */
+export type ListEnumFeedbackRatingFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FeedbackRating[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -1264,6 +1366,7 @@ export type GlobalOmitConfig = {
   interviewSession?: Prisma.InterviewSessionOmit
   interviewMessage?: Prisma.InterviewMessageOmit
   reviewItem?: Prisma.ReviewItemOmit
+  interviewFeedback?: Prisma.InterviewFeedbackOmit
   user?: Prisma.UserOmit
   refreshToken?: Prisma.RefreshTokenOmit
 }

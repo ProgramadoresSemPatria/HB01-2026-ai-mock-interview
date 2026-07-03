@@ -30,6 +30,8 @@ export const serverEnv = {
   // Rate Limiting
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(900000), // 15 minutes
   RATE_LIMIT_MAX: z.coerce.number().default(20),
+  RATE_LIMIT_AI_WINDOW_MS: z.coerce.number().default(900000), // 15 minutes
+  RATE_LIMIT_AI_MAX: z.coerce.number().default(60),
 
   // OpenAI (mock interview)
   OPENAI_API_KEY: z.string().min(1),

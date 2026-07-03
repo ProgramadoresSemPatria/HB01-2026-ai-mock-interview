@@ -104,9 +104,9 @@ describe("ReviewItemsService", () => {
     it("throws NotFoundError when the review item is missing or not owned", async () => {
       vi.mocked(reviewRepository.deleteByIdAndUserId).mockResolvedValue(false);
 
-      await expect(service.deleteForUser(1, "missing-id")).rejects.toBeInstanceOf(
-        NotFoundError,
-      );
+      await expect(
+        service.deleteForUser(1, "missing-id"),
+      ).rejects.toBeInstanceOf(NotFoundError);
     });
   });
 });

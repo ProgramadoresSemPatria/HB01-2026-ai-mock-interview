@@ -36,6 +36,8 @@ describe("serverEnvSchema", () => {
     expect(result.data.SMTP_PORT).toBe(587);
     expect(result.data.RATE_LIMIT_WINDOW_MS).toBe(900000);
     expect(result.data.RATE_LIMIT_MAX).toBe(20);
+    expect(result.data.RATE_LIMIT_AI_WINDOW_MS).toBe(900000);
+    expect(result.data.RATE_LIMIT_AI_MAX).toBe(60);
     expect(result.data.OPENAI_MODEL_INTERVIEW).toBe("gpt-5");
     expect(result.data.OPENAI_MODEL_EXTRACTION).toBe("gpt-5-nano");
     expect(result.data.OPENAI_MODEL_REVIEW).toBe("gpt-5-nano");

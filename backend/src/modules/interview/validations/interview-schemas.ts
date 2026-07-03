@@ -8,7 +8,11 @@ export const createSessionSchema = z.object({
 });
 
 export const streamMessageSchema = z.object({
-  content: z.string().trim().min(1, "Message content is required"),
+  content: z
+    .string()
+    .trim()
+    .min(1, "Message content is required")
+    .max(10_000, "Message content is too long"),
 });
 
 export const reviewPrioritySchema = z.enum(["low", "medium", "high"]);
@@ -23,6 +27,13 @@ export const reviewItemsGeneratorOutputSchema = z.object({
   items: z.array(reviewItemSchema),
 });
 
+export const feedbackRatingSchema = z.enum(["up", "down"]);
+
+export const submitFeedbackSchema = z.object({
+  rating: feedbackRatingSchema,
+  comment: z.string().max(1000).optional(),
+});
+
 export type InterviewLevel = z.infer<typeof interviewLevelSchema>;
 export type CreateSessionInput = z.infer<typeof createSessionSchema>;
 export type StreamMessageInput = z.infer<typeof streamMessageSchema>;
@@ -30,3 +41,5 @@ export type ReviewPriority = z.infer<typeof reviewPrioritySchema>;
 export type ReviewItemsGeneratorOutput = z.infer<
   typeof reviewItemsGeneratorOutputSchema
 >;
+export type FeedbackRating = z.infer<typeof feedbackRatingSchema>;
+export type SubmitFeedbackInput = z.infer<typeof submitFeedbackSchema>;

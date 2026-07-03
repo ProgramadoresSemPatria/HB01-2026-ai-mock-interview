@@ -2,10 +2,7 @@ import { afterAll, afterEach, describe, expect, it } from "vitest";
 import { disconnectDatabase, resetDatabase } from "@/test/integration/helpers";
 import { UserRepository } from "@/modules/auth/repository/user-repository";
 import { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
-import {
-  MAX_TURNS_BY_LEVEL,
-  SessionRepository,
-} from "./session-repository";
+import { MAX_TURNS_BY_LEVEL, SessionRepository } from "./session-repository";
 
 describe("SessionRepository (integration)", () => {
   const userRepository = new UserRepository();
@@ -36,25 +33,28 @@ describe("SessionRepository (integration)", () => {
     ["entry", 5],
     ["mid", 7],
     ["senior", 8],
-  ] as const)("create sets maxTurns to %i for level %s", async (level, maxTurns) => {
-    const { user, resumeId } = await seedUserAndResume();
+  ] as const)(
+    "create sets maxTurns to %i for level %s",
+    async (level, maxTurns) => {
+      const { user, resumeId } = await seedUserAndResume();
 
-    const session = await repository.create({
-      userId: user.id,
-      resumeId,
-      level,
-    });
+      const session = await repository.create({
+        userId: user.id,
+        resumeId,
+        level,
+      });
 
-    expect(session).toMatchObject({
-      userId: user.id,
-      resumeId,
-      level,
-      maxTurns,
-      turnCount: 0,
-      isFinished: false,
-    });
-    expect(session.maxTurns).toBe(MAX_TURNS_BY_LEVEL[level]);
-  });
+      expect(session).toMatchObject({
+        userId: user.id,
+        resumeId,
+        level,
+        maxTurns,
+        turnCount: 0,
+        isFinished: false,
+      });
+      expect(session.maxTurns).toBe(MAX_TURNS_BY_LEVEL[level]);
+    },
+  );
 
   it("listByUserId returns sessions for the user ordered by createdAt desc", async () => {
     const { user, resumeId } = await seedUserAndResume();

@@ -22,7 +22,9 @@ const testSchema = z.object({
 
 describe("validate", () => {
   it("calls next and assigns parsed body when validation succeeds", () => {
-    const req = { body: { email: "user@example.com", name: "Jane" } } as Request;
+    const req = {
+      body: { email: "user@example.com", name: "Jane" },
+    } as Request;
     const res = createMockResponse();
     const next = vi.fn();
 

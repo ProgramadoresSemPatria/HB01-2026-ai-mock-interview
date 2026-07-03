@@ -23,8 +23,7 @@ function toResponse(item: ReviewItemRecord): ReviewItemResponse {
 }
 
 function compareReviewItems(a: ReviewItemRecord, b: ReviewItemRecord): number {
-  const priorityDiff =
-    PRIORITY_RANK[b.priority] - PRIORITY_RANK[a.priority];
+  const priorityDiff = PRIORITY_RANK[b.priority] - PRIORITY_RANK[a.priority];
 
   if (priorityDiff !== 0) {
     return priorityDiff;

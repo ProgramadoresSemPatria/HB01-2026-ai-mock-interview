@@ -21,9 +21,14 @@ vi.mock("@/infrastructure/storage/r2-client", () => ({
   createR2ObjectStorage: () => storageMock,
 }));
 
-vi.mock("@/infrastructure/queue/resume-queue", () => ({
-  add: resumeQueueMock.add,
-}));
+vi.mock("@/infrastructure/queue/resume-queue", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/infrastructure/queue/resume-queue")>();
+  return {
+    ...actual,
+    add: resumeQueueMock.add,
+  };
+});
 
 import { randomUUID } from "node:crypto";
 import request from "supertest";
@@ -45,7 +50,9 @@ import {
 } from "@/test/helpers/interview-seed-helpers";
 import { truncateTables } from "@/test/containers/truncate-tables";
 
-const minimalPdfBuffer = Buffer.from("%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF");
+const minimalPdfBuffer = Buffer.from(
+  "%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF",
+);
 
 async function authenticate(app: Express): Promise<{
   token: string;
@@ -284,6 +291,131 @@ describe("Resumes API E2E", () => {
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual({ message: "Resume not found" });
+    });
+  });
+
+  describe("AI rate limiting", () => {
+    let rateLimitedApp: Express;
+    let previousMax: string | undefined;
+    let previousWindow: string | undefined;
+
+    async function clearAiRateLimitKeys(): Promise<void> {
+      const Redis = (await import("ioredis")).default;
+      const { env } = await import("@/config/env");
+      const redis = new Redis(env.REDIS_URL);
+
+      try {
+        const keys = await redis.keys("rl:ai:*");
+        if (keys.length > 0) {
+          await redis.del(...keys);
+        }
+      } finally {
+        await redis.quit();
+      }
+    }
+
+    function restoreRateLimitEnv(
+      previousMax: string | undefined,
+      previousWindow: string | undefined,
+    ): void {
+      process.env.RATE_LIMIT_AI_MAX = previousMax;
+      process.env.RATE_LIMIT_AI_WINDOW_MS = previousWindow;
+    }
+
+    function uploadResume(
+      appInstance: Express,
+      token: string,
+      filename: string,
+    ) {
+      return request(appInstance)
+        .post("/api/resumes")
+        .set(authHeader(token))
+        .attach("file", minimalPdfBuffer, {
+          filename,
+          contentType: "application/pdf",
+        });
+    }
+
+    beforeAll(async () => {
+      previousMax = process.env.RATE_LIMIT_AI_MAX;
+      previousWindow = process.env.RATE_LIMIT_AI_WINDOW_MS;
+      await clearAiRateLimitKeys();
+      process.env.RATE_LIMIT_AI_MAX = "1";
+      process.env.RATE_LIMIT_AI_WINDOW_MS = "60000";
+      vi.resetModules();
+
+      const { createApp: createAppWithRateLimit } =
+        await import("@/config/app");
+      rateLimitedApp = await createAppWithRateLimit();
+    });
+
+    beforeEach(async () => {
+      await clearAiRateLimitKeys();
+    });
+
+    afterAll(() => {
+      restoreRateLimitEnv(previousMax, previousWindow);
+      vi.resetModules();
+    });
+
+    it("returns 429 when exceeding RATE_LIMIT_AI_MAX on upload", async () => {
+      const { token } = await authenticate(rateLimitedApp);
+
+      await uploadResume(rateLimitedApp, token, "resume.pdf").expect(201);
+
+      const response = await uploadResume(
+        rateLimitedApp,
+        token,
+        "resume-2.pdf",
+      );
+
+      expect(response.status).toBe(429);
+      expect(response.body).toEqual({
+        message: "Too many requests, please try again later.",
+      });
+    });
+
+    it("allows two different users to reach RATE_LIMIT_AI_MAX independently on upload", async () => {
+      const { token: firstToken } = await authenticate(rateLimitedApp);
+
+      await uploadResume(rateLimitedApp, firstToken, "resume.pdf").expect(
+        201,
+      );
+      await uploadResume(rateLimitedApp, firstToken, "resume-2.pdf").expect(
+        429,
+      );
+
+      const { response: signUpOther } = await signUpUser(rateLimitedApp, {
+        email: "rate-limit-other@example.com",
+        name: "Rate Limit Other User",
+      });
+      const loginOther = await loginUser(rateLimitedApp, {
+        email: "rate-limit-other@example.com",
+      });
+      const otherToken = loginOther.body.accessToken as string;
+
+      expect(signUpOther.status).toBe(201);
+
+      const response = await uploadResume(
+        rateLimitedApp,
+        otherToken,
+        "other-resume.pdf",
+      );
+
+      expect(response.status).toBe(201);
+    });
+
+    it("returns 200 on GET /api/resumes after 429 on upload", async () => {
+      const { token } = await authenticate(rateLimitedApp);
+
+      await uploadResume(rateLimitedApp, token, "resume.pdf").expect(201);
+      await uploadResume(rateLimitedApp, token, "resume-2.pdf").expect(429);
+
+      const response = await request(rateLimitedApp)
+        .get("/api/resumes")
+        .set(authHeader(token));
+
+      expect(response.status).toBe(200);
     });
   });
 });

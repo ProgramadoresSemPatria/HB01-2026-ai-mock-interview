@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 
+import { ChatPromptTemplate } from "@langchain/core/prompts";
 import type { ChatOpenAI } from "@langchain/openai";
 
 import {
@@ -143,15 +144,13 @@ export class ResumeService {
         throw new Error("PDF contains no extractable text");
       }
 
-      const structuredModel = this.extractionModel.withStructuredOutput(
-        structuredSummarySchema,
+      const promptText = buildResumeExtractionPrompt(rawText);
+      const chain = ChatPromptTemplate.fromMessages([
+        ["user", promptText],
+      ]).pipe(
+        this.extractionModel.withStructuredOutput(structuredSummarySchema),
       );
-      const structuredSummary = await structuredModel.invoke([
-        {
-          role: "user",
-          content: buildResumeExtractionPrompt(rawText),
-        },
-      ]);
+      const structuredSummary = await chain.invoke({});
 
       await this.resumeRepository.updateReady(
         resumeId,
@@ -197,7 +196,10 @@ function toResumePreview(resume: ResumeRecord): ResumePreview {
 function toResumeDetail(resume: ResumeRecord): ResumeDetail {
   const preview = toResumePreview(resume);
 
-  if (resume.status !== RESUME_STATUS.ready || resume.structuredSummary === null) {
+  if (
+    resume.status !== RESUME_STATUS.ready ||
+    resume.structuredSummary === null
+  ) {
     return preview;
   }
 

@@ -101,7 +101,9 @@ describe("UserRepository (integration)", () => {
     };
 
     const saved = await repository.saveRefreshToken(params);
-    const expectedExpiresAt = new Date(now.getTime() + env.REFRESH_EXPIRES * 1000);
+    const expectedExpiresAt = new Date(
+      now.getTime() + env.REFRESH_EXPIRES * 1000,
+    );
 
     expect(saved).toMatchObject({
       id: params.id,

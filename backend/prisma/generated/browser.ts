@@ -38,6 +38,11 @@ export type InterviewMessage = Prisma.InterviewMessageModel
  */
 export type ReviewItem = Prisma.ReviewItemModel
 /**
+ * Model InterviewFeedback
+ * 
+ */
+export type InterviewFeedback = Prisma.InterviewFeedbackModel
+/**
  * Model User
  * 
  */

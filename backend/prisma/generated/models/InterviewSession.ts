@@ -252,6 +252,7 @@ export type InterviewSessionWhereInput = {
   resume?: Prisma.XOR<Prisma.ResumeScalarRelationFilter, Prisma.ResumeWhereInput>
   messages?: Prisma.InterviewMessageListRelationFilter
   reviewItems?: Prisma.ReviewItemListRelationFilter
+  interviewFeedbacks?: Prisma.InterviewFeedbackListRelationFilter
 }
 
 export type InterviewSessionOrderByWithRelationInput = {
@@ -267,6 +268,7 @@ export type InterviewSessionOrderByWithRelationInput = {
   resume?: Prisma.ResumeOrderByWithRelationInput
   messages?: Prisma.InterviewMessageOrderByRelationAggregateInput
   reviewItems?: Prisma.ReviewItemOrderByRelationAggregateInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackOrderByRelationAggregateInput
 }
 
 export type InterviewSessionWhereUniqueInput = Prisma.AtLeast<{
@@ -285,6 +287,7 @@ export type InterviewSessionWhereUniqueInput = Prisma.AtLeast<{
   resume?: Prisma.XOR<Prisma.ResumeScalarRelationFilter, Prisma.ResumeWhereInput>
   messages?: Prisma.InterviewMessageListRelationFilter
   reviewItems?: Prisma.ReviewItemListRelationFilter
+  interviewFeedbacks?: Prisma.InterviewFeedbackListRelationFilter
 }, "id">
 
 export type InterviewSessionOrderByWithAggregationInput = {
@@ -328,6 +331,7 @@ export type InterviewSessionCreateInput = {
   resume: Prisma.ResumeCreateNestedOneWithoutSessionsInput
   messages?: Prisma.InterviewMessageCreateNestedManyWithoutSessionInput
   reviewItems?: Prisma.ReviewItemCreateNestedManyWithoutSessionInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackCreateNestedManyWithoutSessionInput
 }
 
 export type InterviewSessionUncheckedCreateInput = {
@@ -341,6 +345,7 @@ export type InterviewSessionUncheckedCreateInput = {
   createdAt?: Date | string
   messages?: Prisma.InterviewMessageUncheckedCreateNestedManyWithoutSessionInput
   reviewItems?: Prisma.ReviewItemUncheckedCreateNestedManyWithoutSessionInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type InterviewSessionUpdateInput = {
@@ -354,6 +359,7 @@ export type InterviewSessionUpdateInput = {
   resume?: Prisma.ResumeUpdateOneRequiredWithoutSessionsNestedInput
   messages?: Prisma.InterviewMessageUpdateManyWithoutSessionNestedInput
   reviewItems?: Prisma.ReviewItemUpdateManyWithoutSessionNestedInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackUpdateManyWithoutSessionNestedInput
 }
 
 export type InterviewSessionUncheckedUpdateInput = {
@@ -367,6 +373,7 @@ export type InterviewSessionUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.InterviewMessageUncheckedUpdateManyWithoutSessionNestedInput
   reviewItems?: Prisma.ReviewItemUncheckedUpdateManyWithoutSessionNestedInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type InterviewSessionCreateManyInput = {
@@ -538,6 +545,20 @@ export type InterviewSessionUpdateOneRequiredWithoutReviewItemsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.InterviewSessionUpdateToOneWithWhereWithoutReviewItemsInput, Prisma.InterviewSessionUpdateWithoutReviewItemsInput>, Prisma.InterviewSessionUncheckedUpdateWithoutReviewItemsInput>
 }
 
+export type InterviewSessionCreateNestedOneWithoutInterviewFeedbacksInput = {
+  create?: Prisma.XOR<Prisma.InterviewSessionCreateWithoutInterviewFeedbacksInput, Prisma.InterviewSessionUncheckedCreateWithoutInterviewFeedbacksInput>
+  connectOrCreate?: Prisma.InterviewSessionCreateOrConnectWithoutInterviewFeedbacksInput
+  connect?: Prisma.InterviewSessionWhereUniqueInput
+}
+
+export type InterviewSessionUpdateOneRequiredWithoutInterviewFeedbacksNestedInput = {
+  create?: Prisma.XOR<Prisma.InterviewSessionCreateWithoutInterviewFeedbacksInput, Prisma.InterviewSessionUncheckedCreateWithoutInterviewFeedbacksInput>
+  connectOrCreate?: Prisma.InterviewSessionCreateOrConnectWithoutInterviewFeedbacksInput
+  upsert?: Prisma.InterviewSessionUpsertWithoutInterviewFeedbacksInput
+  connect?: Prisma.InterviewSessionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InterviewSessionUpdateToOneWithWhereWithoutInterviewFeedbacksInput, Prisma.InterviewSessionUpdateWithoutInterviewFeedbacksInput>, Prisma.InterviewSessionUncheckedUpdateWithoutInterviewFeedbacksInput>
+}
+
 export type InterviewSessionCreateNestedManyWithoutUserInput = {
   create?: Prisma.XOR<Prisma.InterviewSessionCreateWithoutUserInput, Prisma.InterviewSessionUncheckedCreateWithoutUserInput> | Prisma.InterviewSessionCreateWithoutUserInput[] | Prisma.InterviewSessionUncheckedCreateWithoutUserInput[]
   connectOrCreate?: Prisma.InterviewSessionCreateOrConnectWithoutUserInput | Prisma.InterviewSessionCreateOrConnectWithoutUserInput[]
@@ -590,6 +611,7 @@ export type InterviewSessionCreateWithoutResumeInput = {
   user: Prisma.UserCreateNestedOneWithoutInterviewSessionsInput
   messages?: Prisma.InterviewMessageCreateNestedManyWithoutSessionInput
   reviewItems?: Prisma.ReviewItemCreateNestedManyWithoutSessionInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackCreateNestedManyWithoutSessionInput
 }
 
 export type InterviewSessionUncheckedCreateWithoutResumeInput = {
@@ -602,6 +624,7 @@ export type InterviewSessionUncheckedCreateWithoutResumeInput = {
   createdAt?: Date | string
   messages?: Prisma.InterviewMessageUncheckedCreateNestedManyWithoutSessionInput
   reviewItems?: Prisma.ReviewItemUncheckedCreateNestedManyWithoutSessionInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type InterviewSessionCreateOrConnectWithoutResumeInput = {
@@ -654,6 +677,7 @@ export type InterviewSessionCreateWithoutMessagesInput = {
   user: Prisma.UserCreateNestedOneWithoutInterviewSessionsInput
   resume: Prisma.ResumeCreateNestedOneWithoutSessionsInput
   reviewItems?: Prisma.ReviewItemCreateNestedManyWithoutSessionInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackCreateNestedManyWithoutSessionInput
 }
 
 export type InterviewSessionUncheckedCreateWithoutMessagesInput = {
@@ -666,6 +690,7 @@ export type InterviewSessionUncheckedCreateWithoutMessagesInput = {
   isFinished?: boolean
   createdAt?: Date | string
   reviewItems?: Prisma.ReviewItemUncheckedCreateNestedManyWithoutSessionInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type InterviewSessionCreateOrConnectWithoutMessagesInput = {
@@ -694,6 +719,7 @@ export type InterviewSessionUpdateWithoutMessagesInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutInterviewSessionsNestedInput
   resume?: Prisma.ResumeUpdateOneRequiredWithoutSessionsNestedInput
   reviewItems?: Prisma.ReviewItemUpdateManyWithoutSessionNestedInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackUpdateManyWithoutSessionNestedInput
 }
 
 export type InterviewSessionUncheckedUpdateWithoutMessagesInput = {
@@ -706,6 +732,7 @@ export type InterviewSessionUncheckedUpdateWithoutMessagesInput = {
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviewItems?: Prisma.ReviewItemUncheckedUpdateManyWithoutSessionNestedInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type InterviewSessionCreateWithoutReviewItemsInput = {
@@ -718,6 +745,7 @@ export type InterviewSessionCreateWithoutReviewItemsInput = {
   user: Prisma.UserCreateNestedOneWithoutInterviewSessionsInput
   resume: Prisma.ResumeCreateNestedOneWithoutSessionsInput
   messages?: Prisma.InterviewMessageCreateNestedManyWithoutSessionInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackCreateNestedManyWithoutSessionInput
 }
 
 export type InterviewSessionUncheckedCreateWithoutReviewItemsInput = {
@@ -730,6 +758,7 @@ export type InterviewSessionUncheckedCreateWithoutReviewItemsInput = {
   isFinished?: boolean
   createdAt?: Date | string
   messages?: Prisma.InterviewMessageUncheckedCreateNestedManyWithoutSessionInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type InterviewSessionCreateOrConnectWithoutReviewItemsInput = {
@@ -758,6 +787,7 @@ export type InterviewSessionUpdateWithoutReviewItemsInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutInterviewSessionsNestedInput
   resume?: Prisma.ResumeUpdateOneRequiredWithoutSessionsNestedInput
   messages?: Prisma.InterviewMessageUpdateManyWithoutSessionNestedInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackUpdateManyWithoutSessionNestedInput
 }
 
 export type InterviewSessionUncheckedUpdateWithoutReviewItemsInput = {
@@ -770,6 +800,75 @@ export type InterviewSessionUncheckedUpdateWithoutReviewItemsInput = {
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.InterviewMessageUncheckedUpdateManyWithoutSessionNestedInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackUncheckedUpdateManyWithoutSessionNestedInput
+}
+
+export type InterviewSessionCreateWithoutInterviewFeedbacksInput = {
+  id?: string
+  level: $Enums.InterviewLevel
+  turnCount?: number
+  maxTurns: number
+  isFinished?: boolean
+  createdAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutInterviewSessionsInput
+  resume: Prisma.ResumeCreateNestedOneWithoutSessionsInput
+  messages?: Prisma.InterviewMessageCreateNestedManyWithoutSessionInput
+  reviewItems?: Prisma.ReviewItemCreateNestedManyWithoutSessionInput
+}
+
+export type InterviewSessionUncheckedCreateWithoutInterviewFeedbacksInput = {
+  id?: string
+  userId: number
+  resumeId: string
+  level: $Enums.InterviewLevel
+  turnCount?: number
+  maxTurns: number
+  isFinished?: boolean
+  createdAt?: Date | string
+  messages?: Prisma.InterviewMessageUncheckedCreateNestedManyWithoutSessionInput
+  reviewItems?: Prisma.ReviewItemUncheckedCreateNestedManyWithoutSessionInput
+}
+
+export type InterviewSessionCreateOrConnectWithoutInterviewFeedbacksInput = {
+  where: Prisma.InterviewSessionWhereUniqueInput
+  create: Prisma.XOR<Prisma.InterviewSessionCreateWithoutInterviewFeedbacksInput, Prisma.InterviewSessionUncheckedCreateWithoutInterviewFeedbacksInput>
+}
+
+export type InterviewSessionUpsertWithoutInterviewFeedbacksInput = {
+  update: Prisma.XOR<Prisma.InterviewSessionUpdateWithoutInterviewFeedbacksInput, Prisma.InterviewSessionUncheckedUpdateWithoutInterviewFeedbacksInput>
+  create: Prisma.XOR<Prisma.InterviewSessionCreateWithoutInterviewFeedbacksInput, Prisma.InterviewSessionUncheckedCreateWithoutInterviewFeedbacksInput>
+  where?: Prisma.InterviewSessionWhereInput
+}
+
+export type InterviewSessionUpdateToOneWithWhereWithoutInterviewFeedbacksInput = {
+  where?: Prisma.InterviewSessionWhereInput
+  data: Prisma.XOR<Prisma.InterviewSessionUpdateWithoutInterviewFeedbacksInput, Prisma.InterviewSessionUncheckedUpdateWithoutInterviewFeedbacksInput>
+}
+
+export type InterviewSessionUpdateWithoutInterviewFeedbacksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
+  turnCount?: Prisma.IntFieldUpdateOperationsInput | number
+  maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
+  isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutInterviewSessionsNestedInput
+  resume?: Prisma.ResumeUpdateOneRequiredWithoutSessionsNestedInput
+  messages?: Prisma.InterviewMessageUpdateManyWithoutSessionNestedInput
+  reviewItems?: Prisma.ReviewItemUpdateManyWithoutSessionNestedInput
+}
+
+export type InterviewSessionUncheckedUpdateWithoutInterviewFeedbacksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.IntFieldUpdateOperationsInput | number
+  resumeId?: Prisma.StringFieldUpdateOperationsInput | string
+  level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
+  turnCount?: Prisma.IntFieldUpdateOperationsInput | number
+  maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
+  isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  messages?: Prisma.InterviewMessageUncheckedUpdateManyWithoutSessionNestedInput
+  reviewItems?: Prisma.ReviewItemUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type InterviewSessionCreateWithoutUserInput = {
@@ -782,6 +881,7 @@ export type InterviewSessionCreateWithoutUserInput = {
   resume: Prisma.ResumeCreateNestedOneWithoutSessionsInput
   messages?: Prisma.InterviewMessageCreateNestedManyWithoutSessionInput
   reviewItems?: Prisma.ReviewItemCreateNestedManyWithoutSessionInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackCreateNestedManyWithoutSessionInput
 }
 
 export type InterviewSessionUncheckedCreateWithoutUserInput = {
@@ -794,6 +894,7 @@ export type InterviewSessionUncheckedCreateWithoutUserInput = {
   createdAt?: Date | string
   messages?: Prisma.InterviewMessageUncheckedCreateNestedManyWithoutSessionInput
   reviewItems?: Prisma.ReviewItemUncheckedCreateNestedManyWithoutSessionInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type InterviewSessionCreateOrConnectWithoutUserInput = {
@@ -842,6 +943,7 @@ export type InterviewSessionUpdateWithoutResumeInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutInterviewSessionsNestedInput
   messages?: Prisma.InterviewMessageUpdateManyWithoutSessionNestedInput
   reviewItems?: Prisma.ReviewItemUpdateManyWithoutSessionNestedInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackUpdateManyWithoutSessionNestedInput
 }
 
 export type InterviewSessionUncheckedUpdateWithoutResumeInput = {
@@ -854,6 +956,7 @@ export type InterviewSessionUncheckedUpdateWithoutResumeInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.InterviewMessageUncheckedUpdateManyWithoutSessionNestedInput
   reviewItems?: Prisma.ReviewItemUncheckedUpdateManyWithoutSessionNestedInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type InterviewSessionUncheckedUpdateManyWithoutResumeInput = {
@@ -886,6 +989,7 @@ export type InterviewSessionUpdateWithoutUserInput = {
   resume?: Prisma.ResumeUpdateOneRequiredWithoutSessionsNestedInput
   messages?: Prisma.InterviewMessageUpdateManyWithoutSessionNestedInput
   reviewItems?: Prisma.ReviewItemUpdateManyWithoutSessionNestedInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackUpdateManyWithoutSessionNestedInput
 }
 
 export type InterviewSessionUncheckedUpdateWithoutUserInput = {
@@ -898,6 +1002,7 @@ export type InterviewSessionUncheckedUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.InterviewMessageUncheckedUpdateManyWithoutSessionNestedInput
   reviewItems?: Prisma.ReviewItemUncheckedUpdateManyWithoutSessionNestedInput
+  interviewFeedbacks?: Prisma.InterviewFeedbackUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type InterviewSessionUncheckedUpdateManyWithoutUserInput = {
@@ -918,11 +1023,13 @@ export type InterviewSessionUncheckedUpdateManyWithoutUserInput = {
 export type InterviewSessionCountOutputType = {
   messages: number
   reviewItems: number
+  interviewFeedbacks: number
 }
 
 export type InterviewSessionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   messages?: boolean | InterviewSessionCountOutputTypeCountMessagesArgs
   reviewItems?: boolean | InterviewSessionCountOutputTypeCountReviewItemsArgs
+  interviewFeedbacks?: boolean | InterviewSessionCountOutputTypeCountInterviewFeedbacksArgs
 }
 
 /**
@@ -949,6 +1056,13 @@ export type InterviewSessionCountOutputTypeCountReviewItemsArgs<ExtArgs extends 
   where?: Prisma.ReviewItemWhereInput
 }
 
+/**
+ * InterviewSessionCountOutputType without action
+ */
+export type InterviewSessionCountOutputTypeCountInterviewFeedbacksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InterviewFeedbackWhereInput
+}
+
 
 export type InterviewSessionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -963,6 +1077,7 @@ export type InterviewSessionSelect<ExtArgs extends runtime.Types.Extensions.Inte
   resume?: boolean | Prisma.ResumeDefaultArgs<ExtArgs>
   messages?: boolean | Prisma.InterviewSession$messagesArgs<ExtArgs>
   reviewItems?: boolean | Prisma.InterviewSession$reviewItemsArgs<ExtArgs>
+  interviewFeedbacks?: boolean | Prisma.InterviewSession$interviewFeedbacksArgs<ExtArgs>
   _count?: boolean | Prisma.InterviewSessionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["interviewSession"]>
 
@@ -1009,6 +1124,7 @@ export type InterviewSessionInclude<ExtArgs extends runtime.Types.Extensions.Int
   resume?: boolean | Prisma.ResumeDefaultArgs<ExtArgs>
   messages?: boolean | Prisma.InterviewSession$messagesArgs<ExtArgs>
   reviewItems?: boolean | Prisma.InterviewSession$reviewItemsArgs<ExtArgs>
+  interviewFeedbacks?: boolean | Prisma.InterviewSession$interviewFeedbacksArgs<ExtArgs>
   _count?: boolean | Prisma.InterviewSessionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type InterviewSessionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1027,6 +1143,7 @@ export type $InterviewSessionPayload<ExtArgs extends runtime.Types.Extensions.In
     resume: Prisma.$ResumePayload<ExtArgs>
     messages: Prisma.$InterviewMessagePayload<ExtArgs>[]
     reviewItems: Prisma.$ReviewItemPayload<ExtArgs>[]
+    interviewFeedbacks: Prisma.$InterviewFeedbackPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1435,6 +1552,7 @@ export interface Prisma__InterviewSessionClient<T, Null = never, ExtArgs extends
   resume<T extends Prisma.ResumeDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ResumeDefaultArgs<ExtArgs>>): Prisma.Prisma__ResumeClient<runtime.Types.Result.GetResult<Prisma.$ResumePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   messages<T extends Prisma.InterviewSession$messagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InterviewSession$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InterviewMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reviewItems<T extends Prisma.InterviewSession$reviewItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InterviewSession$reviewItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReviewItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  interviewFeedbacks<T extends Prisma.InterviewSession$interviewFeedbacksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InterviewSession$interviewFeedbacksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InterviewFeedbackPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1918,6 +2036,30 @@ export type InterviewSession$reviewItemsArgs<ExtArgs extends runtime.Types.Exten
   take?: number
   skip?: number
   distinct?: Prisma.ReviewItemScalarFieldEnum | Prisma.ReviewItemScalarFieldEnum[]
+}
+
+/**
+ * InterviewSession.interviewFeedbacks
+ */
+export type InterviewSession$interviewFeedbacksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InterviewFeedback
+   */
+  select?: Prisma.InterviewFeedbackSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InterviewFeedback
+   */
+  omit?: Prisma.InterviewFeedbackOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InterviewFeedbackInclude<ExtArgs> | null
+  where?: Prisma.InterviewFeedbackWhereInput
+  orderBy?: Prisma.InterviewFeedbackOrderByWithRelationInput | Prisma.InterviewFeedbackOrderByWithRelationInput[]
+  cursor?: Prisma.InterviewFeedbackWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InterviewFeedbackScalarFieldEnum | Prisma.InterviewFeedbackScalarFieldEnum[]
 }
 
 /**

@@ -1,8 +1,10 @@
 import type { SessionService } from "@/modules/interview/service/session-service";
+import type { FeedbackService } from "@/modules/interview/service/feedback-service";
 import type { InterviewStreamService } from "@/modules/interview/service/stream-service";
 import type {
   CreateSessionInput,
   StreamMessageInput,
+  SubmitFeedbackInput,
 } from "@/modules/interview/validations/interview-schemas";
 import type { Request, Response } from "express";
 
@@ -10,6 +12,7 @@ export class InterviewController {
   constructor(
     private readonly sessionService: SessionService,
     private readonly streamService: InterviewStreamService,
+    private readonly feedbackService: FeedbackService,
   ) {}
 
   createSession = async (req: Request, res: Response): Promise<void> => {
@@ -45,5 +48,15 @@ export class InterviewController {
     const sessionId = String(req.params.sessionId);
     await this.sessionService.deleteSession(req.userId!, sessionId);
     res.status(204).send();
+  };
+
+  submitFeedback = async (req: Request, res: Response): Promise<void> => {
+    const sessionId = String(req.params.sessionId);
+    const feedback = await this.feedbackService.submit(
+      req.userId!,
+      sessionId,
+      req.body as SubmitFeedbackInput,
+    );
+    res.status(201).json(feedback);
   };
 }

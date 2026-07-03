@@ -63,7 +63,9 @@ describe("ReviewMergeService", () => {
   it("uses max priority when LLM raises priority", async () => {
     vi.mocked(
       reviewRepository.findByUserIdAndTopicCaseInsensitive,
-    ).mockResolvedValue(existingItem({ topic: "communication", priority: "low" }));
+    ).mockResolvedValue(
+      existingItem({ topic: "communication", priority: "low" }),
+    );
 
     await service.upsertItems(1, "session-1", [
       {
@@ -84,7 +86,9 @@ describe("ReviewMergeService", () => {
   it("bumps priority when LLM keeps same priority for existing topic", async () => {
     vi.mocked(
       reviewRepository.findByUserIdAndTopicCaseInsensitive,
-    ).mockResolvedValue(existingItem({ topic: "communication", priority: "medium" }));
+    ).mockResolvedValue(
+      existingItem({ topic: "communication", priority: "medium" }),
+    );
 
     await service.upsertItems(1, "session-1", [
       {
@@ -104,7 +108,9 @@ describe("ReviewMergeService", () => {
   it("matches existing topics case-insensitively", async () => {
     vi.mocked(
       reviewRepository.findByUserIdAndTopicCaseInsensitive,
-    ).mockResolvedValue(existingItem({ topic: "system design", priority: "low" }));
+    ).mockResolvedValue(
+      existingItem({ topic: "system design", priority: "low" }),
+    );
 
     await service.upsertItems(1, "session-1", [
       {
@@ -128,7 +134,9 @@ describe("ReviewMergeService", () => {
   it("never decreases priority when LLM sends a lower priority", async () => {
     vi.mocked(
       reviewRepository.findByUserIdAndTopicCaseInsensitive,
-    ).mockResolvedValue(existingItem({ topic: "communication", priority: "high" }));
+    ).mockResolvedValue(
+      existingItem({ topic: "communication", priority: "high" }),
+    );
 
     await service.upsertItems(1, "session-1", [
       {

@@ -2,9 +2,10 @@ import type { ReviewPriority } from "@/modules/interview/validations/interview-s
 import { resumeToMarkdown } from "@/modules/resumes/format/resume-to-markdown";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
 
+export const PERSONA_SECTION_HEADER = "## Role";
 export const TRANSCRIPT_SECTION_HEADER = "## Interview transcript";
 export const EXISTING_ITEMS_SECTION_HEADER = "## Existing review items";
-export const CANDIDATE_RESUME_SECTION_HEADER = "## Candidate résumé";
+export const CANDIDATE_RESUME_SECTION_HEADER = "## Candidate r?sum?";
 export const INSTRUCTIONS_SECTION_HEADER = "## Instructions";
 
 export type ExistingReviewItemForPrompt = {
@@ -31,6 +32,12 @@ function buildExistingItemsBlock(
 ${JSON.stringify(existingItems, null, 2)}`;
 }
 
+function buildPersonaBlock(): string {
+  return `${PERSONA_SECTION_HEADER}
+You are a Tech Lead reviewing an interview to identify learning gaps.
+Focus on what the candidate demonstrated ? and what they did not ? relative to the role and curriculum.`;
+}
+
 function buildInstructionsBlock(): string {
   return `${INSTRUCTIONS_SECTION_HEADER}
 Identify gaps and weaknesses from the interview. Emit one item per distinct topic.
@@ -45,6 +52,7 @@ export function buildReviewItemsGeneratorPrompt(
   params: BuildReviewItemsGeneratorPromptParams,
 ): string {
   return [
+    buildPersonaBlock(),
     `${TRANSCRIPT_SECTION_HEADER}
 ${params.transcript}`,
     buildExistingItemsBlock(params.existingItems),

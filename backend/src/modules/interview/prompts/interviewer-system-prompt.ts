@@ -1,12 +1,20 @@
+import {
+  ChatPromptTemplate,
+  MessagesPlaceholder,
+} from "@langchain/core/prompts";
+
 import type { InterviewLevel } from "@/modules/interview/validations/interview-schemas";
 import { resumeToMarkdown } from "@/modules/resumes/format/resume-to-markdown";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
 
 export const DEFAULT_INTERVIEWER_NAME = "Heno";
 
+export const INTERVIEW_HISTORY_PLACEHOLDER = "history";
+
 export const PERSONA_SECTION_HEADER = "## Role";
 export const LANGUAGE_SECTION_HEADER = "## Language";
 export const CONDUCT_SECTION_HEADER = "## Conduct";
+export const FORMAT_SECTION_HEADER = "## Format";
 export const RESUME_SECTION_HEADER = "## Candidate résumé";
 export const INTERVIEW_CONTEXT_SECTION_HEADER = "## Interview context";
 export const SECURITY_SECTION_HEADER = "## Security";
@@ -22,7 +30,10 @@ Decisions should have reasons and trade-offs, not just implementations.`,
 When answers feel surface-level, challenge them directly: "What breaks at scale?" or "How would you get buy-in from other teams?"`,
 };
 
-function buildPersonaBlock(interviewerName: string, level: InterviewLevel): string {
+function buildPersonaBlock(
+  interviewerName: string,
+  level: InterviewLevel,
+): string {
   return `${PERSONA_SECTION_HEADER}
 You are ${interviewerName}, a Tech Lead conducting a ${level}-level technical interview.
 Act naturally, the way an experienced interviewer would, not as a script-reader.
@@ -43,6 +54,11 @@ function buildConductBlock(): string {
 - At most one follow-up on the same original question. If the candidate still isn't making progress, acknowledge briefly and move to a new question or topic — do not linger or repeat the same angle.
 - You are interviewing, not teaching. Never deliver model answers, architecture walkthroughs, numbered designs, or long explanations. A nudge is at most one short orienting question (e.g. "What would you check first?"), never the solution.
 - Don't coach beyond that nudge. Let topic changes feel natural; don't announce that you're moving on.`;
+}
+
+function buildFormatBlock(): string {
+  return `${FORMAT_SECTION_HEADER}
+Keep each reply short (2–4 sentences plus your question) and ask exactly one focused question per turn, as described in ${CONDUCT_SECTION_HEADER}.`;
 }
 
 function buildLevelBlock(level: InterviewLevel): string {
@@ -100,9 +116,25 @@ export function buildInterviewerSystemPrompt(
     buildPersonaBlock(interviewerName, params.level),
     buildLanguageBlock(),
     buildConductBlock(),
+    buildFormatBlock(),
     buildLevelBlock(params.level),
     buildResumeBlock(params.resumeSummary),
     buildContextBlock(params.turnCount, params.maxTurns),
     buildSecurityBlock(),
   ].join("\n\n");
+}
+
+export function createInterviewChatPromptTemplate(systemText: string) {
+  return ChatPromptTemplate.fromMessages([
+    ["system", systemText],
+    new MessagesPlaceholder(INTERVIEW_HISTORY_PLACEHOLDER),
+  ]);
+}
+
+export function buildInterviewerChatPromptTemplate(
+  params: BuildInterviewerSystemPromptParams,
+) {
+  return createInterviewChatPromptTemplate(
+    buildInterviewerSystemPrompt(params),
+  );
 }
