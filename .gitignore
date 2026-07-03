@@ -3,14 +3,14 @@ node_modules
 .pnp
 .pnp.js
 
-tasks.md
+
 
 # Build outputs
 dist
 build
 *.tsbuildinfo
 
-.specs
+
 
 # Environment variables
 .env
