@@ -34,3 +34,20 @@ export type StreamMeta = {
   maxTurns: number;
   isFinished: boolean;
 };
+
+export type FeedbackRating = "up" | "down";
+
+export type SubmitFeedbackInput = {
+  rating: FeedbackRating;
+  comment?: string;
+};
+
+export type InterviewFeedback = {
+  id: string;
+  sessionId: string;
+  userId: number;
+  rating: FeedbackRating;
+  comment: string | null;
+  createdAt: string;
+  updatedAt: string;
+};

@@ -1,8 +1,10 @@
 import type {
   CreateSessionResponse,
+  InterviewFeedback,
   InterviewLevel,
   ListMessagesResponse,
   ListSessionsResponse,
+  SubmitFeedbackInput,
 } from "@/types/interview";
 
 import { apiRequest } from "./client";
@@ -37,5 +39,22 @@ export const interviewApi = {
       method: "DELETE",
       token,
     });
+  },
+
+  submitFeedback(
+    sessionId: string,
+    body: SubmitFeedbackInput,
+    token: string,
+  ) {
+    const payload: SubmitFeedbackInput = { rating: body.rating };
+    const trimmed = body.comment?.trim();
+    if (trimmed) {
+      payload.comment = trimmed;
+    }
+
+    return apiRequest<InterviewFeedback>(
+      `/api/interview/sessions/${sessionId}/feedback`,
+      { method: "POST", body: payload, token },
+    );
   },
 };
