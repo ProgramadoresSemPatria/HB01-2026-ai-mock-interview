@@ -153,12 +153,12 @@ export class ResumeService {
       const promptText = buildResumeExtractionPrompt(rawText);
       const usageCapture = createUsageCaptureCallback();
       const chain = ChatPromptTemplate.fromMessages([
-        ["user", promptText],
+        ["user", "{prompt}"],
       ]).pipe(
         this.extractionModel.withStructuredOutput(structuredSummarySchema),
       );
       const structuredSummary = await chain.invoke(
-        {},
+        { prompt: promptText },
         { callbacks: [usageCapture.callback] },
       );
 

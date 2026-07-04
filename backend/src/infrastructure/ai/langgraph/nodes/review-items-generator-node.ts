@@ -47,13 +47,16 @@ export function createReviewItemsGeneratorNode(
       structuredSummary: input.structuredSummary,
     });
 
+    // Pass prompt as a template variable so JSON braces in existing items are not
+    // parsed as LangChain input placeholders (INVALID_PROMPT_INPUT).
     const promptTemplate = ChatPromptTemplate.fromMessages([
-      ["human", promptText],
+      ["human", "{prompt}"],
     ]);
     const chain = promptTemplate.pipe(structuredModel);
+    const invokeInput = { prompt: promptText };
     const raw = config
-      ? await chain.invoke({}, config)
-      : await chain.invoke({});
+      ? await chain.invoke(invokeInput, config)
+      : await chain.invoke(invokeInput);
     return reviewItemsGeneratorOutputSchema.parse(raw);
   };
 }
