@@ -14,11 +14,13 @@ import {
   structuredSummarySchema,
   type StructuredSummary,
 } from "@/modules/resumes/validations/resume-schemas";
+import type { TokenUsageService } from "@/modules/token-usage/service/token-usage-service";
 import {
   BadGatewayError,
   BadRequestError,
   NotFoundError,
   ServiceUnavailableError,
+  TokenLimitExceededError,
 } from "@/shared";
 import type { Request } from "express";
 
@@ -30,6 +32,13 @@ const mockRandomUUID = vi.hoisted(() => vi.fn());
 
 vi.mock("node:crypto", () => ({
   randomUUID: mockRandomUUID,
+}));
+
+vi.mock("@/modules/token-usage/callbacks/token-usage-callback", () => ({
+  createUsageCaptureCallback: vi.fn(() => ({
+    callback: {},
+    getUsage: () => undefined,
+  })),
 }));
 
 const sampleResume = {
@@ -92,6 +101,7 @@ describe("ResumeService", () => {
   let structuredModelInvoke: ReturnType<typeof vi.fn>;
   let extractionModel: { withStructuredOutput: ReturnType<typeof vi.fn> };
   let extractText: ReturnType<typeof vi.fn>;
+  let tokenUsageService: TokenUsageService;
   let service: ResumeService;
 
   beforeEach(() => {
@@ -127,12 +137,19 @@ describe("ResumeService", () => {
 
     extractText = vi.fn().mockResolvedValue(rawText);
 
+    tokenUsageService = {
+      assertWithinLimit: vi.fn().mockResolvedValue(undefined),
+      recordUsage: vi.fn().mockResolvedValue(undefined),
+      getUsage: vi.fn(),
+    } as unknown as TokenUsageService;
+
     service = new ResumeService(
       resumeRepository,
       objectStorage,
       resumeQueue,
       extractionModel as never,
       extractText,
+      tokenUsageService,
       5_242_880,
     );
   });
@@ -385,6 +402,35 @@ describe("ResumeService", () => {
         rawText,
       );
       expect(resumeRepository.updateFailed).not.toHaveBeenCalled();
+      expect(tokenUsageService.assertWithinLimit).toHaveBeenCalledWith(
+        sampleResume.userId,
+      );
+      expect(tokenUsageService.recordUsage).toHaveBeenCalledWith(
+        sampleResume.userId,
+        undefined,
+      );
+    });
+
+    it("marks resume failed when monthly token limit is reached", async () => {
+      vi.mocked(resumeRepository.findById).mockResolvedValue(sampleResume);
+      vi.mocked(tokenUsageService.assertWithinLimit).mockRejectedValue(
+        new TokenLimitExceededError(),
+      );
+
+      const result = await service.process("resume-uuid");
+
+      expect(result).toEqual({
+        status: "failed",
+        resumeId: "resume-uuid",
+        error:
+          "Monthly token usage limit reached. Your quota resets at the start of next month.",
+        cause: expect.any(TokenLimitExceededError),
+      });
+      expect(objectStorage.get).not.toHaveBeenCalled();
+      expect(resumeRepository.updateFailed).toHaveBeenCalledWith(
+        "resume-uuid",
+        "Monthly token usage limit reached. Your quota resets at the start of next month.",
+      );
     });
 
     it("marks resume failed when PDF has no extractable text", async () => {

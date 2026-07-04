@@ -1,5 +1,7 @@
+import type { BaseCallbackHandler } from "@langchain/core/callbacks/base";
 import type { InterviewLevel } from "@/modules/interview/validations/interview-schemas";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
+import type { LlmUsage } from "@/modules/token-usage/types/llm-usage";
 
 export type InterviewGraphStreamToken = {
   content: string;
@@ -9,6 +11,7 @@ export type InterviewGraphStreamToken = {
 export type InterviewGraphStreamCompletion = {
   content: string;
   langGraphMessageId?: string;
+  usage?: LlmUsage;
 };
 
 export type InterviewGraphInput = {
@@ -22,10 +25,15 @@ export type InterviewGraphInput = {
   runReview: boolean;
 };
 
+export type InterviewGraphStreamOptions = {
+  threadId: string;
+  callbacks?: BaseCallbackHandler[];
+};
+
 export interface IInterviewGraph {
   streamMessages(
     input: InterviewGraphInput,
-    options: { threadId: string },
+    options: InterviewGraphStreamOptions,
   ): AsyncGenerator<
     InterviewGraphStreamToken,
     InterviewGraphStreamCompletion | undefined

@@ -20,6 +20,7 @@ export {
   ConflictError,
   BadGatewayError,
   ServiceUnavailableError,
+  TokenLimitExceededError,
 } from "./errors/http-errors";
 export { asyncHandler } from "./utils/async-handler";
 export { logger } from "./logger";

@@ -1,5 +1,7 @@
 import { HumanMessage } from "@langchain/core/messages";
 
+import type { BaseCallbackHandler } from "@langchain/core/callbacks/base";
+
 import { END, START, StateGraph } from "@langchain/langgraph";
 
 import type { BaseCheckpointSaver } from "@langchain/langgraph";
@@ -52,7 +54,7 @@ export function buildInterviewGraph(
     async *streamMessages(
       input: InterviewGraphInput,
 
-      options: { threadId: string },
+      options: { threadId: string; callbacks?: BaseCallbackHandler[] },
     ) {
       const lastMessage = input.messages.at(-1);
 
@@ -83,6 +85,7 @@ export function buildInterviewGraph(
           ...graphConfig,
 
           streamMode: "messages",
+          callbacks: options.callbacks,
         },
       );
 

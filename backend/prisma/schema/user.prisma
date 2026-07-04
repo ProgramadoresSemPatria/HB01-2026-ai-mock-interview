@@ -11,8 +11,21 @@ model User {
   interviewSessions InterviewSession[]
   reviewItems        ReviewItem[]
   interviewFeedbacks InterviewFeedback[]
+  tokenUsage        UserTokenUsage[]
 
   @@map("users")
+}
+
+model UserTokenUsage {
+  userId           Int
+  periodKey        String
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, periodKey])
+  @@map("user_token_usage")
 }
 
 model RefreshToken {

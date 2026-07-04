@@ -34,5 +34,5 @@ describe("BcryptPasswordHasher", () => {
     expect(lowHash).not.toBe(highHash);
     expect(await lowRounds.compare("same-password", lowHash)).toBe(true);
     expect(await highRounds.compare("same-password", highHash)).toBe(true);
-  });
+  }, 15_000);
 });

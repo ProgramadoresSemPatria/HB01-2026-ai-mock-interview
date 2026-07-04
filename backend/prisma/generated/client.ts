@@ -72,6 +72,11 @@ export type InterviewFeedback = Prisma.InterviewFeedbackModel
  */
 export type User = Prisma.UserModel
 /**
+ * Model UserTokenUsage
+ * 
+ */
+export type UserTokenUsage = Prisma.UserTokenUsageModel
+/**
  * Model RefreshToken
  * 
  */
