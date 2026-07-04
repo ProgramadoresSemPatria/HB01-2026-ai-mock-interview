@@ -43,3 +43,11 @@ export class ServiceUnavailableError extends HttpError {
     super(message, 503);
   }
 }
+
+export class TokenLimitExceededError extends HttpError {
+  constructor(
+    message = "Monthly token usage limit reached. Your quota resets at the start of next month.",
+  ) {
+    super(message, 429);
+  }
+}
