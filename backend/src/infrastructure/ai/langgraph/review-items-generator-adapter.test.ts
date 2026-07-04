@@ -65,17 +65,20 @@ describe("ReviewItemsGeneratorAdapter", () => {
     const result = await adapter.generate(baseParams);
 
     expect(reviewRepository.listByUserId).toHaveBeenCalledWith(42);
-    expect(generateItems).toHaveBeenCalledWith({
-      transcript: baseParams.transcript,
-      structuredSummary: baseParams.structuredSummary,
-      existingItems: [
-        {
-          topic: "Communication",
-          description: "Be concise",
-          priority: "medium",
-        },
-      ],
-    });
+    expect(generateItems).toHaveBeenCalledWith(
+      {
+        transcript: baseParams.transcript,
+        structuredSummary: baseParams.structuredSummary,
+        existingItems: [
+          {
+            topic: "Communication",
+            description: "Be concise",
+            priority: "medium",
+          },
+        ],
+      },
+      undefined,
+    );
     expect(result).toEqual(generated);
   });
 
@@ -88,11 +91,14 @@ describe("ReviewItemsGeneratorAdapter", () => {
     const result = await adapter.generate(baseParams);
 
     expect(reviewRepository.listByUserId).toHaveBeenCalledWith(42);
-    expect(generateItems).toHaveBeenCalledWith({
-      transcript: baseParams.transcript,
-      structuredSummary: baseParams.structuredSummary,
-      existingItems: [],
-    });
+    expect(generateItems).toHaveBeenCalledWith(
+      {
+        transcript: baseParams.transcript,
+        structuredSummary: baseParams.structuredSummary,
+        existingItems: [],
+      },
+      undefined,
+    );
     expect(result).toEqual(generated);
   });
 });

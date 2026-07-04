@@ -57,6 +57,7 @@ export const ModelName = {
   ReviewItem: 'ReviewItem',
   InterviewFeedback: 'InterviewFeedback',
   User: 'User',
+  UserTokenUsage: 'UserTokenUsage',
   RefreshToken: 'RefreshToken'
 } as const
 
@@ -155,6 +156,17 @@ export const UserScalarFieldEnum = {
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const UserTokenUsageScalarFieldEnum = {
+  userId: 'userId',
+  periodKey: 'periodKey',
+  promptTokens: 'promptTokens',
+  completionTokens: 'completionTokens',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserTokenUsageScalarFieldEnum = (typeof UserTokenUsageScalarFieldEnum)[keyof typeof UserTokenUsageScalarFieldEnum]
 
 
 export const RefreshTokenScalarFieldEnum = {

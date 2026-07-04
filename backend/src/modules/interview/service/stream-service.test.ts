@@ -11,7 +11,8 @@ import type { MessageRepository } from "@/modules/interview/repository/message-r
 import type { SessionRepository } from "@/modules/interview/repository/session-repository";
 import type { ReviewMergeService } from "@/modules/interview/service/review-merge-service";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
-import { ConflictError, NotFoundError } from "@/shared";
+import type { TokenUsageService } from "@/modules/token-usage/service/token-usage-service";
+import { ConflictError, NotFoundError, TokenLimitExceededError } from "@/shared";
 
 import { InterviewStreamService } from "./stream-service";
 
@@ -96,6 +97,7 @@ describe("InterviewStreamService", () => {
   let graph: IInterviewGraph;
   let reviewMergeService: ReviewMergeService;
   let reviewItemsGenerator: IReviewItemsGenerator;
+  let tokenUsageService: TokenUsageService;
   let service: InterviewStreamService;
 
   beforeEach(() => {
@@ -127,6 +129,12 @@ describe("InterviewStreamService", () => {
       generate: vi.fn(),
     };
 
+    tokenUsageService = {
+      assertWithinLimit: vi.fn().mockResolvedValue(undefined),
+      recordUsage: vi.fn().mockResolvedValue(undefined),
+      getUsage: vi.fn(),
+    } as unknown as TokenUsageService;
+
     service = new InterviewStreamService(
       sessionRepository,
       messageRepository,
@@ -134,7 +142,30 @@ describe("InterviewStreamService", () => {
       graph,
       reviewMergeService,
       reviewItemsGenerator,
+      tokenUsageService,
     );
+  });
+
+  it("throws TokenLimitExceededError before SSE when monthly token limit is reached", async () => {
+    vi.mocked(sessionRepository.findByIdAndUserId).mockResolvedValue(
+      baseSession,
+    );
+    vi.mocked(resumeRepository.findByIdAndUserId).mockResolvedValue({
+      id: "resume-1",
+      structuredSummary,
+    } as unknown as Awaited<ReturnType<ResumeRepository["findByIdAndUserId"]>>);
+    vi.mocked(tokenUsageService.assertWithinLimit).mockRejectedValue(
+      new TokenLimitExceededError(),
+    );
+
+    const res = createMockResponse();
+
+    await expect(
+      service.streamTurn(1, baseSession.id, "Hello", res),
+    ).rejects.toBeInstanceOf(TokenLimitExceededError);
+
+    expect(res.writeHead).not.toHaveBeenCalled();
+    expect(graph.streamMessages).not.toHaveBeenCalled();
   });
 
   it("throws ConflictError before SSE when session is finished", async () => {
@@ -206,7 +237,10 @@ describe("InterviewStreamService", () => {
 
     expect(graph.streamMessages).toHaveBeenCalledWith(
       expect.objectContaining({ runReview: false }),
-      { threadId: baseSession.id },
+      expect.objectContaining({
+        threadId: baseSession.id,
+        callbacks: expect.any(Array),
+      }),
     );
 
     const output = res.chunks.join("");
@@ -220,6 +254,7 @@ describe("InterviewStreamService", () => {
       userId: 1,
       content: "Hi there",
     });
+    expect(tokenUsageService.recordUsage).toHaveBeenCalled();
     expect(res.end).toHaveBeenCalled();
   });
 
@@ -275,9 +310,18 @@ describe("InterviewStreamService", () => {
 
     expect(graph.streamMessages).toHaveBeenCalledWith(
       expect.objectContaining({ runReview: true }),
-      { threadId: baseSession.id },
+      expect.objectContaining({
+        threadId: baseSession.id,
+        callbacks: expect.any(Array),
+      }),
     );
-    expect(reviewItemsGenerator.generate).toHaveBeenCalled();
+    expect(reviewItemsGenerator.generate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 1,
+        sessionId: baseSession.id,
+      }),
+      expect.objectContaining({ callbacks: expect.any(Array) }),
+    );
     expect(reviewMergeService.upsertItems).toHaveBeenCalledWith(
       1,
       baseSession.id,

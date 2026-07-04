@@ -1,5 +1,8 @@
 import type { Response } from "express";
 
+import { createUsageCaptureCallback } from "@/modules/token-usage/callbacks/token-usage-callback";
+import type { TokenUsageService } from "@/modules/token-usage/service/token-usage-service";
+import type { LlmUsage } from "@/modules/token-usage/types/llm-usage";
 import type { IInterviewGraph } from "@/modules/interview/protocols/interview-graph";
 import type { IReviewItemsGenerator } from "@/modules/interview/protocols/review-items-generator";
 import type { MessageRepository } from "@/modules/interview/repository/message-repository";
@@ -24,6 +27,7 @@ export class InterviewStreamService {
     private readonly graph: IInterviewGraph,
     private readonly reviewMergeService: ReviewMergeService,
     private readonly reviewItemsGenerator: IReviewItemsGenerator,
+    private readonly tokenUsageService: TokenUsageService,
   ) {}
 
   async streamTurn(
@@ -57,6 +61,10 @@ export class InterviewStreamService {
     const resumeSummary = resume.structuredSummary as StructuredSummary;
     const isFinalTurn = session.turnCount + 1 >= session.maxTurns;
 
+    await this.tokenUsageService.assertWithinLimit(userId);
+
+    const interviewerUsageCapture = createUsageCaptureCallback();
+
     res.writeHead(200, SSE_HEADERS);
     res.flushHeaders();
     await this.messageRepository.createHuman({
@@ -84,7 +92,10 @@ export class InterviewStreamService {
         isFinished: session.isFinished,
         runReview: isFinalTurn,
       },
-      { threadId: sessionId },
+      {
+        threadId: sessionId,
+        callbacks: [interviewerUsageCapture.callback],
+      },
     );
     const iterator = stream[Symbol.asyncIterator]();
 
@@ -98,6 +109,10 @@ export class InterviewStreamService {
     };
 
     try {
+      let completedAiMessage:
+        | { content: string; usage?: LlmUsage }
+        | undefined;
+
       while (true) {
         if (aborted) {
           return;
@@ -112,7 +127,7 @@ export class InterviewStreamService {
             return;
           }
 
-          const completedAiMessage = result.value;
+          completedAiMessage = result.value;
           if (!completedAiMessage?.content) {
             closeWithError("Interview response was not saved");
             return;
@@ -134,24 +149,40 @@ export class InterviewStreamService {
         return;
       }
 
+      await this.tokenUsageService.recordUsage(
+        userId,
+        interviewerUsageCapture.getUsage() ?? completedAiMessage?.usage,
+      );
+
       const updatedSession =
         await this.sessionRepository.incrementTurnCount(sessionId);
 
       let isFinished = updatedSession.isFinished;
 
       if (isFinalTurn) {
+        await this.tokenUsageService.assertWithinLimit(userId);
+
         const messages =
           await this.messageRepository.listBySessionId(sessionId);
         const transcript = messages
           .map((message) => `${message.role}: ${message.content}`)
           .join("\n");
 
-        const review = await this.reviewItemsGenerator.generate({
+        const reviewUsageCapture = createUsageCaptureCallback();
+        const review = await this.reviewItemsGenerator.generate(
+          {
+            userId,
+            sessionId,
+            transcript,
+            structuredSummary: resumeSummary,
+          },
+          { callbacks: [reviewUsageCapture.callback] },
+        );
+
+        await this.tokenUsageService.recordUsage(
           userId,
-          sessionId,
-          transcript,
-          structuredSummary: resumeSummary,
-        });
+          reviewUsageCapture.getUsage(),
+        );
 
         await this.reviewMergeService.upsertItems(
           userId,

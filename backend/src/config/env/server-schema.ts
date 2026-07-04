@@ -33,6 +33,13 @@ export const serverEnv = {
   RATE_LIMIT_AI_WINDOW_MS: z.coerce.number().default(900000), // 15 minutes
   RATE_LIMIT_AI_MAX: z.coerce.number().default(60),
 
+  // Token usage limits (monthly per user, UTC calendar month)
+  TOKEN_LIMIT_ENABLED: z
+    .enum(["true", "false"])
+    .default("true")
+    .transform((value) => value === "true"),
+  TOKEN_LIMIT_MONTHLY_MAX: z.coerce.number().default(500_000),
+
   // OpenAI (mock interview)
   OPENAI_API_KEY: z.string().min(1),
   OPENAI_MODEL_INTERVIEW: z.string().default("gpt-5"),
