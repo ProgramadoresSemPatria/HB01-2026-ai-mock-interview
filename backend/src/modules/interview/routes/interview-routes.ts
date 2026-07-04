@@ -15,7 +15,6 @@ export default function interviewRoutes(router: Router): void {
 
   router.post(
     "/sessions",
-    aiRateLimiter,
     validate(createSessionSchema),
     asyncHandler(controller.createSession),
   );
