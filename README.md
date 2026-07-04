@@ -297,6 +297,7 @@ Copy [`Backend/.env.example`](Backend/.env.example). Minimum for full behavior:
 | Core | `DATABASE_URL`, `PORT`, `CORS_ORIGIN`, `NODE_ENV` |
 | Auth | `JWT_SECRET`, `JWT_EXPIRE_IN`, `REFRESH_EXPIRES`, SMTP vars |
 | AI | `OPENAI_API_KEY`, `OPENAI_MODEL_INTERVIEW`, `OPENAI_MODEL_EXTRACTION`, `OPENAI_MODEL_REVIEW` |
+| Token limits | `TOKEN_LIMIT_ENABLED`, `TOKEN_LIMIT_MONTHLY_MAX` (monthly per-user cap, UTC) |
 | Storage | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME` |
 | Queue | `REDIS_URL` |
 | Upload | `RESUME_MAX_BYTES` (default 5 MB) |
