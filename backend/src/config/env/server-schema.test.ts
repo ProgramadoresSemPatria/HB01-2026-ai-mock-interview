@@ -43,6 +43,8 @@ describe("serverEnvSchema", () => {
     expect(result.data.OPENAI_MODEL_REVIEW).toBe("gpt-5-nano");
     expect(result.data.REDIS_URL).toBe("redis://localhost:6379");
     expect(result.data.RESUME_MAX_BYTES).toBe(5_242_880);
+    expect(result.data.TOKEN_LIMIT_ENABLED).toBe(true);
+    expect(result.data.TOKEN_LIMIT_MONTHLY_MAX).toBe(500_000);
     expect(result.data.R2_ENDPOINT).toBe(
       "https://test-account-id.r2.cloudflarestorage.com",
     );
