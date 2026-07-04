@@ -1,4 +1,5 @@
 import { ChatPromptTemplate } from "@langchain/core/prompts";
+import type { RunnableConfig } from "@langchain/core/runnables";
 import type { ChatOpenAI } from "@langchain/openai";
 
 import { createReviewModel } from "@/infrastructure/ai/openai-models";
@@ -38,6 +39,7 @@ export function createReviewItemsGeneratorNode(
 
   return async function reviewItemsGeneratorNode(
     input: ReviewItemsGeneratorInput,
+    config?: RunnableConfig,
   ): Promise<ReviewItemsGeneratorOutput> {
     const promptText = buildReviewItemsGeneratorPrompt({
       transcript: input.transcript,
@@ -49,7 +51,9 @@ export function createReviewItemsGeneratorNode(
       ["human", promptText],
     ]);
     const chain = promptTemplate.pipe(structuredModel);
-    const raw = await chain.invoke({});
+    const raw = config
+      ? await chain.invoke({}, config)
+      : await chain.invoke({});
     return reviewItemsGeneratorOutputSchema.parse(raw);
   };
 }

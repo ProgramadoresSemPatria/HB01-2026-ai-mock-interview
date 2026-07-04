@@ -9,6 +9,8 @@ import {
   type ResumeStatus,
 } from "@/modules/resumes/types/resume-record";
 import { env } from "@/config/env";
+import { createUsageCaptureCallback } from "@/modules/token-usage/callbacks/token-usage-callback";
+import type { TokenUsageService } from "@/modules/token-usage/service/token-usage-service";
 import type { IObjectStorage } from "@/modules/resumes/protocols/object-storage";
 import type { IResumeQueue } from "@/modules/resumes/protocols/resume-queue";
 import { buildResumeExtractionPrompt } from "@/modules/resumes/prompts/resume-extraction-prompt";
@@ -22,6 +24,7 @@ import {
   BadRequestError,
   NotFoundError,
   ServiceUnavailableError,
+  TokenLimitExceededError,
 } from "@/shared";
 
 const PDF_MIME_TYPE = "application/pdf";
@@ -51,6 +54,7 @@ export class ResumeService {
     private readonly resumeQueue: IResumeQueue,
     private readonly extractionModel: ChatOpenAI,
     private readonly extractText: PdfTextExtractor,
+    private readonly tokenUsageService: TokenUsageService,
     private readonly maxBytes: number = env.RESUME_MAX_BYTES,
   ) {}
 
@@ -137,6 +141,8 @@ export class ResumeService {
     }
 
     try {
+      await this.tokenUsageService.assertWithinLimit(resume.userId);
+
       const pdfBuffer = await this.objectStorage.get(resume.storageKey);
       const rawText = await this.extractText(pdfBuffer);
 
@@ -145,12 +151,21 @@ export class ResumeService {
       }
 
       const promptText = buildResumeExtractionPrompt(rawText);
+      const usageCapture = createUsageCaptureCallback();
       const chain = ChatPromptTemplate.fromMessages([
         ["user", promptText],
       ]).pipe(
         this.extractionModel.withStructuredOutput(structuredSummarySchema),
       );
-      const structuredSummary = await chain.invoke({});
+      const structuredSummary = await chain.invoke(
+        {},
+        { callbacks: [usageCapture.callback] },
+      );
+
+      await this.tokenUsageService.recordUsage(
+        resume.userId,
+        usageCapture.getUsage(),
+      );
 
       await this.resumeRepository.updateReady(
         resumeId,
@@ -159,6 +174,12 @@ export class ResumeService {
       );
       return { status: "ready", resumeId };
     } catch (error) {
+      if (error instanceof TokenLimitExceededError) {
+        const message = error.message;
+        await this.resumeRepository.updateFailed(resumeId, message);
+        return { status: "failed", resumeId, error: message, cause: error };
+      }
+
       const message =
         error instanceof Error ? error.message : "Resume processing failed";
 

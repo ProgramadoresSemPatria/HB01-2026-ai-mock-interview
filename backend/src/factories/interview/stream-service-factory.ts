@@ -1,3 +1,4 @@
+import { makeTokenUsageService } from "@/factories/token-usage/token-usage-service-factory";
 import { createReviewItemsGeneratorNode } from "@/infrastructure/ai/langgraph/nodes/review-items-generator-node";
 import { ReviewItemsGeneratorAdapter } from "@/infrastructure/ai/langgraph/review-items-generator-adapter";
 import { MessageRepository } from "@/modules/interview/repository/message-repository";
@@ -22,5 +23,6 @@ export function makeInterviewStreamService(): InterviewStreamService {
       createReviewItemsGeneratorNode(),
       reviewRepository,
     ),
+    makeTokenUsageService(),
   );
 }

@@ -4,6 +4,9 @@ import {
   type BaseMessage,
 } from "@langchain/core/messages";
 
+import { extractLlmUsageFromMetadata } from "@/modules/token-usage/utils/extract-llm-usage";
+import type { LlmUsage } from "@/modules/token-usage/types/llm-usage";
+
 export const STREAM_TOKEN_NODE_NAMES = ["interviewer"] as const;
 
 export type StreamTokenNodeName = (typeof STREAM_TOKEN_NODE_NAMES)[number];
@@ -138,7 +141,7 @@ function extractPersistableMessageContent(message: BaseMessage): string {
 
 export function resolveCompletedAiMessage(
   messages: BaseMessage[] | undefined,
-): { content: string; langGraphMessageId?: string } | undefined {
+): { content: string; langGraphMessageId?: string; usage?: LlmUsage } | undefined {
   const aiMessage = messages?.at(-1);
 
   if (!aiMessage || aiMessage.getType() !== "ai") return undefined;
@@ -146,8 +149,11 @@ export function resolveCompletedAiMessage(
   const content = extractPersistableMessageContent(aiMessage);
   if (!content) return undefined;
 
+  const usage = extractLlmUsageFromMetadata(aiMessage);
+
   return {
     content,
     langGraphMessageId: aiMessage.id,
+    usage,
   };
 }

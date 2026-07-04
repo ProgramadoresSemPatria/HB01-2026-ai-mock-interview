@@ -1,3 +1,4 @@
+import type { BaseCallbackHandler } from "@langchain/core/callbacks/base";
 import type { ReviewItemsGeneratorOutput } from "@/modules/interview/validations/interview-schemas";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
 
@@ -8,8 +9,13 @@ export type ReviewItemsGeneratorParams = {
   structuredSummary: StructuredSummary;
 };
 
+export type ReviewItemsGeneratorOptions = {
+  callbacks?: BaseCallbackHandler[];
+};
+
 export interface IReviewItemsGenerator {
   generate(
     params: ReviewItemsGeneratorParams,
+    options?: ReviewItemsGeneratorOptions,
   ): Promise<ReviewItemsGeneratorOutput>;
 }
