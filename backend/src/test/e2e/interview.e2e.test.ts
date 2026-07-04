@@ -474,15 +474,29 @@ describe("Interview API E2E", () => {
       }
     }
 
-    function createSession(
+    async function createSessionAndGetId(
       appInstance: Express,
       token: string,
       resumeId: string,
-    ) {
-      return request(appInstance)
+    ): Promise<string> {
+      const response = await request(appInstance)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId, level: "entry" });
+        .send({ resumeId, level: "entry" })
+        .expect(201);
+
+      return response.body.id as string;
+    }
+
+    function streamTurn(
+      appInstance: Express,
+      token: string,
+      sessionId: string,
+    ) {
+      return request(appInstance)
+        .post(`/api/interview/sessions/${sessionId}/stream`)
+        .set(authHeader(token))
+        .send({ content: "Hello interviewer" });
     }
 
     beforeAll(async () => {
@@ -511,15 +525,16 @@ describe("Interview API E2E", () => {
     it("returns 429 when exceeding RATE_LIMIT_AI_MAX", async () => {
       const { token, userId } = await authenticate(rateLimitedApp);
       const resume = await seedReadyResume(userId);
-
-      await createSession(rateLimitedApp, token, resume.id).expect(201);
-      await createSession(rateLimitedApp, token, resume.id).expect(201);
-
-      const response = await createSession(
+      const sessionId = await createSessionAndGetId(
         rateLimitedApp,
         token,
         resume.id,
       );
+
+      await streamTurn(rateLimitedApp, token, sessionId).expect(200);
+      await streamTurn(rateLimitedApp, token, sessionId).expect(200);
+
+      const response = await streamTurn(rateLimitedApp, token, sessionId);
 
       expect(response.status).toBe(429);
       expect(response.body).toEqual({
@@ -531,10 +546,15 @@ describe("Interview API E2E", () => {
       const { token: tokenA, userId: userIdA } =
         await authenticate(rateLimitedApp);
       const resumeA = await seedReadyResume(userIdA);
+      const sessionIdA = await createSessionAndGetId(
+        rateLimitedApp,
+        tokenA,
+        resumeA.id,
+      );
 
-      await createSession(rateLimitedApp, tokenA, resumeA.id).expect(201);
-      await createSession(rateLimitedApp, tokenA, resumeA.id).expect(201);
-      await createSession(rateLimitedApp, tokenA, resumeA.id).expect(429);
+      await streamTurn(rateLimitedApp, tokenA, sessionIdA).expect(200);
+      await streamTurn(rateLimitedApp, tokenA, sessionIdA).expect(200);
+      await streamTurn(rateLimitedApp, tokenA, sessionIdA).expect(429);
 
       const { response: signUpB } = await signUpUser(rateLimitedApp, {
         email: "rate-limit-user-b@example.com",
@@ -546,15 +566,16 @@ describe("Interview API E2E", () => {
       });
       const tokenB = loginB.body.accessToken as string;
       const resumeB = await seedReadyResume(userIdB);
-
-      await createSession(rateLimitedApp, tokenB, resumeB.id).expect(201);
-      await createSession(rateLimitedApp, tokenB, resumeB.id).expect(201);
-
-      const response = await createSession(
+      const sessionIdB = await createSessionAndGetId(
         rateLimitedApp,
         tokenB,
         resumeB.id,
       );
+
+      await streamTurn(rateLimitedApp, tokenB, sessionIdB).expect(200);
+      await streamTurn(rateLimitedApp, tokenB, sessionIdB).expect(200);
+
+      const response = await streamTurn(rateLimitedApp, tokenB, sessionIdB);
 
       expect(response.status).toBe(429);
     });
@@ -562,17 +583,22 @@ describe("Interview API E2E", () => {
     it("does not rate limit GET /sessions after AI route returns 429", async () => {
       const { token, userId } = await authenticate(rateLimitedApp);
       const resume = await seedReadyResume(userId);
+      const sessionId = await createSessionAndGetId(
+        rateLimitedApp,
+        token,
+        resume.id,
+      );
 
-      await createSession(rateLimitedApp, token, resume.id).expect(201);
-      await createSession(rateLimitedApp, token, resume.id).expect(201);
-      await createSession(rateLimitedApp, token, resume.id).expect(429);
+      await streamTurn(rateLimitedApp, token, sessionId).expect(200);
+      await streamTurn(rateLimitedApp, token, sessionId).expect(200);
+      await streamTurn(rateLimitedApp, token, sessionId).expect(429);
 
       const response = await request(rateLimitedApp)
         .get("/api/interview/sessions")
         .set(authHeader(token));
 
       expect(response.status).toBe(200);
-      expect(response.body.sessions).toHaveLength(2);
+      expect(response.body.sessions).toHaveLength(1);
     });
   });
 

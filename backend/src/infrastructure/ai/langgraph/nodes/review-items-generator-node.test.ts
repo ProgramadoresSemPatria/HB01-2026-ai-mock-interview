@@ -75,6 +75,29 @@ describe("createReviewItemsGeneratorNode", () => {
     expect(result).toEqual(generated);
   });
 
+  it("renders existing review items JSON without LangChain template variable errors", async () => {
+    const existingItems = [
+      {
+        topic: "interview problem-solving and hypothesis-driven answering",
+        description:
+          "Candidate was honest about not knowing (positive) but did not attempt a high-level hypothesis.",
+        priority: "medium" as const,
+      },
+    ];
+    const invoke = vi.fn().mockResolvedValue({ items: [] });
+    const node = createReviewItemsGeneratorNode({
+      structuredModel: RunnableLambda.from(
+        invoke,
+      ) as unknown as StructuredReviewModel,
+    });
+
+    await node({ ...baseInput, existingItems });
+
+    const content = humanMessageContentFromInvokeArg(invoke.mock.calls[0]?.[0]);
+    expect(content).toContain(existingItems[0]!.topic);
+    expect(content).toContain('"priority": "medium"');
+  });
+
   it("propagates rejected structuredModel.invoke errors with the original message", async () => {
     const failure = new Error("OpenAI request failed after retries");
     const invoke = vi.fn().mockRejectedValue(failure);
