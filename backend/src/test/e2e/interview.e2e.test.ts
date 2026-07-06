@@ -186,6 +186,47 @@ describe("Interview API E2E", () => {
       expect(otherUserResumeResponse.status).toBe(404);
       expect(otherUserResumeResponse.body).toEqual({ message: "Not Found" });
     });
+
+    it("returns 201 when session is created with an optional job description", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const response = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send({
+          resumeId: resume.id,
+          level: "mid",
+          jobDescription: "Senior Backend Engineer with Node.js experience",
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.id).toEqual(expect.any(String));
+
+      const session = await prisma.interviewSession.findUnique({
+        where: { id: response.body.id as string },
+      });
+      expect(session?.jobDescription).toBe(
+        "Senior Backend Engineer with Node.js experience",
+      );
+    });
+
+    it("returns 422 when job description exceeds max length", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const response = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send({
+          resumeId: resume.id,
+          level: "entry",
+          jobDescription: "x".repeat(5_001),
+        });
+
+      expect(response.status).toBe(422);
+      expect(response.body.message).toBe("Validation failed");
+    });
   });
 
   describe("GET /api/interview/sessions", () => {
@@ -220,6 +261,7 @@ describe("Interview API E2E", () => {
         turnCount: 0,
         maxTurns: 7,
         isFinished: false,
+        hasJobDescription: false,
       });
       expect(response.body.sessions[0].createdAt).toEqual(expect.any(String));
     });
