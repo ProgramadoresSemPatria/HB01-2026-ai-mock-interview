@@ -21,6 +21,7 @@ export type InterviewGraphInput = {
   level: InterviewLevel;
   userId: number;
   resumeSummary: StructuredSummary;
+  jobDescription?: string | null;
   isFinished: boolean;
   runReview: boolean;
 };

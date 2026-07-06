@@ -28,12 +28,14 @@ export function createInterviewerNode(deps: InterviewerNodeDeps = {}) {
       ? buildClosingFeedbackChatPromptTemplate({
           level: state.level,
           resumeSummary: state.resumeSummary,
+          jobDescription: state.jobDescription,
         })
       : buildInterviewerChatPromptTemplate({
           level: state.level,
           resumeSummary: state.resumeSummary,
           turnCount: state.turnCount,
           maxTurns: state.maxTurns,
+          jobDescription: state.jobDescription,
         });
 
     const chain = promptTemplate.pipe(model).pipe(outputParser);

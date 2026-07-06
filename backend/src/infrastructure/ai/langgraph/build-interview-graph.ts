@@ -76,6 +76,8 @@ export function buildInterviewGraph(
 
           resumeSummary: input.resumeSummary,
 
+          jobDescription: input.jobDescription ?? null,
+
           isFinished: input.isFinished,
 
           runReview: input.runReview,

@@ -46,6 +46,7 @@ const baseSession = {
   userId: 1,
   resumeId: "resume-1",
   level: "entry" as const,
+  jobDescription: "Backend Engineer role",
   turnCount: 0,
   maxTurns: 5,
   isFinished: false,
@@ -236,7 +237,10 @@ describe("InterviewStreamService", () => {
     await service.streamTurn(1, baseSession.id, "Hello", res);
 
     expect(graph.streamMessages).toHaveBeenCalledWith(
-      expect.objectContaining({ runReview: false }),
+      expect.objectContaining({
+        runReview: false,
+        jobDescription: "Backend Engineer role",
+      }),
       expect.objectContaining({
         threadId: baseSession.id,
         callbacks: expect.any(Array),

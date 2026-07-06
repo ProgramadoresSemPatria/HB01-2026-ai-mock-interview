@@ -14,6 +14,9 @@ export const InterviewGraphStateAnnotation = Annotation.Root({
   level: Annotation<InterviewLevel>,
   userId: Annotation<number>,
   resumeSummary: Annotation<StructuredSummary>,
+  jobDescription: Annotation<string | null>({
+    default: () => null,
+  }),
   isFinished: Annotation<boolean>,
   runReview: Annotation<boolean>,
 });
@@ -27,6 +30,7 @@ export type CreateInitialInterviewStateParams = {
   level: InterviewLevel;
   userId: number;
   resumeSummary: StructuredSummary;
+  jobDescription?: string | null;
   isFinished?: boolean;
   runReview?: boolean;
 };
@@ -41,6 +45,7 @@ export function createInitialInterviewState(
     level: params.level,
     userId: params.userId,
     resumeSummary: params.resumeSummary,
+    jobDescription: params.jobDescription ?? null,
     isFinished: params.isFinished ?? false,
     runReview: params.runReview ?? false,
   };
