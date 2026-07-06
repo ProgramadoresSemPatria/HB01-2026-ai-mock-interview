@@ -24,15 +24,16 @@ function PracticeSection({
   return (
     <section
       id="practice"
-      className="relative overflow-hidden bg-[#070808] py-24 md:py-36"
+      className="relative overflow-hidden bg-black py-24 md:py-36"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(11,139,115,0.22),transparent_28%),radial-gradient(circle_at_80%_60%,rgba(91,103,99,0.24),transparent_24%),linear-gradient(180deg,#090909_0%,#060707_100%)]" />
+      <div className="pointer-events-none absolute inset-0 dot-field opacity-25" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.06),transparent_28%),radial-gradient(circle_at_80%_60%,rgba(255,255,255,0.04),transparent_24%),linear-gradient(180deg,#000000_0%,#050505_100%)]" />
       <div className="content-width relative z-10">
         <SectionHeader
           align="center"
-          title={<span className="text-text-inverse">{title}</span>}
+          title={<span className="text-text-strong">{title}</span>}
           subtitle={
-            <span className="text-text-inverse-muted">{description}</span>
+            <span className="text-text-muted">{description}</span>
           }
         />
 
@@ -40,13 +41,13 @@ function PracticeSection({
           variant="glass"
           radius="xl"
           padding="xl"
-          className="mx-auto mt-16 max-w-4xl bg-white/86 text-left shadow-[var(--shadow-inverse)]"
+          className="mx-auto mt-16 max-w-4xl border-white/10 bg-white/5 text-left shadow-[var(--shadow-inverse)]"
         >
-          <h3 className="font-display text-2xl leading-tight tracking-[-0.04em] text-[#181614] md:text-[2.15rem] dark:text-text-strong">
+          <h3 className="font-display text-2xl leading-tight tracking-[-0.04em] text-text-strong md:text-[2.15rem]">
             {prompt}
           </h3>
 
-          <div className="mt-12 flex flex-wrap items-center gap-3 border-t border-border-subtle pt-6 text-sm text-text-muted">
+          <div className="mt-12 flex flex-wrap items-center gap-3 border-t border-white/10 pt-6 text-sm text-text-muted">
             <Badge tone="neutral">Active Session</Badge>
             <LevelPillGroup levels={levels} active={activeLevel} />
 

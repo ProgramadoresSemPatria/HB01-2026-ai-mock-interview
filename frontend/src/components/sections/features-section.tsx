@@ -22,21 +22,21 @@ function FeaturesSection({ features, topics }: FeaturesSectionProps) {
         title={
           <>
             Do anything with{" "}
-            <span className="font-normal italic text-primary">Hone</span>
+            <span className="font-normal italic text-white/80">Hone</span>
           </>
         }
       />
 
       <div className="mt-16 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {features.map((card) => (
-          <FeatureCard key={card.title} {...card} />
+          <FeatureCard key={card.title} {...card} monochrome />
         ))}
 
         <Surface
           variant="elevated"
           padding="xl"
           radius="xl"
-          className="xl:col-span-4"
+          className="border-white/10 bg-white/5 xl:col-span-4"
         >
           <div className="grid gap-8 md:grid-cols-[0.9fr_1.1fr] md:items-center">
             <div>
@@ -52,7 +52,7 @@ function FeaturesSection({ features, topics }: FeaturesSectionProps) {
 
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {topics.map((card) => (
-                <TopicStatusCard key={card.title} {...card} />
+                <TopicStatusCard key={card.title} {...card} monochrome />
               ))}
             </div>
           </div>

@@ -5,14 +5,30 @@ type TopicStatusCardProps = {
   title: string;
   status: string;
   tone: "critical" | "good" | "neutral";
+  monochrome?: boolean;
 };
 
-function TopicStatusCard({ title, status, tone }: TopicStatusCardProps) {
-  const badgeTone =
-    tone === "critical" ? "critical" : tone === "good" ? "success" : "neutral";
+function TopicStatusCard({
+  title,
+  status,
+  tone,
+  monochrome = false,
+}: TopicStatusCardProps) {
+  const badgeTone = monochrome
+    ? "neutral"
+    : tone === "critical"
+      ? "critical"
+      : tone === "good"
+        ? "success"
+        : "neutral";
 
   return (
-    <Surface variant="default" padding="md" radius="lg" className="h-full">
+    <Surface
+      variant="default"
+      padding="md"
+      radius="lg"
+      className="h-full border-white/10 bg-white/5"
+    >
       <p className="text-sm font-semibold tracking-[-0.02em] text-text-strong">
         {title}
       </p>

@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { BrandMark } from "@/components/patterns/brand-mark";
-import { Surface } from "@/components/ui/surface";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -14,38 +13,38 @@ const defaultLinks = [
 
 function MarketingNav() {
   return (
-    <header className="fixed inset-x-0 top-0 z-40">
+    <header className="fixed inset-x-0 top-0 z-50">
       <div className="content-width pt-5">
-        <Surface
-          variant="glass"
-          radius="full"
-          padding="sm"
-          className="flex items-center justify-between gap-4 shadow-[var(--shadow-soft)]"
+        <nav
+          className={cn(
+            "flex items-center justify-between gap-4 rounded-full",
+            "border border-white/10 bg-white/5 px-4 py-2.5 backdrop-blur-md",
+          )}
         >
           <BrandMark />
 
-          <nav className="hidden items-center gap-8 text-sm text-text-muted md:flex">
+          <div className="hidden items-center gap-8 text-sm text-white/55 md:flex">
             {defaultLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="transition-colors duration-200 hover:text-text-strong"
+                className="transition-colors duration-200 hover:text-white"
               >
                 {link.label}
               </Link>
             ))}
-          </nav>
+          </div>
 
           <Link
             href="/login"
             className={cn(
-              buttonVariants({ variant: "inverse", size: "sm", shape: "pill" }),
-              "px-4 text-[0.6875rem] uppercase tracking-[0.18em]",
+              buttonVariants({ variant: "outline", size: "sm", shape: "pill" }),
+              "border-white/30 bg-white px-4 text-[0.6875rem] uppercase tracking-[0.18em] text-black hover:bg-white/90",
             )}
           >
             Get started
           </Link>
-        </Surface>
+        </nav>
       </div>
     </header>
   );

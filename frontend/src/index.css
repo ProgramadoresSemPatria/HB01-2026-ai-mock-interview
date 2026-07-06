@@ -282,6 +282,113 @@
   .section-spacing-lg {
     @apply py-28 md:py-36;
   }
+
+  .dot-field {
+    background-image:
+      radial-gradient(
+        1px 1px at 20px 30px,
+        rgba(255, 255, 255, 0.75),
+        transparent
+      ),
+      radial-gradient(
+        1.5px 1.5px at 120px 80px,
+        rgba(255, 255, 255, 0.6),
+        transparent
+      ),
+      radial-gradient(
+        1px 1px at 60px 140px,
+        rgba(255, 255, 255, 0.5),
+        transparent
+      ),
+      radial-gradient(
+        1px 1px at 170px 40px,
+        rgba(255, 255, 255, 0.55),
+        transparent
+      );
+    background-size: 220px 220px;
+    background-repeat: repeat;
+  }
+
+  .marketing-vignette {
+    background: radial-gradient(
+      ellipse at center,
+      transparent 30%,
+      rgba(0, 0, 0, 0.55) 100%
+    );
+  }
+}
+
+/* Marketing landing — scoped monochrome cosmos theme */
+.marketing-cosmos {
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: rgba(255, 255, 255, 0.06);
+  --card-foreground: #ffffff;
+  --popover: rgba(12, 12, 12, 0.96);
+  --popover-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-strong: #e8e8e8;
+  --primary-foreground: #000000;
+  --secondary: rgba(255, 255, 255, 0.08);
+  --secondary-foreground: #ffffff;
+  --muted: rgba(255, 255, 255, 0.06);
+  --muted-foreground: rgba(255, 255, 255, 0.55);
+  --accent: rgba(255, 255, 255, 0.1);
+  --accent-foreground: #ffffff;
+  --destructive: #888888;
+  --border: rgba(255, 255, 255, 0.12);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: rgba(255, 255, 255, 0.25);
+
+  --surface-canvas: #000000;
+  --surface-base: rgba(255, 255, 255, 0.06);
+  --surface-elevated: rgba(255, 255, 255, 0.08);
+  --surface-glass: rgba(255, 255, 255, 0.08);
+  --surface-soft: rgba(255, 255, 255, 0.05);
+  --surface-subtle: rgba(255, 255, 255, 0.04);
+  --surface-inverse: #ffffff;
+  --surface-inverse-soft: rgba(255, 255, 255, 0.12);
+  --surface-inverse-foreground: #000000;
+
+  --text-strong: #ffffff;
+  --text-base: rgba(255, 255, 255, 0.88);
+  --text-muted: rgba(255, 255, 255, 0.55);
+  --text-soft: rgba(255, 255, 255, 0.4);
+  --text-inverse: #000000;
+  --text-inverse-muted: rgba(0, 0, 0, 0.65);
+
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.22);
+  --border-inverse: rgba(0, 0, 0, 0.12);
+
+  --status-critical-surface: rgba(255, 255, 255, 0.1);
+  --status-critical-foreground: rgba(255, 255, 255, 0.75);
+  --status-success-surface: rgba(255, 255, 255, 0.12);
+  --status-success-foreground: #ffffff;
+  --status-neutral-surface: rgba(255, 255, 255, 0.08);
+  --status-neutral-foreground: rgba(255, 255, 255, 0.65);
+
+  --shadow-soft: 0 18px 44px rgba(0, 0, 0, 0.4);
+  --shadow-elevated: 0 28px 90px rgba(0, 0, 0, 0.5);
+  --shadow-glass: 0 24px 80px rgba(0, 0, 0, 0.45);
+  --shadow-hero: 0 36px 100px rgba(0, 0, 0, 0.55);
+  --shadow-orb:
+    inset -20px -24px 32px rgba(0, 0, 0, 0.4),
+    0 18px 40px rgba(255, 255, 255, 0.08);
+  --shadow-inverse: 0 28px 100px rgba(0, 0, 0, 0.35);
+
+  --brand-orb-highlight: #ffffff;
+  --brand-orb-mid: #aaaaaa;
+  --brand-orb: #666666;
+  --brand-orb-deep: #222222;
+
+  color-scheme: dark;
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.marketing-cosmos::before {
+  display: none;
 }
 
 @keyframes float {

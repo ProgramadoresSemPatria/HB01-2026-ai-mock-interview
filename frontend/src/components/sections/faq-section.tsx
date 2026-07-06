@@ -11,7 +11,7 @@ function FaqSection({ items }: FaqSectionProps) {
       <SectionHeader
         align="center"
         eyebrow={
-          <p className="font-display text-2xl italic text-primary md:text-[2rem]">
+          <p className="font-display text-2xl italic text-white/60 md:text-[2rem]">
             Questions
           </p>
         }
@@ -25,7 +25,7 @@ function FaqSection({ items }: FaqSectionProps) {
       </div>
 
       <div className="mt-14 flex justify-center">
-        <div className="size-10 rounded-full bg-primary/10" />
+        <div className="size-10 rounded-full bg-white/10" />
       </div>
     </section>
   );

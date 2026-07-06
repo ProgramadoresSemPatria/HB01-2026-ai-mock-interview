@@ -65,14 +65,14 @@ const faqItems = [
 ] as const;
 
 const orbTones = [
-  "graphite",
-  "brand",
-  "stone",
-  "aurora",
-  "fog",
-  "ember",
+  "void",
+  "ash",
+  "smoke",
+  "mist",
   "pearl",
-  "mint",
+  "silver",
+  "graphite",
+  "ink",
 ] as const;
 
 export default function Home() {
@@ -85,17 +85,6 @@ export default function Home() {
         ctaHref="/login"
         ctaLabel="Start your first session"
         supportingText="Free for individual engineers. No credit card required."
-        preview={{
-          sessionLabel: "Interview Session - Senior Level",
-          question:
-            "At Nubank, we handle millions of concurrent transactions. How would you design a distributed lock mechanism for our credit card ledger?",
-          answer:
-            "I'd start by considering Redis with the Redlock algorithm, but given the ledger requirements, maybe a consensus-based approach like Raft...",
-          prompt: "Explain your architectural decision...",
-          contextTitle: "Context",
-          contextBody:
-            "Analyzing candidate response for consistency versus availability trade-offs.",
-        }}
       />
 
       <FeaturesSection features={featureCards} topics={topicCards} />
