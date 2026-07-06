@@ -1,5 +1,6 @@
 import type { MessageRepository } from "@/modules/interview/repository/message-repository";
 import type { SessionRepository } from "@/modules/interview/repository/session-repository";
+import { sanitizeJobDescription } from "@/modules/interview/security/sanitize-job-description";
 import type {
   CreateSessionInput,
   InterviewLevel,
@@ -14,6 +15,7 @@ export type SessionSummary = {
   turnCount: number;
   maxTurns: number;
   isFinished: boolean;
+  hasJobDescription: boolean;
   createdAt: Date;
 };
 
@@ -58,6 +60,9 @@ export class SessionService {
       userId,
       resumeId: input.resumeId,
       level: input.level,
+      jobDescription: input.jobDescription
+        ? sanitizeJobDescription(input.jobDescription)
+        : null,
     });
 
     return { id: session.id };
@@ -72,6 +77,7 @@ export class SessionService {
       turnCount: session.turnCount,
       maxTurns: session.maxTurns,
       isFinished: session.isFinished,
+      hasJobDescription: session.jobDescription != null,
       createdAt: session.createdAt,
     }));
   }

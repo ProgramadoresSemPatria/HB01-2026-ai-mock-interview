@@ -57,6 +57,29 @@ describe("createSessionSchema", () => {
       false,
     );
   });
+
+  it("accepts an optional job description", () => {
+    const result = createSessionSchema.safeParse({
+      resumeId: validResumeId,
+      level: "mid",
+      jobDescription: "Senior Backend Engineer",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.jobDescription).toBe("Senior Backend Engineer");
+    }
+  });
+
+  it("rejects job description over 5000 characters", () => {
+    const result = createSessionSchema.safeParse({
+      resumeId: validResumeId,
+      level: "mid",
+      jobDescription: "x".repeat(5_001),
+    });
+
+    expect(result.success).toBe(false);
+  });
 });
 
 describe("streamMessageSchema", () => {
