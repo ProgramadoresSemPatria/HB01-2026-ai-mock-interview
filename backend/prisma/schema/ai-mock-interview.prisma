@@ -48,14 +48,15 @@ model Resume {
 }
 
 model InterviewSession {
-  id         String         @id @default(uuid())
-  userId     Int
-  resumeId   String         @map("resume_id")
-  level      InterviewLevel
-  turnCount  Int            @default(0) @map("turn_count")
-  maxTurns   Int            @map("max_turns")
-  isFinished Boolean        @default(false) @map("is_finished")
-  createdAt  DateTime       @default(now()) @map("created_at")
+  id             String         @id @default(uuid())
+  userId         Int
+  resumeId       String         @map("resume_id")
+  level          InterviewLevel
+  jobDescription String?        @map("job_description") @db.Text
+  turnCount      Int            @default(0) @map("turn_count")
+  maxTurns       Int            @map("max_turns")
+  isFinished     Boolean        @default(false) @map("is_finished")
+  createdAt      DateTime       @default(now()) @map("created_at")
 
   user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   resume      Resume             @relation(fields: [resumeId], references: [id], onDelete: Cascade)

@@ -26,6 +26,7 @@ export class ReviewItemsGeneratorAdapter implements IReviewItemsGenerator {
       {
         transcript: params.transcript,
         structuredSummary: params.structuredSummary,
+        jobDescription: params.jobDescription,
         existingItems: existingItems.map((item) => ({
           topic: item.topic,
           description: item.description,

@@ -14,16 +14,18 @@ export type CreateSessionParams = {
   userId: number;
   resumeId: string;
   level: InterviewLevel;
+  jobDescription?: string | null;
 };
 
 export class SessionRepository {
   async create(params: CreateSessionParams): Promise<InterviewSession> {
-    const { userId, resumeId, level } = params;
+    const { userId, resumeId, level, jobDescription } = params;
     return prisma.interviewSession.create({
       data: {
         userId,
         resumeId,
         level,
+        jobDescription: jobDescription ?? null,
         maxTurns: MAX_TURNS_BY_LEVEL[level],
       },
     });

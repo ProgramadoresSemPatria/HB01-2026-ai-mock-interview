@@ -1,7 +1,7 @@
 import type {
+  CreateSessionInput,
   CreateSessionResponse,
   InterviewFeedback,
-  InterviewLevel,
   ListMessagesResponse,
   ListSessionsResponse,
   SubmitFeedbackInput,
@@ -10,10 +10,7 @@ import type {
 import { apiRequest } from "./client";
 
 export const interviewApi = {
-  createSession(
-    body: { resumeId: string; level: InterviewLevel },
-    token: string,
-  ) {
+  createSession(body: CreateSessionInput, token: string) {
     return apiRequest<CreateSessionResponse>("/api/interview/sessions", {
       method: "POST",
       body,
