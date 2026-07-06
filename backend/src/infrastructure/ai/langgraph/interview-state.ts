@@ -14,9 +14,7 @@ export const InterviewGraphStateAnnotation = Annotation.Root({
   level: Annotation<InterviewLevel>,
   userId: Annotation<number>,
   resumeSummary: Annotation<StructuredSummary>,
-  jobDescription: Annotation<string | null>({
-    default: () => null,
-  }),
+  jobDescription: Annotation<string | null>(),
   isFinished: Annotation<boolean>,
   runReview: Annotation<boolean>,
 });
