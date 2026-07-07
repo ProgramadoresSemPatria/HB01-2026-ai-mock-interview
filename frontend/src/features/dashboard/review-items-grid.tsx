@@ -1,27 +1,8 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-import { cn } from "@/lib/utils";
-import type { ReviewItem, ReviewPriority } from "@/types/review-items";
-
-const PRIORITY_STYLES: Record<
-  ReviewPriority,
-  { badge: string; label: string }
-> = {
-  high: {
-    badge: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-    label: "high priority",
-  },
-  medium: {
-    badge: "bg-(--accent) text-(--accent-foreground)",
-    label: "medium priority",
-  },
-  low: {
-    badge:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-    label: "low priority",
-  },
-};
+import { ReviewPriorityBadge } from "@/features/study/review-priority-badge";
+import type { ReviewItem } from "@/types/review-items";
 
 export function ReviewItemsGrid({
   items,
@@ -44,20 +25,12 @@ export function ReviewItemsGrid({
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {visible.map((item) => {
-        const styles = PRIORITY_STYLES[item.priority];
         return (
           <div
             key={item.id}
             className="space-y-3 rounded-xl border border-(--border) bg-(--card) p-5 shadow-sm"
           >
-            <span
-              className={cn(
-                "inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize",
-                styles.badge,
-              )}
-            >
-              {styles.label}
-            </span>
+            <ReviewPriorityBadge priority={item.priority} />
             <div>
               <p className="font-semibold text-(--foreground)">{item.topic}</p>
               <p className="mt-1 text-xs leading-relaxed text-(--muted-foreground)">
