@@ -1,7 +1,7 @@
 import type { ReviewSessionStreamService } from "@/modules/review-sessions/service/review-session-stream-service";
 import type { ReviewSessionsService } from "@/modules/review-sessions/service/review-sessions-service";
 import type {
-  ConfirmReviewSessionItemInput,
+  ApplyReviewSessionInput,
   CreateReviewSessionInput,
   ReviewSessionStreamBodyInput,
 } from "@/modules/review-sessions/validations/review-session-schemas";
@@ -43,14 +43,13 @@ export class ReviewSessionsController {
     res.status(200).json(result);
   };
 
-  confirmItem = async (req: Request, res: Response): Promise<void> => {
+  apply = async (req: Request, res: Response): Promise<void> => {
     const sessionId = String(req.params.id);
-    const itemId = String(req.params.itemId);
-    const result = await this.reviewSessionsService.confirmItem(
+    const { items } = req.body as ApplyReviewSessionInput;
+    const result = await this.reviewSessionsService.apply(
       req.userId!,
       sessionId,
-      itemId,
-      req.body as ConfirmReviewSessionItemInput,
+      items,
     );
     res.status(200).json(result);
   };

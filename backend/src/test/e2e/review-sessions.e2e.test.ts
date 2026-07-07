@@ -464,22 +464,28 @@ describe("Review Sessions API E2E", () => {
         .get(`/api/review-sessions/${sessionId}`)
         .set(authHeader(token));
 
-      const sessionItemId = report.body.items[0].id as string;
-
       await request(app)
-        .post(
-          `/api/review-sessions/${sessionId}/items/${sessionItemId}/confirm`,
-        )
+        .post(`/api/review-sessions/${sessionId}/apply`)
         .set(authHeader(token))
-        .send({ action: "accept" })
-        .expect(200);
-
-      await request(app)
-        .post(
-          `/api/review-sessions/${sessionId}/items/${report.body.items[1].id}/confirm`,
-        )
-        .set(authHeader(token))
-        .send({ action: "override", status: "learned" })
+        .send({
+          items: report.body.items.map(
+            (item: {
+              id: string;
+              suggestedStatus: string | null;
+              suggestedPriority: string | null;
+            }) =>
+              item.suggestedStatus === "learned"
+                ? {
+                    reviewSessionItemId: item.id,
+                    status: "learned",
+                  }
+                : {
+                    reviewSessionItemId: item.id,
+                    status: "active",
+                    priority: item.suggestedPriority ?? "medium",
+                  },
+          ),
+        })
         .expect(200);
 
       const completedResponse = await streamReviewSessionTurn(
@@ -496,13 +502,19 @@ describe("Review Sessions API E2E", () => {
     });
   });
 
-  describe("POST /api/review-sessions/:id/items/:itemId/confirm", () => {
+  describe("POST /api/review-sessions/:id/apply", () => {
     it("returns 401 without authentication", async () => {
       const response = await request(app)
-        .post(
-          `/api/review-sessions/${randomUUID()}/items/${randomUUID()}/confirm`,
-        )
-        .send({ action: "accept" });
+        .post(`/api/review-sessions/${randomUUID()}/apply`)
+        .send({
+          items: [
+            {
+              reviewSessionItemId: randomUUID(),
+              status: "active",
+              priority: "high",
+            },
+          ],
+        });
 
       expect(response.status).toBe(401);
       expect(response.body).toEqual({
@@ -510,7 +522,7 @@ describe("Review Sessions API E2E", () => {
       });
     });
 
-    it("returns 404 when session or item does not belong to the user", async () => {
+    it("returns 404 when session does not belong to the user", async () => {
       const { token, userId } = await authenticate(app);
       const item = await seedReviewItem(userId, {
         topic: "System Design",
@@ -534,11 +546,17 @@ describe("Review Sessions API E2E", () => {
       const otherToken = await createOtherUserToken(app);
 
       const missingSessionResponse = await request(app)
-        .post(
-          `/api/review-sessions/${randomUUID()}/items/${sessionItemId}/confirm`,
-        )
+        .post(`/api/review-sessions/${randomUUID()}/apply`)
         .set(authHeader(token))
-        .send({ action: "accept" });
+        .send({
+          items: [
+            {
+              reviewSessionItemId: sessionItemId,
+              status: "active",
+              priority: "medium",
+            },
+          ],
+        });
 
       expect(missingSessionResponse.status).toBe(404);
       expect(missingSessionResponse.body).toEqual({
@@ -546,11 +564,17 @@ describe("Review Sessions API E2E", () => {
       });
 
       const crossUserResponse = await request(app)
-        .post(
-          `/api/review-sessions/${sessionId}/items/${sessionItemId}/confirm`,
-        )
+        .post(`/api/review-sessions/${sessionId}/apply`)
         .set(authHeader(otherToken))
-        .send({ action: "accept" });
+        .send({
+          items: [
+            {
+              reviewSessionItemId: sessionItemId,
+              status: "active",
+              priority: "medium",
+            },
+          ],
+        });
 
       expect(crossUserResponse.status).toBe(404);
       expect(crossUserResponse.body).toEqual({
@@ -558,7 +582,7 @@ describe("Review Sessions API E2E", () => {
       });
     });
 
-    it("returns 400 when accepting without a suggestion and 409 when confirming twice", async () => {
+    it("returns 400 when session is not pending review and 409 when applying twice", async () => {
       const { token, userId } = await authenticate(app);
       const item = await seedReviewItem(userId, {
         topic: "System Design",
@@ -578,44 +602,56 @@ describe("Review Sessions API E2E", () => {
 
       const sessionItemId = beforeEvaluation.body.items[0].id as string;
 
-      const acceptWithoutSuggestion = await request(app)
-        .post(
-          `/api/review-sessions/${sessionId}/items/${sessionItemId}/confirm`,
-        )
+      const applyBeforeEvaluation = await request(app)
+        .post(`/api/review-sessions/${sessionId}/apply`)
         .set(authHeader(token))
-        .send({ action: "accept" });
+        .send({
+          items: [
+            {
+              reviewSessionItemId: sessionItemId,
+              status: "active",
+              priority: "medium",
+            },
+          ],
+        });
 
-      expect(acceptWithoutSuggestion.status).toBe(400);
-      expect(acceptWithoutSuggestion.body).toEqual({
-        message: "No suggestion to accept",
+      expect(applyBeforeEvaluation.status).toBe(400);
+      expect(applyBeforeEvaluation.body).toEqual({
+        message: "Review session is not pending review",
       });
 
       await runStreamThroughEvaluation(app, token, sessionId, 1);
 
+      const applyPayload = {
+        items: [
+          {
+            reviewSessionItemId: sessionItemId,
+            status: "active",
+            priority: "medium",
+          },
+        ],
+      };
+
       await request(app)
-        .post(
-          `/api/review-sessions/${sessionId}/items/${sessionItemId}/confirm`,
-        )
+        .post(`/api/review-sessions/${sessionId}/apply`)
         .set(authHeader(token))
-        .send({ action: "accept" })
+        .send(applyPayload)
         .expect(200);
 
-      const duplicateConfirm = await request(app)
-        .post(
-          `/api/review-sessions/${sessionId}/items/${sessionItemId}/confirm`,
-        )
+      const duplicateApply = await request(app)
+        .post(`/api/review-sessions/${sessionId}/apply`)
         .set(authHeader(token))
-        .send({ action: "accept" });
+        .send(applyPayload);
 
-      expect(duplicateConfirm.status).toBe(409);
-      expect(duplicateConfirm.body).toEqual({
-        message: "Review session item already confirmed",
+      expect(duplicateApply.status).toBe(409);
+      expect(duplicateApply.body).toEqual({
+        message: "Review session already completed",
       });
     });
   });
 
   describe("full review session lifecycle", () => {
-    it("streams through all items, exposes suggestions in the report, and applies only confirmed changes to review items", async () => {
+    it("streams through all items, exposes suggestions in the report, and applies all changes in one bulk apply", async () => {
       const { token, userId } = await authenticate(app);
       const itemOne = await seedReviewItem(userId, {
         topic: "System Design",
@@ -721,41 +757,32 @@ describe("Review Sessions API E2E", () => {
         (item: { reviewItemId: string }) => item.reviewItemId === itemThree.id,
       ).id as string;
 
-      const acceptResponse = await request(app)
-        .post(
-          `/api/review-sessions/${sessionId}/items/${sessionItemOneId}/confirm`,
-        )
+      const applyResponse = await request(app)
+        .post(`/api/review-sessions/${sessionId}/apply`)
         .set(authHeader(token))
-        .send({ action: "accept" });
+        .send({
+          items: [
+            {
+              reviewSessionItemId: sessionItemOneId,
+              status: "active",
+              priority: "medium",
+            },
+            {
+              reviewSessionItemId: sessionItemTwoId,
+              status: "active",
+              priority: "low",
+            },
+            {
+              reviewSessionItemId: sessionItemThreeId,
+              status: "learned",
+            },
+          ],
+        });
 
-      expect(acceptResponse.status).toBe(200);
-      expect(acceptResponse.body).toMatchObject({
-        id: itemOne.id,
-        status: "active",
-        priority: "medium",
-      });
-
-      const overrideActiveResponse = await request(app)
-        .post(
-          `/api/review-sessions/${sessionId}/items/${sessionItemTwoId}/confirm`,
-        )
-        .set(authHeader(token))
-        .send({ action: "override", status: "active", priority: "low" });
-
-      expect(overrideActiveResponse.status).toBe(200);
-      expect(overrideActiveResponse.body).toMatchObject({
-        id: itemTwo.id,
-        status: "active",
-        priority: "low",
-      });
-
-      const midSessionReport = await request(app)
-        .get(`/api/review-sessions/${sessionId}`)
-        .set(authHeader(token));
-
-      expect(midSessionReport.body.status).toBe("pending_review");
-      expect(midSessionReport.body.items).toEqual(
-        expect.arrayContaining([
+      expect(applyResponse.status).toBe(200);
+      expect(applyResponse.body).toMatchObject({
+        status: "completed",
+        items: expect.arrayContaining([
           expect.objectContaining({
             id: sessionItemOneId,
             confirmedStatus: "active",
@@ -768,23 +795,10 @@ describe("Review Sessions API E2E", () => {
           }),
           expect.objectContaining({
             id: sessionItemThreeId,
-            confirmedStatus: null,
+            confirmedStatus: "learned",
+            confirmedPriority: null,
           }),
         ]),
-      );
-
-      const markLearnedResponse = await request(app)
-        .post(
-          `/api/review-sessions/${sessionId}/items/${sessionItemThreeId}/confirm`,
-        )
-        .set(authHeader(token))
-        .send({ action: "override", status: "learned" });
-
-      expect(markLearnedResponse.status).toBe(200);
-      expect(markLearnedResponse.body).toMatchObject({
-        id: itemThree.id,
-        status: "learned",
-        learnedAt: expect.any(String),
       });
 
       const completedSession = await request(app)

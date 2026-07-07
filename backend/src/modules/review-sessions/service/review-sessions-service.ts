@@ -3,14 +3,13 @@ import type { ReviewMergeService } from "@/modules/interview/service/review-merg
 import type { ReviewSessionConfirmation as MergeConfirmation } from "@/modules/interview/service/review-merge-service";
 import type { ReviewItemRecord } from "@/modules/interview/types/review-item-record";
 import type { ReviewPriority } from "@/modules/interview/validations/interview-schemas";
-import type { ReviewItemResponse } from "@/modules/review-items/validations/review-items-schemas";
 import type { ReviewSessionRepository } from "@/modules/review-sessions/repository/review-session-repository";
 import type { ReviewSessionConfirmation } from "@/modules/review-sessions/repository/review-session-repository";
 import type {
   ReviewSessionItemRecord,
   ReviewSessionRecord,
 } from "@/modules/review-sessions/types/review-session-record";
-import type { ConfirmReviewSessionItemInput } from "@/modules/review-sessions/validations/review-session-schemas";
+import type { ApplyReviewSessionInput } from "@/modules/review-sessions/validations/review-session-schemas";
 import {
   BadRequestError,
   ConflictError,
@@ -91,37 +90,11 @@ function toReport(session: ReviewSessionRecord): ReviewSessionReport {
   };
 }
 
-function toReviewItemResponse(item: ReviewItemRecord): ReviewItemResponse {
-  return {
-    id: item.id,
-    sessionId: item.sessionId,
-    topic: item.topic,
-    description: item.description,
-    priority: item.priority,
-    status: item.status,
-    learnedAt: item.learnedAt?.toISOString() ?? null,
-    createdAt: item.createdAt.toISOString(),
-    updatedAt: item.updatedAt.toISOString(),
-  };
-}
-
-function resolveConfirmation(
-  action: ConfirmReviewSessionItemInput,
-  item: ReviewSessionItemRecord,
+function toMergeConfirmation(
+  item: ApplyReviewSessionInput["items"][number],
 ): MergeConfirmation {
-  if (action.action === "accept") {
-    if (item.suggestedStatus === "active") {
-      return {
-        status: "active",
-        priority: item.suggestedPriority!,
-      };
-    }
-
-    return { status: "learned" };
-  }
-
-  if (action.status === "active") {
-    return { status: "active", priority: action.priority };
+  if (item.status === "active") {
+    return { status: "active", priority: item.priority! };
   }
 
   return { status: "learned" };
@@ -201,12 +174,11 @@ export class ReviewSessionsService {
     return toReport(session);
   }
 
-  async confirmItem(
+  async apply(
     userId: number,
     sessionId: string,
-    itemId: string,
-    action: ConfirmReviewSessionItemInput,
-  ): Promise<ReviewItemResponse> {
+    items: ApplyReviewSessionInput["items"],
+  ): Promise<ReviewSessionReport> {
     const session = await this.reviewSessionRepository.findByIdAndUserId(
       sessionId,
       userId,
@@ -216,36 +188,52 @@ export class ReviewSessionsService {
       throw new NotFoundError("Review session not found");
     }
 
-    const item = session.items.find((sessionItem) => sessionItem.id === itemId);
-
-    if (!item) {
-      throw new NotFoundError("Review session item not found");
+    if (session.status === "completed") {
+      throw new ConflictError("Review session already completed");
     }
 
-    if (item.confirmedStatus !== null) {
+    if (session.status !== "pending_review") {
+      throw new BadRequestError("Review session is not pending review");
+    }
+
+    if (items.length !== session.items.length) {
+      throw new BadRequestError("All session items must be included");
+    }
+
+    if (session.items.some((item) => item.confirmedStatus !== null)) {
       throw new ConflictError("Review session item already confirmed");
     }
 
-    if (action.action === "accept" && item.suggestedStatus === null) {
-      throw new BadRequestError("No suggestion to accept");
-    }
+    const sessionItemById = new Map(
+      session.items.map((item) => [item.id, item]),
+    );
 
-    const resolved = resolveConfirmation(action, item);
+    for (const applyItem of items) {
+      const sessionItem = sessionItemById.get(applyItem.reviewSessionItemId);
 
-    const updatedReviewItem =
+      if (!sessionItem) {
+        throw new NotFoundError("Review session item not found");
+      }
+
+      const resolved = toMergeConfirmation(applyItem);
+
       await this.reviewMergeService.applyReviewSessionConfirmation(
         userId,
-        item.reviewItemId,
+        sessionItem.reviewItemId,
         resolved,
       );
 
-    await this.reviewSessionRepository.confirmItem(
-      itemId,
-      toSessionItemConfirmation(resolved),
-    );
+      await this.reviewSessionRepository.confirmItem(
+        sessionItem.id,
+        toSessionItemConfirmation(resolved),
+      );
+    }
 
     await this.reviewSessionRepository.markCompletedIfAllConfirmed(sessionId);
 
-    return toReviewItemResponse(updatedReviewItem);
+    const updatedSession =
+      await this.reviewSessionRepository.findByIdAndUserId(sessionId, userId);
+
+    return toReport(updatedSession!);
   }
 }

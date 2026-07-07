@@ -22,22 +22,36 @@ export const reviewSessionStreamBodySchema = z.object({
   answer: z.string().trim().min(1).max(4_000).optional(),
 });
 
-export const confirmReviewSessionItemSchema = z.union([
-  z.object({ action: z.literal("accept") }),
-  z.discriminatedUnion("status", [
-    z.object({
-      action: z.literal("override"),
-      status: z.literal("active"),
-      priority: reviewPrioritySchema,
-    }),
-    z
-      .object({
-        action: z.literal("override"),
-        status: z.literal("learned"),
-      })
-      .strict(),
-  ]),
-]);
+const applyReviewSessionItemSchema = z.object({
+  reviewSessionItemId: z.uuid(),
+  status: reviewItemStatusSchema,
+  priority: reviewPrioritySchema.optional(),
+});
+
+export const applyReviewSessionSchema = z
+  .object({
+    items: z.array(applyReviewSessionItemSchema).min(1),
+  })
+  .superRefine((data, ctx) => {
+    const ids = data.items.map((item) => item.reviewSessionItemId);
+    if (new Set(ids).size !== ids.length) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Duplicate item IDs",
+        path: ["items"],
+      });
+    }
+
+    for (const [index, item] of data.items.entries()) {
+      if (item.status === "active" && item.priority === undefined) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Priority is required when status is active",
+          path: ["items", index, "priority"],
+        });
+      }
+    }
+  });
 
 export const reviewSessionEvaluationOutputSchema = z.discriminatedUnion(
   "status",
@@ -56,6 +70,4 @@ export type CreateReviewSessionInput = z.infer<
 export type ReviewSessionStreamBodyInput = z.infer<
   typeof reviewSessionStreamBodySchema
 >;
-export type ConfirmReviewSessionItemInput = z.infer<
-  typeof confirmReviewSessionItemSchema
->;
+export type ApplyReviewSessionInput = z.infer<typeof applyReviewSessionSchema>;

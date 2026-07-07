@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  confirmReviewSessionItemSchema,
+  applyReviewSessionSchema,
   createReviewSessionSchema,
   reviewItemStatusSchema,
   reviewSessionEvaluationOutputSchema,
@@ -146,73 +146,69 @@ describe("reviewSessionStreamBodySchema", () => {
   });
 });
 
-describe("confirmReviewSessionItemSchema", () => {
-  it("accepts accept action", () => {
-    const result = confirmReviewSessionItemSchema.safeParse({
-      action: "accept",
+const sessionItemId1 = "550e8400-e29b-41d4-a716-446655440010";
+const sessionItemId2 = "550e8400-e29b-41d4-a716-446655440011";
+
+describe("applyReviewSessionSchema", () => {
+  it("accepts active items with priority and learned items without priority", () => {
+    const result = applyReviewSessionSchema.safeParse({
+      items: [
+        {
+          reviewSessionItemId: sessionItemId1,
+          status: "active",
+          priority: "high",
+        },
+        {
+          reviewSessionItemId: sessionItemId2,
+          status: "learned",
+        },
+      ],
     });
 
     expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data).toEqual({ action: "accept" });
-    }
   });
 
-  it("accepts override active with priority", () => {
-    const result = confirmReviewSessionItemSchema.safeParse({
-      action: "override",
-      status: "active",
-      priority: "high",
-    });
-
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data).toEqual({
-        action: "override",
-        status: "active",
-        priority: "high",
-      });
-    }
-  });
-
-  it("accepts override learned without priority", () => {
-    const result = confirmReviewSessionItemSchema.safeParse({
-      action: "override",
-      status: "learned",
-    });
-
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data).toEqual({
-        action: "override",
-        status: "learned",
-      });
-    }
-  });
-
-  it("rejects priority on override learned branch", () => {
-    const result = confirmReviewSessionItemSchema.safeParse({
-      action: "override",
-      status: "learned",
-      priority: "low",
+  it("rejects active items without priority", () => {
+    const result = applyReviewSessionSchema.safeParse({
+      items: [
+        {
+          reviewSessionItemId: sessionItemId1,
+          status: "active",
+        },
+      ],
     });
 
     expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toBe(
+        "Priority is required when status is active",
+      );
+    }
   });
 
-  it("rejects override active without priority", () => {
-    const result = confirmReviewSessionItemSchema.safeParse({
-      action: "override",
-      status: "active",
+  it("rejects duplicate reviewSessionItemId values", () => {
+    const result = applyReviewSessionSchema.safeParse({
+      items: [
+        {
+          reviewSessionItemId: sessionItemId1,
+          status: "active",
+          priority: "low",
+        },
+        {
+          reviewSessionItemId: sessionItemId1,
+          status: "learned",
+        },
+      ],
     });
 
     expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toBe("Duplicate item IDs");
+    }
   });
 
-  it("rejects unknown actions", () => {
-    const result = confirmReviewSessionItemSchema.safeParse({
-      action: "reject",
-    });
+  it("rejects an empty items array", () => {
+    const result = applyReviewSessionSchema.safeParse({ items: [] });
 
     expect(result.success).toBe(false);
   });

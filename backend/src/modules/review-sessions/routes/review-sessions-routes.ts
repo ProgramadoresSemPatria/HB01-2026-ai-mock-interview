@@ -1,5 +1,5 @@
 import {
-  confirmReviewSessionItemSchema,
+  applyReviewSessionSchema,
   createReviewSessionSchema,
   reviewSessionStreamBodySchema,
 } from "@/modules/review-sessions/validations/review-session-schemas";
@@ -26,8 +26,8 @@ export default function reviewSessionsRoutes(router: Router): void {
   );
   router.get("/:id", asyncHandler(controller.getById));
   router.post(
-    "/:id/items/:itemId/confirm",
-    validate(confirmReviewSessionItemSchema),
-    asyncHandler(controller.confirmItem),
+    "/:id/apply",
+    validate(applyReviewSessionSchema),
+    asyncHandler(controller.apply),
   );
 }

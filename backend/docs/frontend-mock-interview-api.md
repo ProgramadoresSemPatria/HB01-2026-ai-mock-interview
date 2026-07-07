@@ -620,7 +620,7 @@ ou
 
 Prefixo das rotas: `/api/review-sessions`.
 
-Fluxo completo: selecionar itens `active` → criar sessão → Q&A adaptativo por item via SSE → relatório com sugestões → confirmar cada item individualmente.
+Fluxo completo: selecionar itens `active` → criar sessão → Q&A adaptativo por item via SSE → relatório com sugestões → aplicar todas as decisões em uma única chamada bulk.
 
 Cada item da sessão recebe **N perguntas** (padrão **3**, configurável no servidor via `REVIEW_SESSION_QUESTION_COUNT`). O backend faz snapshot de `topic`, `description` e `currentPriority` no momento da criação.
 
@@ -641,10 +641,8 @@ sequenceDiagram
   UI->>API: GET /api/review-sessions/:id
   API-->>UI: relatório com suggested* e confirmed*
 
-  loop por item no relatório
-    UI->>API: POST .../items/:itemId/confirm { action }
-    API-->>UI: 200 review item atualizado
-  end
+  UI->>API: POST .../apply { items[] }
+  API-->>UI: 200 relatório completed + review_items atualizados
 ```
 
 ### `POST /api/review-sessions` — Criar sessão
@@ -690,7 +688,7 @@ sequenceDiagram
 }
 ```
 
-> O `id` em cada elemento de `items` é o **ReviewSessionItem** (use-o em `confirm`). `reviewItemId` referencia o `review_items` original.
+> O `id` em cada elemento de `items` é o **ReviewSessionItem** (use-o em `apply` como `reviewSessionItemId`). `reviewItemId` referencia o `review_items` original.
 
 **Erros:**
 
@@ -791,14 +789,14 @@ data: [DONE]
 
 | Campo do `report[]` | Tipo | Descrição |
 |---------------------|------|-----------|
-| `reviewSessionItemId` | UUID | ID para `confirm` |
+| `reviewSessionItemId` | UUID | ID para `apply` |
 | `reviewItemId` | UUID | ID do `review_items` original |
 | `topic` | string | Snapshot do tópico |
 | `currentPriority` | `low` \| `medium` \| `high` | Prioridade no momento da criação |
 | `suggestedStatus` | `active` \| `learned` \| `null` | Sugestão da IA (`null` se avaliação falhou) |
 | `suggestedPriority` | `low` \| `medium` \| `high` \| `null` | Nova prioridade sugerida (só quando `suggestedStatus === "active"`) |
 
-> Itens com avaliação falha mantêm `suggestedStatus: null`; a UI deve oferecer apenas `override` (não `accept`) nesses casos.
+> Itens com avaliação falha mantêm `suggestedStatus: null`; a UI deve permitir edição livre e enviar o estado editado no bulk `apply`.
 
 #### Guardas antes de abrir o stream
 
@@ -859,61 +857,51 @@ Retorna o estado atual da sessão e de cada item (sugestões e confirmações).
 
 ---
 
-### `POST /api/review-sessions/:id/items/:itemId/confirm` — Confirmar item
+### `POST /api/review-sessions/:id/apply` — Aplicar decisões (bulk)
 
-Aplica a decisão do usuário sobre um item do relatório. `:itemId` é o **ReviewSessionItem** `id` (não o `reviewItemId`).
+Aplica as decisões do usuário sobre **todos** os itens do relatório em uma única chamada.
 
-**Body (uma das formas):**
-
-Aceitar sugestão da IA:
-
-```json
-{ "action": "accept" }
-```
-
-Sobrescrever mantendo ativo (prioridade obrigatória):
-
-```json
-{ "action": "override", "status": "active", "priority": "high" }
-```
-
-Sobrescrever marcando como aprendido (sem `priority`):
-
-```json
-{ "action": "override", "status": "learned" }
-```
-
-**Resposta (200):** shape de um elemento de `review_items` (objeto único):
+**Body:**
 
 ```json
 {
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "sessionId": "660e8400-e29b-41d4-a716-446655440001",
-  "topic": "system design",
-  "description": "Practice scalability patterns and trade-offs.",
-  "priority": "medium",
-  "status": "active",
-  "learnedAt": null,
-  "createdAt": "2026-05-28T12:00:00.000Z",
-  "updatedAt": "2026-07-07T15:30:00.000Z"
+  "items": [
+    {
+      "reviewSessionItemId": "880e8400-e29b-41d4-a716-446655440003",
+      "status": "active",
+      "priority": "medium"
+    },
+    {
+      "reviewSessionItemId": "990e8400-e29b-41d4-a716-446655440004",
+      "status": "learned"
+    }
+  ]
 }
 ```
 
+| Campo | Regra |
+|-------|-------|
+| `items` | Array não vazio; deve incluir **todos** os `ReviewSessionItem` da sessão |
+| `reviewSessionItemId` | `ReviewSessionItem.id` (não o `reviewItemId`) |
+| `status` | `active` \| `learned` |
+| `priority` | Obrigatório quando `status === "active"`; omitido/ignorado quando `learned` |
+
+**Resposta (200):** mesmo shape de `GET /api/review-sessions/:id`, com `status: "completed"` e `confirmedStatus` / `confirmedPriority` preenchidos em cada item.
+
 **Comportamento:**
 
-- `accept` → aplica `suggestedStatus` / `suggestedPriority`.
-- `override` → aplica os valores do body.
-- Ao confirmar o **último** item pendente, a sessão passa para `status: "completed"`.
-- Alterações em `review_items` só ocorrem após `confirm` (sugestões do SSE/GET não alteram a listagem).
+- Persiste cada decisão em `review_items` via merge e marca `confirmedStatus` / `confirmedPriority` / `confirmedAt` em cada `ReviewSessionItem`.
+- Ao aplicar todos os itens, a sessão passa para `status: "completed"`.
+- Alterações em `review_items` só ocorrem após `apply` (sugestões do SSE/GET não alteram a listagem).
 
 **Erros:**
 
 | Status | Quando |
 |--------|--------|
-| `400` | `action: "accept"` mas `suggestedStatus` é `null` |
+| `400` | Body inválido, sessão não está em `pending_review`, ou nem todos os itens foram enviados |
 | `404` | Sessão ou item inexistente / outro usuário |
-| `409` | Item já confirmado (`"Review session item already confirmed"`) |
-| `422` | Body inválido (ex.: `override` + `learned` com `priority`) |
+| `409` | Sessão já `completed`, ou algum item já confirmado |
+| `422` | Validação Zod (ex.: `active` sem `priority`) |
 
 ---
 
@@ -924,7 +912,7 @@ Sobrescrever marcando como aprendido (sem `priority`):
 | `400` | Validação (body, PDF, currículo não pronto, stream sem resposta quando obrigatória) |
 | `401` | Token ausente/inválido |
 | `404` | Recurso não encontrado ou não pertence ao usuário |
-| `409` | Sessão já finalizada (stream de entrevista ou review session em `pending_review`/`completed`); item de review session já confirmado |
+| `409` | Sessão já finalizada (stream de entrevista ou review session em `pending_review`/`completed`); review session já `completed` no bulk apply |
 | `422` | Validação Zod (body/query inválidos em review-items e review-sessions) |
 | `502` | Falha de storage no upload |
 | `503` | Fila de processamento indisponível |
@@ -989,14 +977,14 @@ finished (isFinished)
 ```
 selecting_items → creating → in_progress (Q&A SSE)
   → pending_review (relatório)
-  → confirming (por item)
+  → applying (bulk apply)
   → completed
 ```
 
 - Durante `in_progress`: habilitar input apenas quando não há stream ativo.
-- Em `pending_review`: desabilitar stream; exibir relatório e botões de confirm por item.
-- Após cada `confirm`, refetch `GET /review-sessions/:id` e/ou `GET /review-items`.
-- Itens com `suggestedStatus: null` no relatório: oferecer só `override`.
+- Em `pending_review`: desabilitar stream; exibir relatório e botão **Apply** único.
+- Após `apply`, refetch `GET /review-sessions/:id` e/ou `GET /review-items`.
+- Itens com `suggestedStatus: null` no relatório: card totalmente editável; valores editados vão no bulk `apply`.
 
 ---
 
@@ -1016,7 +1004,7 @@ selecting_items → creating → in_progress (Q&A SSE)
 | `POST` | `/api/review-sessions` | Criar Review Session |
 | `POST` | `/api/review-sessions/:id/stream` | Q&A adaptativo (SSE) |
 | `GET` | `/api/review-sessions/:id` | Relatório da sessão |
-| `POST` | `/api/review-sessions/:id/items/:itemId/confirm` | Confirmar sugestão de um item |
+| `POST` | `/api/review-sessions/:id/apply` | Aplicar decisões do relatório (bulk) |
 
 ---
 
