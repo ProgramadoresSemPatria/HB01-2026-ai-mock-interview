@@ -107,7 +107,7 @@ export default function ResumesPage() {
       // Invalidate queries
       void queryClient.invalidateQueries({ queryKey: queryKeys.resumes });
       void queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.reviewItems });
+      void queryClient.invalidateQueries({ queryKey: ["review-items"] });
       
       if (activeResumeId === id) {
         setStoredResumeId("");

@@ -144,7 +144,7 @@ function FeedbackContent() {
       
       // Invalidate queries
       void queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.reviewItems });
+      void queryClient.invalidateQueries({ queryKey: ["review-items"] });
       
       if (selectedSessionId === id) {
         setSelectedSessionId(null);

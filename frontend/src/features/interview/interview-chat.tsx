@@ -147,7 +147,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
 
   const invalidateAfterTurn = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.reviewItems });
+    void queryClient.invalidateQueries({ queryKey: ["review-items"] });
   }, [queryClient, sessionId]);
 
   useEffect(() => {
