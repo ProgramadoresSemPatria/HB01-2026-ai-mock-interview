@@ -21,4 +21,34 @@ export const reviewSessionsApi = {
       token,
     });
   },
+
+  apply(token: string, sessionId: string, body: ApplyReviewSessionRequest) {
+    return apiRequest<ReviewSession>(
+      `/api/review-sessions/${sessionId}/apply`,
+      {
+        method: "POST",
+        body,
+        token,
+      },
+    );
+  },
+
+  applyKeepalive(
+    token: string,
+    sessionId: string,
+    body: ApplyReviewSessionRequest,
+  ): void {
+    void fetch(
+      `${env.NEXT_PUBLIC_SERVER_URL}/api/review-sessions/${sessionId}/apply`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+        keepalive: true,
+      },
+    );
+  },
 };
