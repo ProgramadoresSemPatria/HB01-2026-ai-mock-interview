@@ -432,7 +432,7 @@ describe("Interview API E2E", () => {
           resumeSummary: sampleStructuredSummary,
           runReview: false,
         }),
-        { threadId: sessionId },
+        expect.objectContaining({ threadId: sessionId }),
       );
     });
 

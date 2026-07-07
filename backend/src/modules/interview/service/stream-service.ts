@@ -186,7 +186,7 @@ export class InterviewStreamService {
           reviewUsageCapture.getUsage(),
         );
 
-        await this.reviewMergeService.upsertItems(
+        await this.reviewMergeService.insertNewTopicsOnly(
           userId,
           sessionId,
           review.items,

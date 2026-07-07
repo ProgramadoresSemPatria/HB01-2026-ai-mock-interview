@@ -10,6 +10,7 @@ model User {
   resumes           Resume[]
   interviewSessions InterviewSession[]
   reviewItems        ReviewItem[]
+  reviewSessions     ReviewSession[]
   interviewFeedbacks InterviewFeedback[]
   tokenUsage        UserTokenUsage[]
 
