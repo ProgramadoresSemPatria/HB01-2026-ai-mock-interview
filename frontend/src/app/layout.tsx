@@ -1,23 +1,12 @@
 import type { Metadata } from "next";
-import { Outfit, Playfair_Display } from "next/font/google";
 
 import "../index.css";
 import Providers from "@/components/providers";
 
-const outfit = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-});
-
-const playfairDisplay = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Hone | AI Mock Interview",
+  title: "Hone ",
   description:
-    "Landing page do AI Mock Interview com foco em preparacao tecnica, feedback estruturado e pratica guiada por IA.",
+    "AI Mock Interview, technical interview preparation, structured feedback, guided practice with AI.",
 };
 
 export default function RootLayout({
@@ -27,9 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning data-scroll-behavior="smooth">
-      <body
-        className={`${outfit.variable} ${playfairDisplay.variable} min-h-screen antialiased`}
-      >
+      <body className="min-h-dvh antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>
