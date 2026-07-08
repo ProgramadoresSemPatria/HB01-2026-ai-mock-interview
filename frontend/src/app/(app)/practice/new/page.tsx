@@ -12,6 +12,7 @@ import { useResume } from "@/lib/query/hooks/use-resume";
 import { ApiError } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 import type { InterviewLevel } from "@/types/interview";
+import { MAX_JOB_DESCRIPTION_LENGTH } from "@/types/interview";
 
 const LEVELS: { value: InterviewLevel; label: string; description: string }[] =
   [
@@ -26,6 +27,7 @@ function NewSessionContent() {
   const resumeId = searchParams.get("resumeId") ?? getStoredResumeId() ?? "";
   const { fetchWithAuth } = useAuth();
   const [level, setLevel] = useState<InterviewLevel>("mid");
+  const [jobDescription, setJobDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resumeQuery = useResume(resumeId || null);
@@ -41,10 +43,27 @@ function NewSessionContent() {
       return;
     }
 
+    const trimmedJobDescription = jobDescription.trim();
+    if (trimmedJobDescription.length > MAX_JOB_DESCRIPTION_LENGTH) {
+      toast.error(
+        `Job description must be at most ${MAX_JOB_DESCRIPTION_LENGTH} characters.`,
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      const body: {
+        resumeId: string;
+        level: InterviewLevel;
+        jobDescription?: string;
+      } = { resumeId, level };
+      if (trimmedJobDescription) {
+        body.jobDescription = trimmedJobDescription;
+      }
+
       const { id } = await fetchWithAuth((token) =>
-        interviewApi.createSession({ resumeId, level }, token),
+        interviewApi.createSession(body, token),
       );
       router.push(`/interview/${id}`);
     } catch (err) {
@@ -102,6 +121,27 @@ function NewSessionContent() {
             </span>
           </button>
         ))}
+      </div>
+
+      <div className="space-y-1.5">
+        <label
+          htmlFor="job-description"
+          className="text-sm font-medium text-(--foreground)"
+        >
+          Job description (optional)
+        </label>
+        <textarea
+          id="job-description"
+          value={jobDescription}
+          onChange={(e) => setJobDescription(e.target.value)}
+          placeholder="Paste a job posting to tailor questions to a specific role…"
+          rows={5}
+          maxLength={MAX_JOB_DESCRIPTION_LENGTH}
+          className="w-full resize-y rounded-xl border border-(--border) bg-(--background) px-4 py-3 text-sm text-(--foreground) placeholder:text-(--muted-foreground) focus:outline-none focus:ring-2 focus:ring-(--primary)"
+        />
+        <p className="text-xs text-(--muted-foreground) text-right">
+          {jobDescription.length}/{MAX_JOB_DESCRIPTION_LENGTH}
+        </p>
       </div>
 
       <button

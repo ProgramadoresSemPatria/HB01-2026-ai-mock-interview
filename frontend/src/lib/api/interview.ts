@@ -1,17 +1,16 @@
 import type {
+  CreateSessionInput,
   CreateSessionResponse,
-  InterviewLevel,
+  InterviewFeedback,
   ListMessagesResponse,
   ListSessionsResponse,
+  SubmitFeedbackInput,
 } from "@/types/interview";
 
 import { apiRequest } from "./client";
 
 export const interviewApi = {
-  createSession(
-    body: { resumeId: string; level: InterviewLevel },
-    token: string,
-  ) {
+  createSession(body: CreateSessionInput, token: string) {
     return apiRequest<CreateSessionResponse>("/api/interview/sessions", {
       method: "POST",
       body,
@@ -37,5 +36,22 @@ export const interviewApi = {
       method: "DELETE",
       token,
     });
+  },
+
+  submitFeedback(
+    sessionId: string,
+    body: SubmitFeedbackInput,
+    token: string,
+  ) {
+    const payload: SubmitFeedbackInput = { rating: body.rating };
+    const trimmed = body.comment?.trim();
+    if (trimmed) {
+      payload.comment = trimmed;
+    }
+
+    return apiRequest<InterviewFeedback>(
+      `/api/interview/sessions/${sessionId}/feedback`,
+      { method: "POST", body: payload, token },
+    );
   },
 };

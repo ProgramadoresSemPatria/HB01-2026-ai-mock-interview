@@ -1,5 +1,13 @@
 export type InterviewLevel = "entry" | "mid" | "senior";
 
+export const MAX_JOB_DESCRIPTION_LENGTH = 5_000;
+
+export type CreateSessionInput = {
+  resumeId: string;
+  level: InterviewLevel;
+  jobDescription?: string;
+};
+
 export type SessionSummary = {
   id: string;
   resumeId: string;
@@ -7,6 +15,7 @@ export type SessionSummary = {
   turnCount: number;
   maxTurns: number;
   isFinished: boolean;
+  hasJobDescription: boolean;
   createdAt: string;
 };
 
@@ -33,4 +42,21 @@ export type StreamMeta = {
   turnCount: number;
   maxTurns: number;
   isFinished: boolean;
+};
+
+export type FeedbackRating = "up" | "down";
+
+export type SubmitFeedbackInput = {
+  rating: FeedbackRating;
+  comment?: string;
+};
+
+export type InterviewFeedback = {
+  id: string;
+  sessionId: string;
+  userId: number;
+  rating: FeedbackRating;
+  comment: string | null;
+  createdAt: string;
+  updatedAt: string;
 };

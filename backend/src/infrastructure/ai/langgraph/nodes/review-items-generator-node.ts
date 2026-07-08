@@ -17,6 +17,7 @@ export type ReviewItemsGeneratorInput = {
   transcript: string;
   existingItems: ExistingReviewItemForPrompt[];
   structuredSummary: StructuredSummary;
+  jobDescription?: string | null;
 };
 
 export type StructuredReviewModel = {
@@ -45,15 +46,19 @@ export function createReviewItemsGeneratorNode(
       transcript: input.transcript,
       existingItems: input.existingItems,
       structuredSummary: input.structuredSummary,
+      jobDescription: input.jobDescription,
     });
 
+    // Pass prompt as a template variable so JSON braces in existing items are not
+    // parsed as LangChain input placeholders (INVALID_PROMPT_INPUT).
     const promptTemplate = ChatPromptTemplate.fromMessages([
-      ["human", promptText],
+      ["human", "{prompt}"],
     ]);
     const chain = promptTemplate.pipe(structuredModel);
+    const invokeInput = { prompt: promptText };
     const raw = config
-      ? await chain.invoke({}, config)
-      : await chain.invoke({});
+      ? await chain.invoke(invokeInput, config)
+      : await chain.invoke(invokeInput);
     return reviewItemsGeneratorOutputSchema.parse(raw);
   };
 }

@@ -1,10 +1,14 @@
 import { CheckCircle2 } from "lucide-react";
 
+import { InterviewFeedbackWidget } from "./interview-feedback-widget";
+
 type InterviewCompletionBannerProps = {
+  sessionId: string;
   onViewReview?: () => void;
 };
 
 export function InterviewCompletionBanner({
+  sessionId,
   onViewReview,
 }: InterviewCompletionBannerProps) {
   return (
@@ -27,6 +31,7 @@ export function InterviewCompletionBanner({
             Jump to review
           </button>
         )}
+        <InterviewFeedbackWidget sessionId={sessionId} />
       </div>
     </div>
   );

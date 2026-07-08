@@ -89,6 +89,7 @@ export class InterviewStreamService {
         level: session.level,
         userId,
         resumeSummary,
+        jobDescription: session.jobDescription,
         isFinished: session.isFinished,
         runReview: isFinalTurn,
       },
@@ -175,6 +176,7 @@ export class InterviewStreamService {
             sessionId,
             transcript,
             structuredSummary: resumeSummary,
+            jobDescription: session.jobDescription,
           },
           { callbacks: [reviewUsageCapture.callback] },
         );

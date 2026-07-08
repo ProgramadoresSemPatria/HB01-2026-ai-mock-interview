@@ -60,9 +60,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
 
   if (
     pendingHuman &&
-    !serverMessages.some(
-      (m) => m.role === "human" && m.content === pendingHuman.content,
-    )
+    !displayMessages.some((m) => m.id === pendingHuman.id)
   ) {
     displayMessages.push(pendingHuman);
   }
@@ -112,28 +110,24 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
   );
 
   const mergeStreamedMessages = useCallback(
-    (humanContent: string, aiContent: string) => {
+    (humanContent: string, aiContent: string, pendingId: string) => {
       queryClient.setQueryData<ListMessagesResponse>(
         queryKeys.sessionMessages(sessionId),
         (old) => {
           const existing = old?.messages ?? [];
-          const withoutPending = existing.filter(
-            (m) => m.id !== "pending-human",
+          const withoutCurrentPending = existing.filter(
+            (m) => m.id !== pendingId,
           );
 
-          const hasHuman = withoutPending.some(
-            (m) => m.role === "human" && m.content === humanContent,
-          );
-          const next: SessionMessage[] = [...withoutPending];
-
-          if (!hasHuman) {
-            next.push({
-              id: "pending-human",
+          const next: SessionMessage[] = [
+            ...withoutCurrentPending,
+            {
+              id: pendingId,
               role: "human",
               content: humanContent,
               createdAt: new Date().toISOString(),
-            });
-          }
+            },
+          ];
 
           if (aiContent) {
             next.push({
@@ -152,9 +146,6 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
   );
 
   const invalidateAfterTurn = useCallback(() => {
-    void queryClient.invalidateQueries({
-      queryKey: queryKeys.sessionMessages(sessionId),
-    });
     void queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
     void queryClient.invalidateQueries({ queryKey: queryKeys.reviewItems });
   }, [queryClient, sessionId]);
@@ -178,8 +169,9 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
       return;
     }
 
+    const pendingId = `pending-human-${Date.now()}`;
     setPendingHuman({
-      id: "pending-human",
+      id: pendingId,
       role: "human",
       content,
       createdAt: new Date().toISOString(),
@@ -204,7 +196,10 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
         },
       });
 
-      mergeStreamedMessages(content, streamingContentRef.current);
+      mergeStreamedMessages(content, streamingContentRef.current, pendingId);
+      setIsStreaming(false);
+      setStreamingContent("");
+      setPendingHuman(null);
       invalidateAfterTurn();
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
@@ -321,7 +316,10 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
 
           {isCompleted && (
             <div className="mt-4 shrink-0">
-              <InterviewCompletionBanner onViewReview={() => setViewMode("review")} />
+              <InterviewCompletionBanner
+                sessionId={sessionId}
+                onViewReview={() => setViewMode("review")}
+              />
             </div>
           )}
 

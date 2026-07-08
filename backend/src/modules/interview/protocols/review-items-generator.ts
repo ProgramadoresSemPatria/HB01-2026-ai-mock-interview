@@ -7,6 +7,7 @@ export type ReviewItemsGeneratorParams = {
   sessionId: string;
   transcript: string;
   structuredSummary: StructuredSummary;
+  jobDescription?: string | null;
 };
 
 export type ReviewItemsGeneratorOptions = {

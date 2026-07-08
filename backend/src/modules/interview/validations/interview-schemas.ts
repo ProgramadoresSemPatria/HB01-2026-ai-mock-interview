@@ -5,6 +5,11 @@ export const interviewLevelSchema = z.enum(["entry", "mid", "senior"]);
 export const createSessionSchema = z.object({
   resumeId: z.uuid({ message: "Invalid resume ID" }),
   level: interviewLevelSchema,
+  jobDescription: z
+    .string()
+    .trim()
+    .max(5_000, "Job description is too long")
+    .optional(),
 });
 
 export const streamMessageSchema = z.object({

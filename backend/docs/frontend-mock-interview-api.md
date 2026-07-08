@@ -43,7 +43,7 @@ sequenceDiagram
     API-->>UI: { status, structuredSummary? }
   end
 
-  UI->>API: POST /api/interview/sessions { resumeId, level }
+  UI->>API: POST /api/interview/sessions { resumeId, level, jobDescription? }
   API-->>UI: { id: sessionId }
 
   loop enquanto turnCount < maxTurns
@@ -222,11 +222,14 @@ O backend expõe `turnCount` e `maxTurns` na listagem de sessões e no evento SS
 ```json
 {
   "resumeId": "uuid-do-curriculo",
-  "level": "entry"
+  "level": "entry",
+  "jobDescription": "opcional — texto da vaga (máx. 5000 caracteres)"
 }
 ```
 
 `level`: `"entry"` | `"mid"` | `"senior"`
+
+`jobDescription` (opcional): quando informado, o backend **sanitiza** o texto (remove HTML, neutraliza padrões comuns de prompt injection) antes de persistir e injetar no prompt do entrevistador. Omita o campo ou envie string vazia para entrevista genérica.
 
 **Resposta (201):**
 
@@ -264,6 +267,7 @@ O backend expõe `turnCount` e `maxTurns` na listagem de sessões e no evento SS
       "turnCount": 3,
       "maxTurns": 7,
       "isFinished": false,
+      "hasJobDescription": true,
       "createdAt": "2026-05-27T12:00:00.000Z"
     }
   ]

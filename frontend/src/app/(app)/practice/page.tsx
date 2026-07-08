@@ -25,6 +25,7 @@ import { InterviewChat } from "@/features/interview/interview-chat";
 import { queryKeys } from "@/lib/query/keys";
 import { cn } from "@/lib/utils";
 import type { InterviewLevel } from "@/types/interview";
+import { MAX_JOB_DESCRIPTION_LENGTH } from "@/types/interview";
 import {
   getStoredResumeId,
   setStoredResumeId,
@@ -46,6 +47,8 @@ function PracticeContent() {
     getStoredResumeId(),
   );
   const [level, setLevel] = useState<InterviewLevel>("mid");
+  const [jobDescription, setJobDescription] = useState("");
+  const [showJobDescription, setShowJobDescription] = useState(false);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
 
@@ -92,12 +95,26 @@ function PracticeContent() {
       return;
     }
 
+    const trimmedJobDescription = jobDescription.trim();
+    if (trimmedJobDescription.length > MAX_JOB_DESCRIPTION_LENGTH) {
+      toast.error(
+        `Job description must be at most ${MAX_JOB_DESCRIPTION_LENGTH} characters.`,
+      );
+      return;
+    }
+
     setIsCreatingSession(true);
     try {
-      const { id } = await interviewApi.createSession(
-        { resumeId: activeResumeId, level },
-        token,
-      );
+      const body: {
+        resumeId: string;
+        level: InterviewLevel;
+        jobDescription?: string;
+      } = { resumeId: activeResumeId, level };
+      if (trimmedJobDescription) {
+        body.jobDescription = trimmedJobDescription;
+      }
+
+      const { id } = await interviewApi.createSession(body, token);
       
       toast.success("New interview session created!");
       
@@ -192,6 +209,38 @@ function PracticeContent() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Optional job description */}
+          <div className="space-y-1.5">
+            <button
+              type="button"
+              onClick={() => setShowJobDescription((open) => !open)}
+              className="cursor-pointer flex w-full items-center justify-between text-xs font-semibold text-(--muted-foreground) uppercase tracking-wider"
+            >
+              <span>Job description (optional)</span>
+              <ChevronRight
+                className={cn(
+                  "h-3.5 w-3.5 transition-transform",
+                  showJobDescription && "rotate-90",
+                )}
+              />
+            </button>
+            {showJobDescription && (
+              <div className="space-y-1">
+                <textarea
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  placeholder="Paste a job posting to tailor questions to a specific role…"
+                  rows={4}
+                  maxLength={MAX_JOB_DESCRIPTION_LENGTH}
+                  className="w-full resize-y rounded-lg border border-(--border) bg-(--background) px-3 py-2 text-xs text-(--foreground) placeholder:text-(--muted-foreground) focus:outline-none focus:ring-2 focus:ring-(--primary)"
+                />
+                <p className="text-[10px] text-(--muted-foreground) text-right">
+                  {jobDescription.length}/{MAX_JOB_DESCRIPTION_LENGTH}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Start New Session CTA */}
