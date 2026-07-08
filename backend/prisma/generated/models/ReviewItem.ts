@@ -41,6 +41,8 @@ export type ReviewItemMinAggregateOutputType = {
   topic: string | null
   description: string | null
   priority: $Enums.ReviewPriority | null
+  status: $Enums.ReviewItemStatus | null
+  learnedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -52,6 +54,8 @@ export type ReviewItemMaxAggregateOutputType = {
   topic: string | null
   description: string | null
   priority: $Enums.ReviewPriority | null
+  status: $Enums.ReviewItemStatus | null
+  learnedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -63,6 +67,8 @@ export type ReviewItemCountAggregateOutputType = {
   topic: number
   description: number
   priority: number
+  status: number
+  learnedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -84,6 +90,8 @@ export type ReviewItemMinAggregateInputType = {
   topic?: true
   description?: true
   priority?: true
+  status?: true
+  learnedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -95,6 +103,8 @@ export type ReviewItemMaxAggregateInputType = {
   topic?: true
   description?: true
   priority?: true
+  status?: true
+  learnedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -106,6 +116,8 @@ export type ReviewItemCountAggregateInputType = {
   topic?: true
   description?: true
   priority?: true
+  status?: true
+  learnedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -204,6 +216,8 @@ export type ReviewItemGroupByOutputType = {
   topic: string
   description: string
   priority: $Enums.ReviewPriority
+  status: $Enums.ReviewItemStatus
+  learnedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: ReviewItemCountAggregateOutputType | null
@@ -238,10 +252,13 @@ export type ReviewItemWhereInput = {
   topic?: Prisma.StringFilter<"ReviewItem"> | string
   description?: Prisma.StringFilter<"ReviewItem"> | string
   priority?: Prisma.EnumReviewPriorityFilter<"ReviewItem"> | $Enums.ReviewPriority
+  status?: Prisma.EnumReviewItemStatusFilter<"ReviewItem"> | $Enums.ReviewItemStatus
+  learnedAt?: Prisma.DateTimeNullableFilter<"ReviewItem"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"ReviewItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ReviewItem"> | Date | string
   session?: Prisma.XOR<Prisma.InterviewSessionScalarRelationFilter, Prisma.InterviewSessionWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  sessionItems?: Prisma.ReviewSessionItemListRelationFilter
 }
 
 export type ReviewItemOrderByWithRelationInput = {
@@ -251,10 +268,13 @@ export type ReviewItemOrderByWithRelationInput = {
   topic?: Prisma.SortOrder
   description?: Prisma.SortOrder
   priority?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  learnedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   session?: Prisma.InterviewSessionOrderByWithRelationInput
   user?: Prisma.UserOrderByWithRelationInput
+  sessionItems?: Prisma.ReviewSessionItemOrderByRelationAggregateInput
 }
 
 export type ReviewItemWhereUniqueInput = Prisma.AtLeast<{
@@ -268,10 +288,13 @@ export type ReviewItemWhereUniqueInput = Prisma.AtLeast<{
   topic?: Prisma.StringFilter<"ReviewItem"> | string
   description?: Prisma.StringFilter<"ReviewItem"> | string
   priority?: Prisma.EnumReviewPriorityFilter<"ReviewItem"> | $Enums.ReviewPriority
+  status?: Prisma.EnumReviewItemStatusFilter<"ReviewItem"> | $Enums.ReviewItemStatus
+  learnedAt?: Prisma.DateTimeNullableFilter<"ReviewItem"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"ReviewItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ReviewItem"> | Date | string
   session?: Prisma.XOR<Prisma.InterviewSessionScalarRelationFilter, Prisma.InterviewSessionWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  sessionItems?: Prisma.ReviewSessionItemListRelationFilter
 }, "id" | "userId_topic">
 
 export type ReviewItemOrderByWithAggregationInput = {
@@ -281,6 +304,8 @@ export type ReviewItemOrderByWithAggregationInput = {
   topic?: Prisma.SortOrder
   description?: Prisma.SortOrder
   priority?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  learnedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ReviewItemCountOrderByAggregateInput
@@ -300,6 +325,8 @@ export type ReviewItemScalarWhereWithAggregatesInput = {
   topic?: Prisma.StringWithAggregatesFilter<"ReviewItem"> | string
   description?: Prisma.StringWithAggregatesFilter<"ReviewItem"> | string
   priority?: Prisma.EnumReviewPriorityWithAggregatesFilter<"ReviewItem"> | $Enums.ReviewPriority
+  status?: Prisma.EnumReviewItemStatusWithAggregatesFilter<"ReviewItem"> | $Enums.ReviewItemStatus
+  learnedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReviewItem"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ReviewItem"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ReviewItem"> | Date | string
 }
@@ -309,10 +336,13 @@ export type ReviewItemCreateInput = {
   topic: string
   description: string
   priority: $Enums.ReviewPriority
+  status?: $Enums.ReviewItemStatus
+  learnedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   session: Prisma.InterviewSessionCreateNestedOneWithoutReviewItemsInput
   user: Prisma.UserCreateNestedOneWithoutReviewItemsInput
+  sessionItems?: Prisma.ReviewSessionItemCreateNestedManyWithoutReviewItemInput
 }
 
 export type ReviewItemUncheckedCreateInput = {
@@ -322,8 +352,11 @@ export type ReviewItemUncheckedCreateInput = {
   topic: string
   description: string
   priority: $Enums.ReviewPriority
+  status?: $Enums.ReviewItemStatus
+  learnedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  sessionItems?: Prisma.ReviewSessionItemUncheckedCreateNestedManyWithoutReviewItemInput
 }
 
 export type ReviewItemUpdateInput = {
@@ -331,10 +364,13 @@ export type ReviewItemUpdateInput = {
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   priority?: Prisma.EnumReviewPriorityFieldUpdateOperationsInput | $Enums.ReviewPriority
+  status?: Prisma.EnumReviewItemStatusFieldUpdateOperationsInput | $Enums.ReviewItemStatus
+  learnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   session?: Prisma.InterviewSessionUpdateOneRequiredWithoutReviewItemsNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutReviewItemsNestedInput
+  sessionItems?: Prisma.ReviewSessionItemUpdateManyWithoutReviewItemNestedInput
 }
 
 export type ReviewItemUncheckedUpdateInput = {
@@ -344,8 +380,11 @@ export type ReviewItemUncheckedUpdateInput = {
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   priority?: Prisma.EnumReviewPriorityFieldUpdateOperationsInput | $Enums.ReviewPriority
+  status?: Prisma.EnumReviewItemStatusFieldUpdateOperationsInput | $Enums.ReviewItemStatus
+  learnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessionItems?: Prisma.ReviewSessionItemUncheckedUpdateManyWithoutReviewItemNestedInput
 }
 
 export type ReviewItemCreateManyInput = {
@@ -355,6 +394,8 @@ export type ReviewItemCreateManyInput = {
   topic: string
   description: string
   priority: $Enums.ReviewPriority
+  status?: $Enums.ReviewItemStatus
+  learnedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -364,6 +405,8 @@ export type ReviewItemUpdateManyMutationInput = {
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   priority?: Prisma.EnumReviewPriorityFieldUpdateOperationsInput | $Enums.ReviewPriority
+  status?: Prisma.EnumReviewItemStatusFieldUpdateOperationsInput | $Enums.ReviewItemStatus
+  learnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -375,6 +418,8 @@ export type ReviewItemUncheckedUpdateManyInput = {
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   priority?: Prisma.EnumReviewPriorityFieldUpdateOperationsInput | $Enums.ReviewPriority
+  status?: Prisma.EnumReviewItemStatusFieldUpdateOperationsInput | $Enums.ReviewItemStatus
+  learnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -401,6 +446,8 @@ export type ReviewItemCountOrderByAggregateInput = {
   topic?: Prisma.SortOrder
   description?: Prisma.SortOrder
   priority?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  learnedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -416,6 +463,8 @@ export type ReviewItemMaxOrderByAggregateInput = {
   topic?: Prisma.SortOrder
   description?: Prisma.SortOrder
   priority?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  learnedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -427,12 +476,19 @@ export type ReviewItemMinOrderByAggregateInput = {
   topic?: Prisma.SortOrder
   description?: Prisma.SortOrder
   priority?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  learnedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type ReviewItemSumOrderByAggregateInput = {
   userId?: Prisma.SortOrder
+}
+
+export type ReviewItemScalarRelationFilter = {
+  is?: Prisma.ReviewItemWhereInput
+  isNot?: Prisma.ReviewItemWhereInput
 }
 
 export type ReviewItemCreateNestedManyWithoutSessionInput = {
@@ -479,6 +535,28 @@ export type ReviewItemUncheckedUpdateManyWithoutSessionNestedInput = {
 
 export type EnumReviewPriorityFieldUpdateOperationsInput = {
   set?: $Enums.ReviewPriority
+}
+
+export type EnumReviewItemStatusFieldUpdateOperationsInput = {
+  set?: $Enums.ReviewItemStatus
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
+}
+
+export type ReviewItemCreateNestedOneWithoutSessionItemsInput = {
+  create?: Prisma.XOR<Prisma.ReviewItemCreateWithoutSessionItemsInput, Prisma.ReviewItemUncheckedCreateWithoutSessionItemsInput>
+  connectOrCreate?: Prisma.ReviewItemCreateOrConnectWithoutSessionItemsInput
+  connect?: Prisma.ReviewItemWhereUniqueInput
+}
+
+export type ReviewItemUpdateOneRequiredWithoutSessionItemsNestedInput = {
+  create?: Prisma.XOR<Prisma.ReviewItemCreateWithoutSessionItemsInput, Prisma.ReviewItemUncheckedCreateWithoutSessionItemsInput>
+  connectOrCreate?: Prisma.ReviewItemCreateOrConnectWithoutSessionItemsInput
+  upsert?: Prisma.ReviewItemUpsertWithoutSessionItemsInput
+  connect?: Prisma.ReviewItemWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ReviewItemUpdateToOneWithWhereWithoutSessionItemsInput, Prisma.ReviewItemUpdateWithoutSessionItemsInput>, Prisma.ReviewItemUncheckedUpdateWithoutSessionItemsInput>
 }
 
 export type ReviewItemCreateNestedManyWithoutUserInput = {
@@ -528,9 +606,12 @@ export type ReviewItemCreateWithoutSessionInput = {
   topic: string
   description: string
   priority: $Enums.ReviewPriority
+  status?: $Enums.ReviewItemStatus
+  learnedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutReviewItemsInput
+  sessionItems?: Prisma.ReviewSessionItemCreateNestedManyWithoutReviewItemInput
 }
 
 export type ReviewItemUncheckedCreateWithoutSessionInput = {
@@ -539,8 +620,11 @@ export type ReviewItemUncheckedCreateWithoutSessionInput = {
   topic: string
   description: string
   priority: $Enums.ReviewPriority
+  status?: $Enums.ReviewItemStatus
+  learnedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  sessionItems?: Prisma.ReviewSessionItemUncheckedCreateNestedManyWithoutReviewItemInput
 }
 
 export type ReviewItemCreateOrConnectWithoutSessionInput = {
@@ -579,8 +663,78 @@ export type ReviewItemScalarWhereInput = {
   topic?: Prisma.StringFilter<"ReviewItem"> | string
   description?: Prisma.StringFilter<"ReviewItem"> | string
   priority?: Prisma.EnumReviewPriorityFilter<"ReviewItem"> | $Enums.ReviewPriority
+  status?: Prisma.EnumReviewItemStatusFilter<"ReviewItem"> | $Enums.ReviewItemStatus
+  learnedAt?: Prisma.DateTimeNullableFilter<"ReviewItem"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"ReviewItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ReviewItem"> | Date | string
+}
+
+export type ReviewItemCreateWithoutSessionItemsInput = {
+  id?: string
+  topic: string
+  description: string
+  priority: $Enums.ReviewPriority
+  status?: $Enums.ReviewItemStatus
+  learnedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  session: Prisma.InterviewSessionCreateNestedOneWithoutReviewItemsInput
+  user: Prisma.UserCreateNestedOneWithoutReviewItemsInput
+}
+
+export type ReviewItemUncheckedCreateWithoutSessionItemsInput = {
+  id?: string
+  sessionId: string
+  userId: number
+  topic: string
+  description: string
+  priority: $Enums.ReviewPriority
+  status?: $Enums.ReviewItemStatus
+  learnedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ReviewItemCreateOrConnectWithoutSessionItemsInput = {
+  where: Prisma.ReviewItemWhereUniqueInput
+  create: Prisma.XOR<Prisma.ReviewItemCreateWithoutSessionItemsInput, Prisma.ReviewItemUncheckedCreateWithoutSessionItemsInput>
+}
+
+export type ReviewItemUpsertWithoutSessionItemsInput = {
+  update: Prisma.XOR<Prisma.ReviewItemUpdateWithoutSessionItemsInput, Prisma.ReviewItemUncheckedUpdateWithoutSessionItemsInput>
+  create: Prisma.XOR<Prisma.ReviewItemCreateWithoutSessionItemsInput, Prisma.ReviewItemUncheckedCreateWithoutSessionItemsInput>
+  where?: Prisma.ReviewItemWhereInput
+}
+
+export type ReviewItemUpdateToOneWithWhereWithoutSessionItemsInput = {
+  where?: Prisma.ReviewItemWhereInput
+  data: Prisma.XOR<Prisma.ReviewItemUpdateWithoutSessionItemsInput, Prisma.ReviewItemUncheckedUpdateWithoutSessionItemsInput>
+}
+
+export type ReviewItemUpdateWithoutSessionItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  topic?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  priority?: Prisma.EnumReviewPriorityFieldUpdateOperationsInput | $Enums.ReviewPriority
+  status?: Prisma.EnumReviewItemStatusFieldUpdateOperationsInput | $Enums.ReviewItemStatus
+  learnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  session?: Prisma.InterviewSessionUpdateOneRequiredWithoutReviewItemsNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutReviewItemsNestedInput
+}
+
+export type ReviewItemUncheckedUpdateWithoutSessionItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sessionId?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.IntFieldUpdateOperationsInput | number
+  topic?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  priority?: Prisma.EnumReviewPriorityFieldUpdateOperationsInput | $Enums.ReviewPriority
+  status?: Prisma.EnumReviewItemStatusFieldUpdateOperationsInput | $Enums.ReviewItemStatus
+  learnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ReviewItemCreateWithoutUserInput = {
@@ -588,9 +742,12 @@ export type ReviewItemCreateWithoutUserInput = {
   topic: string
   description: string
   priority: $Enums.ReviewPriority
+  status?: $Enums.ReviewItemStatus
+  learnedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   session: Prisma.InterviewSessionCreateNestedOneWithoutReviewItemsInput
+  sessionItems?: Prisma.ReviewSessionItemCreateNestedManyWithoutReviewItemInput
 }
 
 export type ReviewItemUncheckedCreateWithoutUserInput = {
@@ -599,8 +756,11 @@ export type ReviewItemUncheckedCreateWithoutUserInput = {
   topic: string
   description: string
   priority: $Enums.ReviewPriority
+  status?: $Enums.ReviewItemStatus
+  learnedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  sessionItems?: Prisma.ReviewSessionItemUncheckedCreateNestedManyWithoutReviewItemInput
 }
 
 export type ReviewItemCreateOrConnectWithoutUserInput = {
@@ -635,6 +795,8 @@ export type ReviewItemCreateManySessionInput = {
   topic: string
   description: string
   priority: $Enums.ReviewPriority
+  status?: $Enums.ReviewItemStatus
+  learnedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -644,9 +806,12 @@ export type ReviewItemUpdateWithoutSessionInput = {
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   priority?: Prisma.EnumReviewPriorityFieldUpdateOperationsInput | $Enums.ReviewPriority
+  status?: Prisma.EnumReviewItemStatusFieldUpdateOperationsInput | $Enums.ReviewItemStatus
+  learnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutReviewItemsNestedInput
+  sessionItems?: Prisma.ReviewSessionItemUpdateManyWithoutReviewItemNestedInput
 }
 
 export type ReviewItemUncheckedUpdateWithoutSessionInput = {
@@ -655,8 +820,11 @@ export type ReviewItemUncheckedUpdateWithoutSessionInput = {
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   priority?: Prisma.EnumReviewPriorityFieldUpdateOperationsInput | $Enums.ReviewPriority
+  status?: Prisma.EnumReviewItemStatusFieldUpdateOperationsInput | $Enums.ReviewItemStatus
+  learnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessionItems?: Prisma.ReviewSessionItemUncheckedUpdateManyWithoutReviewItemNestedInput
 }
 
 export type ReviewItemUncheckedUpdateManyWithoutSessionInput = {
@@ -665,6 +833,8 @@ export type ReviewItemUncheckedUpdateManyWithoutSessionInput = {
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   priority?: Prisma.EnumReviewPriorityFieldUpdateOperationsInput | $Enums.ReviewPriority
+  status?: Prisma.EnumReviewItemStatusFieldUpdateOperationsInput | $Enums.ReviewItemStatus
+  learnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -675,6 +845,8 @@ export type ReviewItemCreateManyUserInput = {
   topic: string
   description: string
   priority: $Enums.ReviewPriority
+  status?: $Enums.ReviewItemStatus
+  learnedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -684,9 +856,12 @@ export type ReviewItemUpdateWithoutUserInput = {
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   priority?: Prisma.EnumReviewPriorityFieldUpdateOperationsInput | $Enums.ReviewPriority
+  status?: Prisma.EnumReviewItemStatusFieldUpdateOperationsInput | $Enums.ReviewItemStatus
+  learnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   session?: Prisma.InterviewSessionUpdateOneRequiredWithoutReviewItemsNestedInput
+  sessionItems?: Prisma.ReviewSessionItemUpdateManyWithoutReviewItemNestedInput
 }
 
 export type ReviewItemUncheckedUpdateWithoutUserInput = {
@@ -695,8 +870,11 @@ export type ReviewItemUncheckedUpdateWithoutUserInput = {
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   priority?: Prisma.EnumReviewPriorityFieldUpdateOperationsInput | $Enums.ReviewPriority
+  status?: Prisma.EnumReviewItemStatusFieldUpdateOperationsInput | $Enums.ReviewItemStatus
+  learnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessionItems?: Prisma.ReviewSessionItemUncheckedUpdateManyWithoutReviewItemNestedInput
 }
 
 export type ReviewItemUncheckedUpdateManyWithoutUserInput = {
@@ -705,10 +883,41 @@ export type ReviewItemUncheckedUpdateManyWithoutUserInput = {
   topic?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   priority?: Prisma.EnumReviewPriorityFieldUpdateOperationsInput | $Enums.ReviewPriority
+  status?: Prisma.EnumReviewItemStatusFieldUpdateOperationsInput | $Enums.ReviewItemStatus
+  learnedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+
+/**
+ * Count Type ReviewItemCountOutputType
+ */
+
+export type ReviewItemCountOutputType = {
+  sessionItems: number
+}
+
+export type ReviewItemCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  sessionItems?: boolean | ReviewItemCountOutputTypeCountSessionItemsArgs
+}
+
+/**
+ * ReviewItemCountOutputType without action
+ */
+export type ReviewItemCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ReviewItemCountOutputType
+   */
+  select?: Prisma.ReviewItemCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * ReviewItemCountOutputType without action
+ */
+export type ReviewItemCountOutputTypeCountSessionItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReviewSessionItemWhereInput
+}
 
 
 export type ReviewItemSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -718,10 +927,14 @@ export type ReviewItemSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   topic?: boolean
   description?: boolean
   priority?: boolean
+  status?: boolean
+  learnedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   session?: boolean | Prisma.InterviewSessionDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  sessionItems?: boolean | Prisma.ReviewItem$sessionItemsArgs<ExtArgs>
+  _count?: boolean | Prisma.ReviewItemCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["reviewItem"]>
 
 export type ReviewItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -731,6 +944,8 @@ export type ReviewItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   topic?: boolean
   description?: boolean
   priority?: boolean
+  status?: boolean
+  learnedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   session?: boolean | Prisma.InterviewSessionDefaultArgs<ExtArgs>
@@ -744,6 +959,8 @@ export type ReviewItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   topic?: boolean
   description?: boolean
   priority?: boolean
+  status?: boolean
+  learnedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   session?: boolean | Prisma.InterviewSessionDefaultArgs<ExtArgs>
@@ -757,14 +974,18 @@ export type ReviewItemSelectScalar = {
   topic?: boolean
   description?: boolean
   priority?: boolean
+  status?: boolean
+  learnedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ReviewItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sessionId" | "userId" | "topic" | "description" | "priority" | "createdAt" | "updatedAt", ExtArgs["result"]["reviewItem"]>
+export type ReviewItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "sessionId" | "userId" | "topic" | "description" | "priority" | "status" | "learnedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["reviewItem"]>
 export type ReviewItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   session?: boolean | Prisma.InterviewSessionDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  sessionItems?: boolean | Prisma.ReviewItem$sessionItemsArgs<ExtArgs>
+  _count?: boolean | Prisma.ReviewItemCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ReviewItemIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   session?: boolean | Prisma.InterviewSessionDefaultArgs<ExtArgs>
@@ -780,6 +1001,7 @@ export type $ReviewItemPayload<ExtArgs extends runtime.Types.Extensions.Internal
   objects: {
     session: Prisma.$InterviewSessionPayload<ExtArgs>
     user: Prisma.$UserPayload<ExtArgs>
+    sessionItems: Prisma.$ReviewSessionItemPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -788,6 +1010,8 @@ export type $ReviewItemPayload<ExtArgs extends runtime.Types.Extensions.Internal
     topic: string
     description: string
     priority: $Enums.ReviewPriority
+    status: $Enums.ReviewItemStatus
+    learnedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["reviewItem"]>
@@ -1186,6 +1410,7 @@ export interface Prisma__ReviewItemClient<T, Null = never, ExtArgs extends runti
   readonly [Symbol.toStringTag]: "PrismaPromise"
   session<T extends Prisma.InterviewSessionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InterviewSessionDefaultArgs<ExtArgs>>): Prisma.Prisma__InterviewSessionClient<runtime.Types.Result.GetResult<Prisma.$InterviewSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  sessionItems<T extends Prisma.ReviewItem$sessionItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReviewItem$sessionItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReviewSessionItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1221,6 +1446,8 @@ export interface ReviewItemFieldRefs {
   readonly topic: Prisma.FieldRef<"ReviewItem", 'String'>
   readonly description: Prisma.FieldRef<"ReviewItem", 'String'>
   readonly priority: Prisma.FieldRef<"ReviewItem", 'ReviewPriority'>
+  readonly status: Prisma.FieldRef<"ReviewItem", 'ReviewItemStatus'>
+  readonly learnedAt: Prisma.FieldRef<"ReviewItem", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"ReviewItem", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ReviewItem", 'DateTime'>
 }
@@ -1621,6 +1848,30 @@ export type ReviewItemDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Limit how many ReviewItems to delete.
    */
   limit?: number
+}
+
+/**
+ * ReviewItem.sessionItems
+ */
+export type ReviewItem$sessionItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ReviewSessionItem
+   */
+  select?: Prisma.ReviewSessionItemSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ReviewSessionItem
+   */
+  omit?: Prisma.ReviewSessionItemOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReviewSessionItemInclude<ExtArgs> | null
+  where?: Prisma.ReviewSessionItemWhereInput
+  orderBy?: Prisma.ReviewSessionItemOrderByWithRelationInput | Prisma.ReviewSessionItemOrderByWithRelationInput[]
+  cursor?: Prisma.ReviewSessionItemWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReviewSessionItemScalarFieldEnum | Prisma.ReviewSessionItemScalarFieldEnum[]
 }
 
 /**

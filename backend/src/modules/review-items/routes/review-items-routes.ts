@@ -1,4 +1,5 @@
-import { asyncHandler } from "@/shared";
+import { patchReviewItemSchema } from "@/modules/review-items/validations/review-items-schemas";
+import { asyncHandler, validate } from "@/shared";
 import type { Router } from "express";
 
 import { makeReviewItemsController } from "@/factories/review-items/review-items-controller-factory";
@@ -7,5 +8,10 @@ export default function reviewItemsRoutes(router: Router): void {
   const controller = makeReviewItemsController();
 
   router.get("/", asyncHandler(controller.list));
+  router.patch(
+    "/:id",
+    validate(patchReviewItemSchema),
+    asyncHandler(controller.updateStatus),
+  );
   router.delete("/:id", asyncHandler(controller.remove));
 }

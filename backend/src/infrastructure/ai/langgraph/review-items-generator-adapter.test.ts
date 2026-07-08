@@ -46,6 +46,8 @@ describe("ReviewItemsGeneratorAdapter", () => {
         topic: "Communication",
         description: "Be concise",
         priority: "medium",
+        status: "active",
+        learnedAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       } satisfies ReviewItemRecord,

@@ -41,6 +41,7 @@ describe("serverEnvSchema", () => {
     expect(result.data.OPENAI_MODEL_INTERVIEW).toBe("gpt-5");
     expect(result.data.OPENAI_MODEL_EXTRACTION).toBe("gpt-5-nano");
     expect(result.data.OPENAI_MODEL_REVIEW).toBe("gpt-5-nano");
+    expect(result.data.REVIEW_SESSION_QUESTION_COUNT).toBe(3);
     expect(result.data.REDIS_URL).toBe("redis://localhost:6379");
     expect(result.data.RESUME_MAX_BYTES).toBe(5_242_880);
     expect(result.data.TOKEN_LIMIT_ENABLED).toBe(true);
@@ -48,6 +49,27 @@ describe("serverEnvSchema", () => {
     expect(result.data.R2_ENDPOINT).toBe(
       "https://test-account-id.r2.cloudflarestorage.com",
     );
+  });
+
+  it("uses default REVIEW_SESSION_QUESTION_COUNT when omitted", () => {
+    const result = serverEnvSchema.safeParse(validEnv);
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+
+    expect(result.data.REVIEW_SESSION_QUESTION_COUNT).toBe(3);
+  });
+
+  it("coerces REVIEW_SESSION_QUESTION_COUNT when overridden", () => {
+    const result = serverEnvSchema.safeParse({
+      ...validEnv,
+      REVIEW_SESSION_QUESTION_COUNT: "5",
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+
+    expect(result.data.REVIEW_SESSION_QUESTION_COUNT).toBe(5);
   });
 
   it("uses explicit R2_ENDPOINT when provided", () => {

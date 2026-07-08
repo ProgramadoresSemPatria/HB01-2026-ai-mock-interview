@@ -190,4 +190,100 @@ describe("ReviewRepository (integration)", () => {
     expect(found!.id).toBe(created.id);
     expect(found!.topic).toBe("database indexing");
   });
+
+  it("findActiveByIdsAndUserId returns only active items owned by the user", async () => {
+    const { user, session } = await seedSession();
+    const otherUser = await prisma.user.create({
+      data: {
+        name: "Other User",
+        email: "other-review@example.com",
+        password: "hashed-password",
+      },
+    });
+    const otherResume = await prisma.resume.create({
+      data: {
+        userId: otherUser.id,
+        name: "Other Resume",
+        pdfUrl: "https://example.com/other-resume.pdf",
+        storageKey: "resumes/other-review.pdf",
+        status: "ready",
+      },
+    });
+    const otherSession = await prisma.interviewSession.create({
+      data: {
+        userId: otherUser.id,
+        resumeId: otherResume.id,
+        level: "entry",
+        maxTurns: 5,
+      },
+    });
+
+    const activeItem = await repository.upsert({
+      userId: user.id,
+      sessionId: session.id,
+      topic: "active topic",
+      description: "Still reviewing",
+      priority: ReviewPriority.high,
+    });
+    const learnedItem = await prisma.reviewItem.create({
+      data: {
+        userId: user.id,
+        sessionId: session.id,
+        topic: "learned topic",
+        description: "Already mastered",
+        priority: ReviewPriority.medium,
+        status: "learned",
+      },
+    });
+    const otherUserItem = await prisma.reviewItem.create({
+      data: {
+        userId: otherUser.id,
+        sessionId: otherSession.id,
+        topic: "foreign topic",
+        description: "Belongs to another user",
+        priority: ReviewPriority.low,
+        status: "active",
+      },
+    });
+    const nonexistentId = "00000000-0000-4000-8000-000000000000";
+
+    const found = await repository.findActiveByIdsAndUserId(user.id, [
+      activeItem.id,
+      learnedItem.id,
+      otherUserItem.id,
+      nonexistentId,
+    ]);
+
+    expect(found).toHaveLength(1);
+    expect(found[0]!.id).toBe(activeItem.id);
+  });
+
+  it("findActiveByIdsAndUserId returns all matching active items when every id is valid", async () => {
+    const { user, session } = await seedSession();
+
+    const first = await repository.upsert({
+      userId: user.id,
+      sessionId: session.id,
+      topic: "first topic",
+      description: "First active item",
+      priority: ReviewPriority.high,
+    });
+    const second = await repository.upsert({
+      userId: user.id,
+      sessionId: session.id,
+      topic: "second topic",
+      description: "Second active item",
+      priority: ReviewPriority.medium,
+    });
+
+    const found = await repository.findActiveByIdsAndUserId(user.id, [
+      first.id,
+      second.id,
+    ]);
+
+    expect(found).toHaveLength(2);
+    expect(found.map((item) => item.id).sort()).toEqual(
+      [first.id, second.id].sort(),
+    );
+  });
 });

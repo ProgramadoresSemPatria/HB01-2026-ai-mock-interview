@@ -38,6 +38,16 @@ export type InterviewMessage = Prisma.InterviewMessageModel
  */
 export type ReviewItem = Prisma.ReviewItemModel
 /**
+ * Model ReviewSession
+ * 
+ */
+export type ReviewSession = Prisma.ReviewSessionModel
+/**
+ * Model ReviewSessionItem
+ * 
+ */
+export type ReviewSessionItem = Prisma.ReviewSessionItemModel
+/**
  * Model InterviewFeedback
  * 
  */

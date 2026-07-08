@@ -1,12 +1,10 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  Play,
-  FileText,
   Clock,
   Plus,
   Loader2,
@@ -57,34 +55,44 @@ function PracticeContent() {
   const readyResumes = resumes.filter((r) => r.status === "ready");
 
   const { data: sessionsData, isLoading: isLoadingSessions } = useSessions();
-  const sessions = sessionsData?.sessions ?? [];
+  const sessions = useMemo(
+    () => sessionsData?.sessions ?? [],
+    [sessionsData?.sessions],
+  );
 
-  // Update selected resume if none stored but ready resumes are loaded
-  useEffect(() => {
-    if (readyResumes.length > 0 && !activeResumeId) {
-      const stored = getStoredResumeId();
-      const hasStored = readyResumes.some((r) => r.id === stored);
-      const fallbackId = hasStored ? stored : readyResumes[0].id;
-      if (fallbackId) {
-        setStoredResumeId(fallbackId);
-        setActiveResumeId(fallbackId);
-      }
-    }
-  }, [readyResumes, activeResumeId]);
-
-  // Load sessionId from search parameters if present, or auto-load the latest active session
   const querySessionId = searchParams.get("sessionId");
-  useEffect(() => {
-    if (querySessionId) {
-      setActiveSessionId(querySessionId);
-    } else if (sessions.length > 0 && !activeSessionId) {
-      // Auto-load the most recent session
-      setActiveSessionId(sessions[0].id);
+
+  const resolvedResumeId = useMemo(() => {
+    if (readyResumes.length === 0) {
+      return activeResumeId;
     }
-  }, [querySessionId, sessions, activeSessionId]);
+
+    if (activeResumeId && readyResumes.some((r) => r.id === activeResumeId)) {
+      return activeResumeId;
+    }
+
+    const stored = getStoredResumeId();
+    if (stored && readyResumes.some((r) => r.id === stored)) {
+      return stored;
+    }
+
+    return readyResumes[0]?.id ?? null;
+  }, [activeResumeId, readyResumes]);
+
+  const resolvedSessionId = useMemo(() => {
+    if (querySessionId) {
+      return querySessionId;
+    }
+
+    if (activeSessionId) {
+      return activeSessionId;
+    }
+
+    return sessions[0]?.id ?? null;
+  }, [activeSessionId, querySessionId, sessions]);
 
   async function handleStartNewInterview() {
-    if (!activeResumeId) {
+    if (!resolvedResumeId) {
       toast.error("Please upload and select a CV first.");
       return;
     }
@@ -109,7 +117,7 @@ function PracticeContent() {
         resumeId: string;
         level: InterviewLevel;
         jobDescription?: string;
-      } = { resumeId: activeResumeId, level };
+      } = { resumeId: resolvedResumeId, level };
       if (trimmedJobDescription) {
         body.jobDescription = trimmedJobDescription;
       }
@@ -170,7 +178,7 @@ function PracticeContent() {
               </div>
             ) : (
               <select
-                value={activeResumeId ?? ""}
+                value={resolvedResumeId ?? ""}
                 onChange={(e) => {
                   setStoredResumeId(e.target.value);
                   setActiveResumeId(e.target.value);
@@ -280,7 +288,7 @@ function PracticeContent() {
               </div>
             ) : (
               sessions.map((sess) => {
-                const isActive = activeSessionId === sess.id;
+                const isActive = resolvedSessionId === sess.id;
                 const resumeObj = resumes.find((r) => r.id === sess.resumeId);
                 const resumeName = resumeObj ? resumeObj.name : "Resume";
 
@@ -326,9 +334,9 @@ function PracticeContent() {
 
       {/* Expanded Chat Pane */}
       <div className="flex-1 bg-(--background) flex flex-col h-full min-w-0 overflow-hidden relative">
-        {activeSessionId ? (
+        {resolvedSessionId ? (
           <div className="flex-1 flex flex-col h-full p-4 overflow-hidden">
-            <InterviewChat key={activeSessionId} sessionId={activeSessionId} />
+            <InterviewChat key={resolvedSessionId} sessionId={resolvedSessionId} />
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-(--background)">

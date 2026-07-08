@@ -21,6 +21,17 @@ enum ReviewPriority {
   low
 }
 
+enum ReviewItemStatus {
+  active
+  learned
+}
+
+enum ReviewSessionStatus {
+  in_progress
+  pending_review
+  completed
+}
+
 enum FeedbackRating {
   up
   down
@@ -85,21 +96,65 @@ model InterviewMessage {
 }
 
 model ReviewItem {
-  id          String         @id @default(uuid())
-  sessionId   String         @map("session_id")
-  userId      Int            @map("user_id")
+  id          String           @id @default(uuid())
+  sessionId   String           @map("session_id")
+  userId      Int              @map("user_id")
   topic       String
-  description String         @db.Text
+  description String           @db.Text
   priority    ReviewPriority
-  createdAt   DateTime       @default(now()) @map("created_at")
-  updatedAt   DateTime       @updatedAt @map("updated_at")
+  status      ReviewItemStatus @default(active)
+  learnedAt   DateTime?        @map("learned_at")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
 
-  session InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session      InterviewSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionItems ReviewSessionItem[]
 
   @@map("review_items")
   @@unique([userId, topic])
   @@index([userId])
+  @@index([userId, status])
+}
+
+model ReviewSession {
+  id          String              @id @default(uuid())
+  userId      Int                 @map("user_id")
+  status      ReviewSessionStatus @default(in_progress)
+  createdAt   DateTime            @default(now()) @map("created_at")
+  evaluatedAt DateTime?           @map("evaluated_at")
+  completedAt DateTime?           @map("completed_at")
+
+  user  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items ReviewSessionItem[]
+
+  @@map("review_sessions")
+  @@index([userId])
+}
+
+model ReviewSessionItem {
+  id                String            @id @default(uuid())
+  reviewSessionId   String            @map("review_session_id")
+  reviewItemId      String            @map("review_item_id")
+  order             Int
+  topic             String
+  description       String            @db.Text
+  turns             Json              @default("[]")
+  currentPriority   ReviewPriority    @map("current_priority")
+  pendingQuestion   String?           @map("pending_question")
+  suggestedStatus   ReviewItemStatus? @map("suggested_status")
+  suggestedPriority ReviewPriority?   @map("suggested_priority")
+  confirmedStatus   ReviewItemStatus? @map("confirmed_status")
+  confirmedPriority ReviewPriority?   @map("confirmed_priority")
+  confirmedAt       DateTime?         @map("confirmed_at")
+  createdAt         DateTime          @default(now()) @map("created_at")
+
+  reviewSession ReviewSession @relation(fields: [reviewSessionId], references: [id], onDelete: Cascade)
+  reviewItem    ReviewItem    @relation(fields: [reviewItemId], references: [id], onDelete: Cascade)
+
+  @@map("review_session_items")
+  @@index([reviewSessionId])
+  @@index([reviewItemId])
 }
 
 model InterviewFeedback {

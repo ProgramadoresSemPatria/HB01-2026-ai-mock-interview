@@ -10,7 +10,7 @@ import type { SessionRepository } from "@/modules/interview/repository/session-r
 import type { ReviewMergeService } from "@/modules/interview/service/review-merge-service";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
-import { ConflictError, NotFoundError } from "@/shared";
+import { ConflictError, NotFoundError, logStreamError } from "@/shared";
 import { writeDone, writeEvent } from "@/shared/utils/sse";
 
 const SSE_HEADERS = {
@@ -100,10 +100,25 @@ export class InterviewStreamService {
     );
     const iterator = stream[Symbol.asyncIterator]();
 
-    const closeWithError = (message: string): void => {
+    const logAborted = (): void => {
+      logStreamError({
+        flow: "interview",
+        userId,
+        sessionId,
+        err: "Client disconnected during stream",
+        aborted: true,
+      });
+    };
+
+    const closeWithError = (err: unknown): void => {
+      logStreamError({ flow: "interview", userId, sessionId, err });
+
       if (res.writableEnded) {
         return;
       }
+
+      const message =
+        err instanceof Error ? err.message : "Interview stream failed";
       writeEvent(res, "error", { message });
       writeDone(res);
       res.end();
@@ -116,21 +131,24 @@ export class InterviewStreamService {
 
       while (true) {
         if (aborted) {
+          logAborted();
           return;
         }
 
         const result = await iterator.next();
         if (aborted) {
+          logAborted();
           return;
         }
         if (result.done) {
           if (aborted) {
+            logAborted();
             return;
           }
 
           completedAiMessage = result.value;
           if (!completedAiMessage?.content) {
-            closeWithError("Interview response was not saved");
+            closeWithError(new Error("Interview response was not saved"));
             return;
           }
 
@@ -147,6 +165,7 @@ export class InterviewStreamService {
       }
 
       if (aborted) {
+        logAborted();
         return;
       }
 
@@ -186,7 +205,7 @@ export class InterviewStreamService {
           reviewUsageCapture.getUsage(),
         );
 
-        await this.reviewMergeService.upsertItems(
+        await this.reviewMergeService.insertNewTopicsOnly(
           userId,
           sessionId,
           review.items,
@@ -203,10 +222,10 @@ export class InterviewStreamService {
       writeDone(res);
       res.end();
     } catch (err) {
-      if (!aborted) {
-        const message =
-          err instanceof Error ? err.message : "Interview stream failed";
-        closeWithError(message);
+      if (aborted) {
+        logAborted();
+      } else {
+        closeWithError(err);
       }
     } finally {
       res.off("close", onClose);

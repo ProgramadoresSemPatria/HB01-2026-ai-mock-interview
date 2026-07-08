@@ -23,12 +23,16 @@ type InterviewMessageListProps = {
   messages: DisplayMessage[];
   showWelcome: boolean;
   onStart?: () => void;
+  welcomeText?: string;
+  startLabel?: string;
 };
 
 export function InterviewMessageList({
   messages,
   showWelcome,
   onStart,
+  welcomeText = "When you're ready, click to start the interview.",
+  startLabel = START_MESSAGE,
 }: InterviewMessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -44,15 +48,13 @@ export function InterviewMessageList({
     >
       {showWelcome && (
         <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
-          <p className="text-sm text-(--muted-foreground)">
-            When you're ready, click to start the interview.
-          </p>
+          <p className="text-sm text-(--muted-foreground)">{welcomeText}</p>
           <button
             type="button"
             onClick={onStart}
             className="rounded-xl bg-(--primary) px-6 py-2.5 text-sm font-medium text-(--primary-foreground) cursor-pointer transition-opacity hover:opacity-90"
           >
-            {START_MESSAGE}
+            {startLabel}
           </button>
         </div>
       )}

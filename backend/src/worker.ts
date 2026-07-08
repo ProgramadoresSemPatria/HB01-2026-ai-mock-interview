@@ -10,7 +10,9 @@ import type {
   ResumeProcessResult,
   ResumeService,
 } from "@/modules/resumes/service/resume-service";
-import { logger } from "@/shared";
+import { logger, setupProcessErrorHandlers } from "@/shared";
+
+setupProcessErrorHandlers();
 
 export async function processResumeJob(
   resumeId: string,

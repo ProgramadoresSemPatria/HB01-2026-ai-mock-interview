@@ -42,10 +42,6 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
   const streamingContentRef = useRef("");
   const [viewMode, setViewMode] = useState<"chat" | "review">("chat");
 
-  useEffect(() => {
-    setViewMode("chat");
-  }, [sessionId]);
-
   const session = sessionsQuery.data?.sessions.find((s) => s.id === sessionId);
   const isFinished = session?.isFinished ?? false;
   const atTurnLimit = session != null && session.turnCount >= session.maxTurns;
@@ -147,18 +143,12 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
 
   const invalidateAfterTurn = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.reviewItems });
-  }, [queryClient, sessionId]);
+    void queryClient.invalidateQueries({ queryKey: ["review-items"] });
+  }, [queryClient]);
 
   useEffect(() => {
     return () => abortRef.current?.abort();
   }, []);
-
-  function scrollToReview() {
-    document
-      .getElementById("interview-review")
-      ?.scrollIntoView({ behavior: "smooth" });
-  }
 
   async function sendMessage(content: string) {
     if (!content || !canSend) return;

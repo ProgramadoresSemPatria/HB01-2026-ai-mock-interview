@@ -1,0 +1,56 @@
+import type { ReviewSessionStreamService } from "@/modules/review-sessions/service/review-session-stream-service";
+import type { ReviewSessionsService } from "@/modules/review-sessions/service/review-sessions-service";
+import type {
+  ApplyReviewSessionInput,
+  CreateReviewSessionInput,
+  ReviewSessionStreamBodyInput,
+} from "@/modules/review-sessions/validations/review-session-schemas";
+import type { Request, Response } from "express";
+
+export class ReviewSessionsController {
+  constructor(
+    private readonly reviewSessionsService: ReviewSessionsService,
+    private readonly reviewSessionStreamService: ReviewSessionStreamService,
+  ) {}
+
+  create = async (req: Request, res: Response): Promise<void> => {
+    const { reviewItemIds } = req.body as CreateReviewSessionInput;
+    const result = await this.reviewSessionsService.create(
+      req.userId!,
+      reviewItemIds,
+    );
+    res.status(201).json(result);
+  };
+
+  stream = async (req: Request, res: Response): Promise<void> => {
+    const sessionId = String(req.params.id);
+    const { answer } = req.body as ReviewSessionStreamBodyInput;
+
+    await this.reviewSessionStreamService.streamTurn(
+      req.userId!,
+      sessionId,
+      answer,
+      res,
+    );
+  };
+
+  getById = async (req: Request, res: Response): Promise<void> => {
+    const sessionId = String(req.params.id);
+    const result = await this.reviewSessionsService.getById(
+      req.userId!,
+      sessionId,
+    );
+    res.status(200).json(result);
+  };
+
+  apply = async (req: Request, res: Response): Promise<void> => {
+    const sessionId = String(req.params.id);
+    const { items } = req.body as ApplyReviewSessionInput;
+    const result = await this.reviewSessionsService.apply(
+      req.userId!,
+      sessionId,
+      items,
+    );
+    res.status(200).json(result);
+  };
+}

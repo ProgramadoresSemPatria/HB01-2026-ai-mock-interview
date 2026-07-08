@@ -2,6 +2,7 @@ import type { ReviewRepository } from "@/modules/interview/repository/review-rep
 import type { ReviewItemRecord } from "@/modules/interview/types/review-item-record";
 import type { ReviewPriority } from "@/modules/interview/validations/interview-schemas";
 import type { ReviewItemResponse } from "@/modules/review-items/validations/review-items-schemas";
+import type { ReviewItemStatus } from "../../../../prisma/generated/client";
 import { NotFoundError } from "@/shared";
 
 const PRIORITY_RANK: Record<ReviewPriority, number> = {
@@ -10,6 +11,8 @@ const PRIORITY_RANK: Record<ReviewPriority, number> = {
   high: 2,
 };
 
+type ReviewItemListStatus = "active" | "learned" | "all";
+
 function toResponse(item: ReviewItemRecord): ReviewItemResponse {
   return {
     id: item.id,
@@ -17,6 +20,8 @@ function toResponse(item: ReviewItemRecord): ReviewItemResponse {
     topic: item.topic,
     description: item.description,
     priority: item.priority,
+    status: item.status,
+    learnedAt: item.learnedAt?.toISOString() ?? null,
     createdAt: item.createdAt.toISOString(),
     updatedAt: item.updatedAt.toISOString(),
   };
@@ -32,12 +37,67 @@ function compareReviewItems(a: ReviewItemRecord, b: ReviewItemRecord): number {
   return b.updatedAt.getTime() - a.updatedAt.getTime();
 }
 
+function compareLearnedReviewItems(
+  a: ReviewItemRecord,
+  b: ReviewItemRecord,
+): number {
+  const aLearnedAt = a.learnedAt?.getTime() ?? a.updatedAt.getTime();
+  const bLearnedAt = b.learnedAt?.getTime() ?? b.updatedAt.getTime();
+
+  return bLearnedAt - aLearnedAt;
+}
+
+function filterByStatus(
+  items: ReviewItemRecord[],
+  status: ReviewItemListStatus,
+): ReviewItemRecord[] {
+  if (status === "all") {
+    return items;
+  }
+
+  return items.filter((item) => item.status === status);
+}
+
+function sortReviewItems(
+  items: ReviewItemRecord[],
+  status: ReviewItemListStatus,
+): ReviewItemRecord[] {
+  const comparator =
+    status === "learned" ? compareLearnedReviewItems : compareReviewItems;
+
+  return [...items].sort(comparator);
+}
+
 export class ReviewItemsService {
   constructor(private readonly reviewRepository: ReviewRepository) {}
 
-  async listForUser(userId: number): Promise<ReviewItemResponse[]> {
+  async listForUser(
+    userId: number,
+    status: ReviewItemListStatus = "active",
+  ): Promise<ReviewItemResponse[]> {
     const items = await this.reviewRepository.listByUserId(userId);
-    return [...items].sort(compareReviewItems).map(toResponse);
+    return sortReviewItems(filterByStatus(items, status), status).map(
+      toResponse,
+    );
+  }
+
+  async updateStatus(
+    userId: number,
+    id: string,
+    status: ReviewItemStatus,
+  ): Promise<ReviewItemResponse> {
+    const learnedAt = status === "learned" ? new Date() : null;
+    const updated = await this.reviewRepository.updateByIdAndUserId(
+      id,
+      userId,
+      { status, learnedAt },
+    );
+
+    if (!updated) {
+      throw new NotFoundError("Review item not found");
+    }
+
+    return toResponse(updated);
   }
 
   async deleteForUser(userId: number, id: string): Promise<void> {

@@ -9,7 +9,9 @@ import type {
 import type { IReviewItemsGenerator } from "@/modules/interview/protocols/review-items-generator";
 import type { MessageRepository } from "@/modules/interview/repository/message-repository";
 import type { SessionRepository } from "@/modules/interview/repository/session-repository";
-import type { ReviewMergeService } from "@/modules/interview/service/review-merge-service";
+import type { ReviewRepository } from "@/modules/interview/repository/review-repository";
+import { ReviewMergeService } from "@/modules/interview/service/review-merge-service";
+import type { ReviewItemRecord } from "@/modules/interview/types/review-item-record";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
 import type { TokenUsageService } from "@/modules/token-usage/service/token-usage-service";
 import { ConflictError, NotFoundError, TokenLimitExceededError } from "@/shared";
@@ -123,7 +125,7 @@ describe("InterviewStreamService", () => {
     };
 
     reviewMergeService = {
-      upsertItems: vi.fn(),
+      insertNewTopicsOnly: vi.fn(),
     } as unknown as ReviewMergeService;
 
     reviewItemsGenerator = {
@@ -326,7 +328,7 @@ describe("InterviewStreamService", () => {
       }),
       expect.objectContaining({ callbacks: expect.any(Array) }),
     );
-    expect(reviewMergeService.upsertItems).toHaveBeenCalledWith(
+    expect(reviewMergeService.insertNewTopicsOnly).toHaveBeenCalledWith(
       1,
       baseSession.id,
       [
@@ -341,6 +343,95 @@ describe("InterviewStreamService", () => {
 
     const output = res.chunks.join("");
     expect(output).toContain('"isFinished":true');
+  });
+
+  it("leaves existing active item unchanged when topic is discussed on final turn", async () => {
+    const reviewRepository = {
+      findByUserIdAndTopicCaseInsensitive: vi.fn(),
+      findSimilarByUserIdAndTopic: vi.fn(),
+      upsert: vi.fn(),
+    } as unknown as ReviewRepository;
+
+    const existingActiveItem: ReviewItemRecord = {
+      id: "item-1",
+      userId: 1,
+      sessionId: "old-session",
+      topic: "Communication",
+      description: "Existing description",
+      priority: "low",
+      status: "active",
+      learnedAt: null,
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+    };
+
+    vi.mocked(
+      reviewRepository.findByUserIdAndTopicCaseInsensitive,
+    ).mockResolvedValue(existingActiveItem);
+
+    const realReviewMergeService = new ReviewMergeService(reviewRepository);
+
+    service = new InterviewStreamService(
+      sessionRepository,
+      messageRepository,
+      resumeRepository,
+      graph,
+      realReviewMergeService,
+      reviewItemsGenerator,
+      tokenUsageService,
+    );
+
+    vi.mocked(sessionRepository.findByIdAndUserId).mockResolvedValue({
+      ...baseSession,
+      turnCount: 4,
+      maxTurns: 5,
+    });
+    vi.mocked(resumeRepository.findByIdAndUserId).mockResolvedValue({
+      id: "resume-1",
+      structuredSummary,
+    } as unknown as Awaited<ReturnType<ResumeRepository["findByIdAndUserId"]>>);
+    vi.mocked(graph.streamMessages).mockReturnValue(
+      (async function* () {
+        yield { content: "Final answer" };
+        return { content: "Final answer" };
+      })(),
+    );
+    vi.mocked(sessionRepository.incrementTurnCount).mockResolvedValue({
+      ...baseSession,
+      turnCount: 5,
+    });
+    vi.mocked(messageRepository.listBySessionId).mockResolvedValue([
+      {
+        id: "m1",
+        role: "human",
+        content: "Tell me about communication skills",
+        createdAt: new Date(),
+      },
+      {
+        id: "m2",
+        role: "ai",
+        content: "Final answer",
+        createdAt: new Date(),
+      },
+    ] as Awaited<ReturnType<MessageRepository["listBySessionId"]>>);
+    vi.mocked(reviewItemsGenerator.generate).mockResolvedValue({
+      items: [
+        {
+          topic: "Communication",
+          description: "Be more concise",
+          priority: "high",
+        },
+      ],
+    });
+    vi.mocked(messageRepository.createHuman).mockResolvedValue({} as never);
+    vi.mocked(messageRepository.createAi).mockResolvedValue({} as never);
+
+    const res = createMockResponse();
+
+    await service.streamTurn(1, baseSession.id, "Hello", res);
+
+    expect(reviewRepository.upsert).not.toHaveBeenCalled();
+    expect(sessionRepository.markFinished).toHaveBeenCalledWith(baseSession.id);
   });
 
   it("does not persist partial AI message when client disconnects", async () => {
