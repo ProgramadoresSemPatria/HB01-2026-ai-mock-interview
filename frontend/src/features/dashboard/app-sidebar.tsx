@@ -2,7 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Dumbbell, MessageSquare, LogOut, FileText, User, X } from "lucide-react";
+import {
+  BookOpen,
+  LayoutDashboard,
+  Dumbbell,
+  MessageSquare,
+  LogOut,
+  FileText,
+  User,
+  X,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/session-provider";
@@ -11,9 +20,22 @@ const NAV_ITEMS = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
   { icon: Dumbbell, label: "Practice", href: "/practice" },
   { icon: MessageSquare, label: "Feedback", href: "/feedback" },
+  { icon: BookOpen, label: "Study", href: "/study" },
   { icon: FileText, label: "Resumes", href: "/resumes" },
   { icon: User, label: "Profile", href: "/profile" },
 ] as const;
+
+function isNavItemActive(pathname: string, href: string): boolean {
+  if (href === "/study") {
+    return (
+      pathname === "/study" ||
+      pathname.startsWith("/study/") ||
+      pathname.startsWith("/review-session")
+    );
+  }
+
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 type AppSidebarProps = {
   isOpen?: boolean;
@@ -44,7 +66,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
 
       <nav className="flex-1 space-y-0.5 px-3">
         {NAV_ITEMS.map(({ icon: Icon, label, href }) => {
-          const active = pathname === href || pathname.startsWith(`${href}/`);
+          const active = isNavItemActive(pathname, href);
           return (
             <Link
               key={href}

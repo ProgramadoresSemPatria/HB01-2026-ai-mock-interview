@@ -40,8 +40,8 @@ function buildInstructionsBlock(): string {
   return `${INSTRUCTIONS_SECTION_HEADER}
 Suggest whether this single review item should stay active or be marked learned, and what priority to use if it stays active.
 
-- Mark \`status: "learned"\` only when the answers demonstrate **sufficient** understanding of the topic — not merely getting one question right.
-- When \`status: "active"\`, you **must** include \`priority\` (\`low\`, \`medium\`, or \`high\`). Never emit \`status: "active"\` without \`priority\`.
+- Mark \`status: "learned"\` only when the answers demonstrate **sufficient** understanding of the topic — not merely getting one question right. When learned, set \`priority\` to \`null\`.
+- When \`status: "active"\`, you **must** set \`priority\` to \`low\`, \`medium\`, or \`high\` (never \`null\`).
 - Raise priority when the answers reinforce the existing gap.
 - Lower priority only with **clear evidence of improvement** across the answers; never lower below \`low\`.
 - If answers show no clear change (neither strong improvement nor reinforcement), keep the same priority.

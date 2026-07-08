@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -25,7 +25,7 @@ const MAX_SELECTION = 10;
 export function StudyHubContent() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { getAccessToken, fetchWithAuth } = useAuth();
+  const { getAccessToken } = useAuth();
 
   const [activeTab, setActiveTab] = useState<StudyTab>("active");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
@@ -33,24 +33,22 @@ export function StudyHubContent() {
   const [pendingItemId, setPendingItemId] = useState<string | null>(null);
 
   const reviewQuery = useReviewItems(activeTab);
-  const items = useMemo(
-    () => reviewQuery.data?.reviewItems ?? [],
-    [reviewQuery.data?.reviewItems],
-  );
+  const items = reviewQuery.data?.reviewItems ?? [];
 
-  const visibleItemIds = useMemo(
-    () => new Set(items.map((item) => item.id)),
-    [items],
-  );
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [activeTab]);
 
-  const effectiveSelectedIds = useMemo(
-    () => new Set([...selectedIds].filter((id) => visibleItemIds.has(id))),
-    [selectedIds, visibleItemIds],
-  );
+  useEffect(() => {
+    setSelectedIds((prev) => {
+      const visibleIds = new Set(items.map((item) => item.id));
+      const next = new Set([...prev].filter((id) => visibleIds.has(id)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [items]);
 
   function handleTabChange(tab: StudyTab) {
     setActiveTab(tab);
-    setSelectedIds(new Set());
   }
 
   function handleSelectToggle(itemId: string) {
@@ -74,11 +72,15 @@ export function StudyHubContent() {
   }
 
   async function handleMarkLearned(itemId: string) {
+    const token = await getAccessToken();
+    if (!token) {
+      toast.error("Not authenticated");
+      return;
+    }
+
     setPendingItemId(itemId);
     try {
-      await fetchWithAuth((token) =>
-        reviewItemsApi.patchStatus(token, itemId, "learned"),
-      );
+      await reviewItemsApi.patchStatus(token, itemId, "learned");
       toast.success("Topic marked as learned");
       setSelectedIds((prev) => {
         if (!prev.has(itemId)) return prev;
@@ -98,11 +100,15 @@ export function StudyHubContent() {
   }
 
   async function handleReactivate(itemId: string) {
+    const token = await getAccessToken();
+    if (!token) {
+      toast.error("Not authenticated");
+      return;
+    }
+
     setPendingItemId(itemId);
     try {
-      await fetchWithAuth((token) =>
-        reviewItemsApi.patchStatus(token, itemId, "active"),
-      );
+      await reviewItemsApi.patchStatus(token, itemId, "active");
       toast.success("Topic reactivated");
       await invalidateReviewItems();
     } catch (err) {
@@ -116,9 +122,15 @@ export function StudyHubContent() {
   }
 
   async function handleDelete(itemId: string) {
+    const token = await getAccessToken();
+    if (!token) {
+      toast.error("Not authenticated");
+      return;
+    }
+
     setPendingItemId(itemId);
     try {
-      await fetchWithAuth((token) => reviewItemsApi.delete(token, itemId));
+      await reviewItemsApi.delete(token, itemId);
       toast.success("Topic deleted");
       setSelectedIds((prev) => {
         if (!prev.has(itemId)) return prev;
@@ -138,7 +150,7 @@ export function StudyHubContent() {
   }
 
   async function handleStartSession() {
-    if (effectiveSelectedIds.size === 0 || isStarting) {
+    if (selectedIds.size === 0 || isStarting) {
       return;
     }
 
@@ -150,9 +162,7 @@ export function StudyHubContent() {
 
     setIsStarting(true);
     try {
-      const response = await reviewSessionsApi.create(token, [
-        ...effectiveSelectedIds,
-      ]);
+      const response = await reviewSessionsApi.create(token, [...selectedIds]);
       setLastReviewSessionId(response.id);
       router.push(`/review-session/${response.id}`);
     } catch (err) {
@@ -161,10 +171,6 @@ export function StudyHubContent() {
           ? err.message
           : "Failed to start review session",
       );
-      if (err instanceof ApiError && err.status === 404) {
-        setSelectedIds(new Set());
-        await invalidateReviewItems();
-      }
     } finally {
       setIsStarting(false);
     }
@@ -241,7 +247,7 @@ export function StudyHubContent() {
               key={item.id}
               item={item}
               selectable={showSelection}
-              selected={effectiveSelectedIds.has(item.id)}
+              selected={selectedIds.has(item.id)}
               onSelectToggle={
                 showSelection && !isItemPending(item.id)
                   ? () => handleSelectToggle(item.id)
@@ -269,7 +275,7 @@ export function StudyHubContent() {
 
       {showSelection && (
         <StudySelectionBar
-          selectedCount={effectiveSelectedIds.size}
+          selectedCount={selectedIds.size}
           onStart={() => void handleStartSession()}
           isStarting={isStarting}
         />

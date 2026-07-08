@@ -76,26 +76,40 @@ describe("errorHandler", () => {
     const next = vi.fn();
     const err = new Error("boom");
     const errorSpy = vi.spyOn(logger, "error");
+    const req = { method: "GET", path: "/api/test" } as Request;
 
-    errorHandler(err, {} as Request, res, next);
+    errorHandler(err, req, res, next);
 
     expect(errorSpy).toHaveBeenCalledOnce();
-    expect(errorSpy).toHaveBeenCalledWith("boom", { stack: err.stack });
+    expect(errorSpy).toHaveBeenCalledWith("boom", {
+      method: "GET",
+      path: "/api/test",
+      statusCode: 500,
+      stack: err.stack,
+    });
   });
 
-  it("does not log 4xx HttpError as a server error", () => {
+  it("logs 4xx HttpError as logger.warn", () => {
     const res = createMockResponse();
     const next = vi.fn();
     const errorSpy = vi.spyOn(logger, "error");
+    const warnSpy = vi.spyOn(logger, "warn");
+    const req = { method: "GET", path: "/api/resumes/1" } as Request;
 
     errorHandler(
       new NotFoundError("Resume not found"),
-      {} as Request,
+      req,
       res,
       next,
     );
 
     expect(errorSpy).not.toHaveBeenCalled();
+    expect(warnSpy).toHaveBeenCalledOnce();
+    expect(warnSpy).toHaveBeenCalledWith("Resume not found", {
+      method: "GET",
+      path: "/api/resumes/1",
+      statusCode: 404,
+    });
   });
 
   it("passes through BadRequestError from application code", () => {

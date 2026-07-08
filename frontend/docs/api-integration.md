@@ -30,11 +30,16 @@ pages (App Router)
 | `/practice/new`          | `POST /api/interview/sessions`                         |
 | `/interview/[sessionId]` | `GET .../messages`, `POST .../stream` (SSE)            |
 | `/feedback`              | `GET /api/review-items`                                |
+| `/study`                 | `GET /api/review-items?status=active\|learned`, `PATCH`/`DELETE /api/review-items/:id`, `POST /api/review-sessions` |
+| `/review-session/[sessionId]` | `GET /api/review-sessions/:id`, `POST .../stream` (SSE) |
+| `/review-session/[sessionId]/report` | `GET /api/review-sessions/:id`, `POST .../apply` (bulk) |
+
+Review session confirmation uses **bulk** `POST /api/review-sessions/:id/apply` with all session items — not per-item confirm.
 
 ## Auth storage
 
 - `localStorage`: access token, refresh token, user JSON
-- `sessionStorage`: last uploaded `resumeId` (no list-resumes endpoint)
+- `sessionStorage`: last uploaded `resumeId` (no list-resumes endpoint); last open review session id (`hone:last-review-session-id`) for resume banner
 
 ## Dashboard metrics
 

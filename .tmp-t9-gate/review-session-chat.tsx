@@ -120,7 +120,6 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
   const queryClient = useQueryClient();
   const { getAccessToken, fetchWithAuth } = useAuth();
   const sessionQuery = useReviewSession(sessionId);
-  const session = sessionQuery.data;
 
   const [messages, setMessages] = useState<ReviewDisplayMessage[]>([]);
   const [draft, setDraft] = useState("");
@@ -133,14 +132,54 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
   const abortRef = useRef<AbortController | null>(null);
   const streamingContentRef = useRef("");
   const lastItemIndexRef = useRef(-1);
-  const sessionItemsRef = useRef(session?.items ?? []);
+  const sessionItemsRef = useRef(sessionQuery.data?.items ?? []);
+  const runStreamRef = useRef<
+    (answer: string | undefined, signal: AbortSignal) => Promise<void>
+  >(() => Promise.resolve());
 
-  sessionItemsRef.current = session?.items ?? [];
+  sessionItemsRef.current = sessionQuery.data?.items ?? [];
 
+  const session = sessionQuery.data;
+  const isPendingReview = session?.status === "pending_review";
+  const isCompleted = session?.status === "completed";
   const canSend =
     session?.status === "in_progress" && !isStreaming && !isRedirecting;
-  const showWelcome =
-    messages.length === 0 && !isStreaming && session?.status === "in_progress";
+
+  const redirectForSession = useCallback(
+    (nextSession: ReviewSession) => {
+      setIsRedirecting(true);
+
+      if (nextSession.status === "pending_review") {
+        router.replace(`/review-session/${sessionId}/report`);
+        return;
+      }
+
+      if (nextSession.status === "completed") {
+        router.replace("/study");
+      }
+    },
+    [router, sessionId],
+  );
+
+  const seedReportCache = useCallback(
+    (meta: Extract<ReviewSessionStreamMeta, { status: "pending_review" }>) => {
+      queryClient.setQueryData<ReviewSession>(queryKeys.reviewSession(sessionId), {
+        id: sessionId,
+        status: "pending_review",
+        items: meta.report.map((item) => ({
+          id: item.reviewSessionItemId,
+          reviewItemId: item.reviewItemId,
+          topic: item.topic,
+          currentPriority: item.currentPriority,
+          suggestedStatus: item.suggestedStatus,
+          suggestedPriority: item.suggestedPriority,
+          confirmedStatus: null,
+          confirmedPriority: null,
+        })),
+      });
+    },
+    [queryClient, sessionId],
+  );
 
   const resolveTopicName = useCallback((meta: ReviewSessionStreamMetaProgress) => {
     const items = sessionItemsRef.current;
@@ -176,42 +215,6 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
     [resolveTopicName],
   );
 
-  const seedReportCache = useCallback(
-    (meta: Extract<ReviewSessionStreamMeta, { status: "pending_review" }>) => {
-      queryClient.setQueryData<ReviewSession>(queryKeys.reviewSession(sessionId), {
-        id: sessionId,
-        status: "pending_review",
-        items: meta.report.map((item) => ({
-          id: item.reviewSessionItemId,
-          reviewItemId: item.reviewItemId,
-          topic: item.topic,
-          currentPriority: item.currentPriority,
-          suggestedStatus: item.suggestedStatus,
-          suggestedPriority: item.suggestedPriority,
-          confirmedStatus: null,
-          confirmedPriority: null,
-        })),
-      });
-    },
-    [queryClient, sessionId],
-  );
-
-  const redirectForSession = useCallback(
-    (nextSession: ReviewSession) => {
-      setIsRedirecting(true);
-
-      if (nextSession.status === "pending_review") {
-        router.replace(`/review-session/${sessionId}/report`);
-        return;
-      }
-
-      if (nextSession.status === "completed") {
-        router.replace("/study");
-      }
-    },
-    [router, sessionId],
-  );
-
   const handleStreamConflict = useCallback(async () => {
     try {
       const nextSession = await fetchWithAuth((token) =>
@@ -225,20 +228,105 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
     }
   }, [fetchWithAuth, redirectForSession, sessionId]);
 
+  const runStream = useCallback(
+    async (answer: string | undefined, signal: AbortSignal) => {
+      const token = await getAccessToken();
+      if (!token) {
+        toast.error("Not authenticated");
+        return;
+      }
+
+      const trimmedAnswer = answer?.trim();
+      if (trimmedAnswer) {
+        setMessages((current) => appendHumanMessage(current, trimmedAnswer));
+      }
+
+      setIsStreaming(true);
+      setStreamingContent("");
+      streamingContentRef.current = "";
+
+      let pendingReviewComplete = false;
+
+      try {
+        await streamReviewSessionTurn(sessionId, trimmedAnswer, token, {
+          signal,
+          onToken: (chunk) => {
+            streamingContentRef.current += chunk;
+            setStreamingContent((current) => current + chunk);
+          },
+          onMeta: (meta) => {
+            if (meta.status === "pending_review") {
+              pendingReviewComplete = true;
+              seedReportCache(meta);
+              setIsRedirecting(true);
+              router.push(`/review-session/${sessionId}/report`);
+              return;
+            }
+
+            handleProgressMeta(meta);
+          },
+        });
+
+        if (pendingReviewComplete) {
+          return;
+        }
+
+        const aiContent = streamingContentRef.current;
+        if (aiContent) {
+          setMessages((current) => appendAiMessage(current, aiContent));
+        }
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
+        }
+
+        if (err instanceof ApiError && err.status === 409) {
+          await handleStreamConflict();
+          return;
+        }
+
+        toast.error(err instanceof ApiError ? err.message : "Stream failed");
+      } finally {
+        setIsStreaming(false);
+        setStreamingContent("");
+        streamingContentRef.current = "";
+      }
+    },
+    [
+      getAccessToken,
+      handleProgressMeta,
+      handleStreamConflict,
+      router,
+      seedReportCache,
+      sessionId,
+    ],
+  );
+
+  runStreamRef.current = runStream;
+
+  useEffect(() => {
+    setMessages([]);
+    setProgressMeta(null);
+    setDraft("");
+    setIsStreaming(false);
+    setStreamingContent("");
+    setIsRedirecting(false);
+    lastItemIndexRef.current = -1;
+  }, [sessionId]);
+
+  useEffect(() => {
+    return () => abortRef.current?.abort();
+  }, []);
+
   useEffect(() => {
     if (!session) {
       return;
     }
 
-    if (session.status === "pending_review") {
-      router.replace(`/review-session/${sessionId}/report`);
-      return;
+    if (session.status === "pending_review" || session.status === "completed") {
+      redirectForSession(session);
     }
-
-    if (session.status === "completed") {
-      router.replace("/study");
-    }
-  }, [router, session, sessionId]);
+  }, [redirectForSession, session]);
 
   useEffect(() => {
     if (
@@ -252,113 +340,21 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
   }, [router, sessionQuery.error]);
 
   useEffect(() => {
-    setMessages([]);
-    setProgressMeta(null);
-    setDraft("");
-    setIsStreaming(false);
-    setStreamingContent("");
-    setIsRedirecting(false);
-    lastItemIndexRef.current = -1;
-    abortRef.current?.abort();
-    abortRef.current = null;
-  }, [sessionId]);
-
-  useEffect(() => {
-    return () => abortRef.current?.abort();
-  }, []);
-
-  async function sendTurn(answer: string | undefined) {
-    if (answer !== undefined) {
-      if (!canSend) {
-        return;
-      }
-
-      const trimmedAnswer = answer.trim();
-      if (!trimmedAnswer) {
-        return;
-      }
-    } else if (isStreaming || isRedirecting) {
+    if (session?.status !== "in_progress") {
       return;
     }
 
-    const token = await getAccessToken();
-    if (!token) {
-      toast.error("Not authenticated");
-      return;
-    }
+    const controller = new AbortController();
+    abortRef.current = controller;
+    void runStreamRef.current(undefined, controller.signal);
 
-    const trimmedAnswer = answer?.trim();
-    if (trimmedAnswer) {
-      setMessages((current) => appendHumanMessage(current, trimmedAnswer));
-    }
-
-    setIsStreaming(true);
-    setStreamingContent("");
-    streamingContentRef.current = "";
-    abortRef.current = new AbortController();
-
-    let pendingReviewComplete = false;
-
-    try {
-      await streamReviewSessionTurn(sessionId, trimmedAnswer, token, {
-        signal: abortRef.current.signal,
-        onToken: (chunk) => {
-          streamingContentRef.current += chunk;
-          setStreamingContent((prev) => prev + chunk);
-        },
-        onMeta: (meta) => {
-          if (meta.status === "pending_review") {
-            pendingReviewComplete = true;
-            seedReportCache(meta);
-            setIsRedirecting(true);
-            router.push(`/review-session/${sessionId}/report`);
-            return;
-          }
-
-          handleProgressMeta(meta);
-        },
-      });
-
-      if (pendingReviewComplete) {
-        return;
+    return () => {
+      controller.abort();
+      if (abortRef.current === controller) {
+        abortRef.current = null;
       }
-
-      const aiContent = streamingContentRef.current;
-      if (aiContent) {
-        setMessages((current) => appendAiMessage(current, aiContent));
-      }
-    } catch (err) {
-      if (err instanceof Error && err.name === "AbortError") {
-        return;
-      }
-
-      if (err instanceof ApiError && err.status === 409) {
-        await handleStreamConflict();
-        return;
-      }
-
-      toast.error(err instanceof ApiError ? err.message : "Stream failed");
-    } finally {
-      setIsStreaming(false);
-      setStreamingContent("");
-      streamingContentRef.current = "";
-      abortRef.current = null;
-    }
-  }
-
-  function handleStart() {
-    void sendTurn(undefined);
-  }
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const content = draft.trim();
-    if (!content) {
-      return;
-    }
-    setDraft("");
-    void sendTurn(content);
-  }
+    };
+  }, [session?.status, sessionId]);
 
   const displayItems = useMemo(
     () => buildDisplayItems(messages, isStreaming, streamingContent),
@@ -380,6 +376,25 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
         .map((item) => item.message),
     [displayItems],
   );
+
+  async function sendAnswer(content: string) {
+    if (!content || !canSend) {
+      return;
+    }
+
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    await runStream(content, controller.signal);
+    abortRef.current = null;
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const content = draft.trim();
+    setDraft("");
+    void sendAnswer(content);
+  }
 
   if (sessionQuery.isLoading) {
     return (
@@ -405,13 +420,7 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
     );
   }
 
-  if (isRedirecting) {
-    return (
-      <p className="text-sm text-(--muted-foreground)">Redirecting…</p>
-    );
-  }
-
-  if (session && session.status !== "in_progress") {
+  if (isPendingReview || isCompleted || isRedirecting) {
     return (
       <p className="text-sm text-(--muted-foreground)">Redirecting…</p>
     );
@@ -453,10 +462,7 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
         ) : (
           <InterviewMessageList
             messages={chatOnlyMessages}
-            showWelcome={showWelcome}
-            onStart={handleStart}
-            welcomeText="When you're ready, click to begin your review session."
-            startLabel="Start review session"
+            showWelcome={false}
           />
         )}
 

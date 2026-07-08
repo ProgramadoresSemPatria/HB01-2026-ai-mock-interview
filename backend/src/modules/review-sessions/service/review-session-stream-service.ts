@@ -15,6 +15,8 @@ import type { ReviewSessionEvaluationOutput } from "@/modules/review-sessions/va
 import {
   BadRequestError,
   ConflictError,
+  logStreamError,
+  logger,
   NotFoundError,
 } from "@/shared";
 import { writeDone, writeEvent } from "@/shared/utils/sse";
@@ -141,10 +143,25 @@ export class ReviewSessionStreamService {
 
     res.on("close", onClose);
 
-    const closeWithError = (message: string): void => {
+    const logAborted = (): void => {
+      logStreamError({
+        flow: "review-session",
+        userId,
+        sessionId,
+        err: "Client disconnected during stream",
+        aborted: true,
+      });
+    };
+
+    const closeWithError = (err: unknown): void => {
+      logStreamError({ flow: "review-session", userId, sessionId, err });
+
       if (res.writableEnded) {
         return;
       }
+
+      const message =
+        err instanceof Error ? err.message : "Review session stream failed";
       writeEvent(res, "error", { message });
       writeDone(res);
       res.end();
@@ -152,8 +169,9 @@ export class ReviewSessionStreamService {
 
     try {
       if (allItemsComplete) {
-        await this.runEvaluation(userId, sessionId, session, res, aborted);
+        await this.runEvaluation(userId, sessionId, session, res, () => aborted);
         if (aborted) {
+          logAborted();
           return;
         }
         return;
@@ -161,7 +179,7 @@ export class ReviewSessionStreamService {
 
       const currentItem = findCurrentItem(session.items, questionCount);
       if (!currentItem) {
-        closeWithError("No review session item is ready for a question");
+        closeWithError(new Error("No review session item is ready for a question"));
         return;
       }
 
@@ -172,7 +190,12 @@ export class ReviewSessionStreamService {
         () => aborted,
       );
 
-      if (aborted || !streamed) {
+      if (aborted) {
+        logAborted();
+        return;
+      }
+
+      if (!streamed) {
         return;
       }
 
@@ -196,10 +219,10 @@ export class ReviewSessionStreamService {
       writeDone(res);
       res.end();
     } catch (err) {
-      if (!aborted) {
-        const message =
-          err instanceof Error ? err.message : "Review session stream failed";
-        closeWithError(message);
+      if (aborted) {
+        logAborted();
+      } else {
+        closeWithError(err);
       }
     } finally {
       res.off("close", onClose);
@@ -269,9 +292,9 @@ export class ReviewSessionStreamService {
     sessionId: string,
     session: ReviewSessionRecord,
     res: Response,
-    aborted: boolean,
+    isAborted: () => boolean,
   ): Promise<void> {
-    if (aborted) {
+    if (isAborted()) {
       return;
     }
 
@@ -297,12 +320,14 @@ export class ReviewSessionStreamService {
       }),
     );
 
-    if (aborted) {
+    if (isAborted()) {
       return;
     }
 
+    let failureCount = 0;
+
     for (let index = 0; index < results.length; index++) {
-      if (aborted) {
+      if (isAborted()) {
         return;
       }
 
@@ -318,6 +343,16 @@ export class ReviewSessionStreamService {
         continue;
       }
 
+      failureCount += 1;
+
+      logStreamError({
+        flow: "review-session",
+        userId,
+        sessionId,
+        err: result.reason,
+        reviewSessionItemId: item.id,
+      });
+
       await this.reviewSessionRepository.saveSuggestions(item.id, null);
 
       const message =
@@ -331,7 +366,17 @@ export class ReviewSessionStreamService {
       });
     }
 
-    if (aborted) {
+    if (failureCount > 0) {
+      logger.info("Evaluation completed with failures", {
+        flow: "review-session",
+        userId,
+        sessionId,
+        failureCount,
+        totalItems: session.items.length,
+      });
+    }
+
+    if (isAborted()) {
       return;
     }
 
@@ -341,6 +386,12 @@ export class ReviewSessionStreamService {
       await this.reviewSessionRepository.findByIdAndUserId(sessionId, userId);
 
     if (!updatedSession) {
+      logStreamError({
+        flow: "review-session",
+        userId,
+        sessionId,
+        err: new Error("Review session not found after evaluation"),
+      });
       closeWithErrorOnResponse(res, "Review session not found after evaluation");
       return;
     }

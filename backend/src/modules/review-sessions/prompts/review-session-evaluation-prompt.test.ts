@@ -42,7 +42,8 @@ describe("buildReviewSessionEvaluationPrompt", () => {
     expect(prompt).toContain(INSTRUCTIONS_SECTION_HEADER);
     expect(prompt).toContain('status: "learned"');
     expect(prompt).toContain("sufficient");
-    expect(prompt).toContain("Never emit `status: \"active\"` without `priority`");
+    expect(prompt).toContain('set `priority` to `null`');
+    expect(prompt).toContain("never `null`");
     expect(prompt).toContain("never lower below `low`");
     expect(prompt).toContain("ambiguous");
     expect(prompt).toContain("keep the same priority");

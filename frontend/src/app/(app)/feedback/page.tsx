@@ -1,17 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import {
   Trash2,
-  Calendar,
   MessageSquare,
   Loader2,
-  ChevronRight,
   AlertCircle,
-  Dumbbell,
   BookOpen,
 } from "lucide-react";
 
@@ -114,16 +111,11 @@ function FeedbackContent() {
   const { data: sessionsData, isLoading: isLoadingSessions } = useSessions();
   const sessions = sessionsData?.sessions ?? [];
   const finishedSessions = sessions.filter((s) => s.isFinished);
+  const resolvedSessionId =
+    selectedSessionId ?? finishedSessions[0]?.id ?? null;
 
   const { data: resumesData } = useResumes();
   const resumes = resumesData?.resumes ?? [];
-
-  // Default select first completed session when loaded
-  useEffect(() => {
-    if (finishedSessions.length > 0 && !selectedSessionId) {
-      setSelectedSessionId(finishedSessions[0].id);
-    }
-  }, [finishedSessions, selectedSessionId]);
 
   async function handleDeleteSession(id: string, e: React.MouseEvent) {
     e.stopPropagation(); // Stop click from selecting
@@ -146,7 +138,7 @@ function FeedbackContent() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
       void queryClient.invalidateQueries({ queryKey: ["review-items"] });
       
-      if (selectedSessionId === id) {
+      if (resolvedSessionId === id) {
         setSelectedSessionId(null);
       }
     } catch (err) {
@@ -158,7 +150,9 @@ function FeedbackContent() {
     }
   }
 
-  const selectedSession = finishedSessions.find((s) => s.id === selectedSessionId);
+  const selectedSession = finishedSessions.find(
+    (s) => s.id === resolvedSessionId,
+  );
   const selectedResume = selectedSession
     ? resumes.find((r) => r.id === selectedSession.resumeId)
     : null;
@@ -192,7 +186,7 @@ function FeedbackContent() {
             </div>
           ) : (
             finishedSessions.map((sess) => {
-              const isActive = selectedSessionId === sess.id;
+              const isActive = resolvedSessionId === sess.id;
               const resumeObj = resumes.find((r) => r.id === sess.resumeId);
               const resumeName = resumeObj ? resumeObj.name : "Resume";
 
@@ -242,9 +236,9 @@ function FeedbackContent() {
 
       {/* Detail Pane */}
       <div className="flex-1 bg-(--background) flex flex-col h-full min-w-0 overflow-hidden relative">
-        {selectedSessionId ? (
+        {resolvedSessionId ? (
           <SessionFeedbackDetail
-            sessionId={selectedSessionId}
+            sessionId={resolvedSessionId}
             resumeName={selectedResumeName}
           />
         ) : (

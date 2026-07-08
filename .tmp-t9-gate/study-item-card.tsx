@@ -1,17 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { ReviewPriorityBadge } from "@/features/study/review-priority-badge";
 import { cn } from "@/lib/utils";
 import type { ReviewItem } from "@/types/review-items";
@@ -35,12 +23,16 @@ export function StudyItemCard({
   onReactivate,
   onDelete,
 }: StudyItemCardProps) {
-  const [deleteOpen, setDeleteOpen] = useState(false);
   const isActive = item.status === "active";
 
-  const handleConfirmDelete = () => {
-    onDelete?.();
-    setDeleteOpen(false);
+  const handleDelete = () => {
+    if (
+      window.confirm(
+        `Delete "${item.topic}" from your study backlog? This cannot be undone.`,
+      )
+    ) {
+      onDelete?.();
+    }
   };
 
   return (
@@ -93,7 +85,7 @@ export function StudyItemCard({
             </button>
             <button
               type="button"
-              onClick={() => setDeleteOpen(true)}
+              onClick={handleDelete}
               className="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
             >
               Delete
@@ -110,7 +102,7 @@ export function StudyItemCard({
             </button>
             <button
               type="button"
-              onClick={() => setDeleteOpen(true)}
+              onClick={handleDelete}
               className="cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
             >
               Delete
@@ -118,24 +110,6 @@ export function StudyItemCard({
           </>
         )}
       </div>
-
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete review item?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Delete &ldquo;{item.topic}&rdquo; from your study backlog? This
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={handleConfirmDelete}>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

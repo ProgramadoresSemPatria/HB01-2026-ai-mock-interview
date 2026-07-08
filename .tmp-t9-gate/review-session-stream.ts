@@ -43,8 +43,6 @@ export async function streamReviewSessionTurn(
   await readSseStream(res, {
     onToken: callbacks.onToken,
     onMeta: (data) => callbacks.onMeta(data as ReviewSessionStreamMeta),
-    // Per-item evaluation failures are non-fatal; pending_review meta still follows.
-    isFatalError: (data) => !("reviewSessionItemId" in data),
     signal: callbacks.signal,
   });
 }

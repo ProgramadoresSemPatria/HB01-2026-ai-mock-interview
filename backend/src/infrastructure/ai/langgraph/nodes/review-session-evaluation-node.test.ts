@@ -50,7 +50,7 @@ function humanMessageContentFromInvokeArg(input: unknown): string {
 
 describe("createReviewSessionEvaluationNode", () => {
   it("invokes structuredModel via ChatPromptTemplate with scoped item prompt content", async () => {
-    const evaluated = { status: "learned" as const };
+    const evaluated = { status: "learned" as const, priority: null };
     const invoke = vi.fn().mockResolvedValue(evaluated);
     const node = createReviewSessionEvaluationNode({
       structuredModel: RunnableLambda.from(
@@ -89,7 +89,7 @@ describe("createReviewSessionEvaluationNode", () => {
   });
 
   it("rejects malformed structuredModel output via schema.parse", async () => {
-    const invoke = vi.fn().mockResolvedValue({ status: "active" });
+    const invoke = vi.fn().mockResolvedValue({ status: "active", priority: null });
     const node = createReviewSessionEvaluationNode({
       structuredModel: RunnableLambda.from(
         invoke,

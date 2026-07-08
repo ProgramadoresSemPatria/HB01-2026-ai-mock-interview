@@ -447,7 +447,7 @@ describe("ReviewSessionStreamService", () => {
 
     vi.mocked(evaluator.evaluate)
       .mockResolvedValueOnce({ status: "active", priority: "medium" })
-      .mockResolvedValueOnce({ status: "learned" });
+      .mockResolvedValueOnce({ status: "learned", priority: null });
 
     const res = createMockResponse();
 

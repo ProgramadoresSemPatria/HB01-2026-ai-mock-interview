@@ -53,13 +53,29 @@ export const applyReviewSessionSchema = z
     }
   });
 
-export const reviewSessionEvaluationOutputSchema = z.discriminatedUnion(
-  "status",
-  [
-    z.object({ status: z.literal("learned") }),
-    z.object({ status: z.literal("active"), priority: reviewPrioritySchema }),
-  ],
-);
+// Flat object schema — OpenAI structured output rejects oneOf/discriminatedUnion.
+export const reviewSessionEvaluationOutputSchema = z
+  .object({
+    status: reviewItemStatusSchema,
+    priority: reviewPrioritySchema.nullable(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.status === "active" && data.priority === null) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Priority is required when status is active",
+        path: ["priority"],
+      });
+    }
+
+    if (data.status === "learned" && data.priority !== null) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Priority must be null when status is learned",
+        path: ["priority"],
+      });
+    }
+  });
 
 export type ReviewSessionEvaluationOutput = z.infer<
   typeof reviewSessionEvaluationOutputSchema

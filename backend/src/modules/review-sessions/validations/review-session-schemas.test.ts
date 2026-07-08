@@ -215,10 +215,13 @@ describe("applyReviewSessionSchema", () => {
 });
 
 describe("reviewSessionEvaluationOutputSchema", () => {
-  it("accepts learned status without priority", () => {
+  it("accepts learned status with null priority", () => {
     expect(
-      reviewSessionEvaluationOutputSchema.parse({ status: "learned" }),
-    ).toEqual({ status: "learned" });
+      reviewSessionEvaluationOutputSchema.parse({
+        status: "learned",
+        priority: null,
+      }),
+    ).toEqual({ status: "learned", priority: null });
   });
 
   it("accepts active status with priority", () => {
@@ -230,9 +233,21 @@ describe("reviewSessionEvaluationOutputSchema", () => {
     ).toEqual({ status: "active", priority: "medium" });
   });
 
-  it("rejects active status without priority", () => {
+  it("rejects active status with null priority", () => {
     expect(() =>
-      reviewSessionEvaluationOutputSchema.parse({ status: "active" }),
+      reviewSessionEvaluationOutputSchema.parse({
+        status: "active",
+        priority: null,
+      }),
+    ).toThrow();
+  });
+
+  it("rejects learned status with a priority", () => {
+    expect(() =>
+      reviewSessionEvaluationOutputSchema.parse({
+        status: "learned",
+        priority: "low",
+      }),
     ).toThrow();
   });
 

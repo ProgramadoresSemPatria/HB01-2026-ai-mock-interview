@@ -4,8 +4,6 @@ export type SseStreamCallbacks = {
   onToken: (content: string) => void;
   onMeta: (data: Record<string, unknown>) => void;
   onError?: (message: string, extra?: Record<string, unknown>) => void;
-  /** When false, error events are reported via onError but do not abort the stream. */
-  isFatalError?: (data: Record<string, unknown>) => boolean;
   signal?: AbortSignal;
 };
 
@@ -50,11 +48,8 @@ export async function readSseStream(
         callbacks.onMeta(data);
       }
       if (event === "error" && typeof data.message === "string") {
-        const isFatal = callbacks.isFatalError?.(data) ?? true;
         callbacks.onError?.(data.message, data);
-        if (isFatal) {
-          throw new ApiError(data.message, 500, data);
-        }
+        throw new ApiError(data.message, 500, data);
       }
     }
   }
