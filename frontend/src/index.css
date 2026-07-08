@@ -6,7 +6,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #f9f5ef;
+  --background: #2b2b2b;
   --foreground: #171311;
   --card: rgba(255, 255, 255, 0.9);
   --card-foreground: #171311;
@@ -25,27 +25,12 @@
   --border: rgba(23, 19, 17, 0.08);
   --input: rgba(255, 255, 255, 0.94);
   --ring: rgba(11, 139, 115, 0.25);
-  --chart-1: #0b8b73;
-  --chart-2: #2a7c70;
-  --chart-3: #43514d;
-  --chart-4: #e4dfd8;
-  --chart-5: #d35d5d;
   --radius: 0.75rem;
-  --sidebar: rgba(255, 255, 255, 0.96);
-  --sidebar-foreground: #171311;
-  --sidebar-primary: #0b8b73;
-  --sidebar-primary-foreground: #fdfbf8;
-  --sidebar-accent: #ece4db;
-  --sidebar-accent-foreground: #171311;
-  --sidebar-border: rgba(23, 19, 17, 0.08);
-  --sidebar-ring: rgba(11, 139, 115, 0.25);
 
-  --surface-canvas: #f9f5ef;
   --surface-base: rgba(255, 255, 255, 0.92);
   --surface-elevated: #fffdf9;
   --surface-glass: rgba(255, 255, 255, 0.78);
   --surface-soft: #f5f1ec;
-  --surface-subtle: rgba(255, 255, 255, 0.62);
   --surface-inverse: #080909;
   --surface-inverse-soft: rgba(255, 255, 255, 0.08);
   --surface-inverse-foreground: #f7f4ef;
@@ -86,9 +71,10 @@
   --radius-card: 1.5rem;
   --radius-pill: 999px;
 
-  --motion-fast: 180ms;
   --motion-base: 280ms;
-  --motion-slow: 480ms;
+
+  --landing-canvas: #1f1f1f;
+  --landing-container: #000000;
 }
 
 .dark {
@@ -112,12 +98,10 @@
   --input: rgba(26, 26, 26, 0.88);
   --ring: rgba(95, 212, 189, 0.4);
 
-  --surface-canvas: #0a0b0b;
   --surface-base: rgba(18, 18, 18, 0.94);
   --surface-elevated: rgba(24, 24, 24, 0.96);
   --surface-glass: rgba(18, 18, 18, 0.78);
   --surface-soft: rgba(255, 255, 255, 0.06);
-  --surface-subtle: rgba(255, 255, 255, 0.04);
   --surface-inverse: #f7f4ef;
   --surface-inverse-soft: rgba(247, 244, 239, 0.12);
   --surface-inverse-foreground: #111111;
@@ -153,19 +137,6 @@
 @theme inline {
   --font-sans: var(--font-outfit), system-ui, sans-serif;
   --font-display: var(--font-playfair), Georgia, serif;
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -186,12 +157,10 @@
   --color-foreground: var(--foreground);
   --color-background: var(--background);
 
-  --color-surface-canvas: var(--surface-canvas);
   --color-surface-base: var(--surface-base);
   --color-surface-elevated: var(--surface-elevated);
   --color-surface-glass: var(--surface-glass);
   --color-surface-soft: var(--surface-soft);
-  --color-surface-subtle: var(--surface-subtle);
   --color-surface-inverse: var(--surface-inverse);
   --color-surface-inverse-soft: var(--surface-inverse-soft);
 
@@ -278,9 +247,29 @@
   .section-spacing {
     @apply py-24 md:py-32;
   }
+}
 
-  .section-spacing-lg {
-    @apply py-28 md:py-36;
+.landing-canvas {
+  min-height: 100dvh;
+  padding: 1rem;
+  background-color: var(--landing-canvas);
+}
+
+@media (min-width: 768px) {
+  .landing-canvas {
+    padding: 1rem;
+  }
+}
+
+.landing-container {
+  min-height: calc(100dvh - 3rem);
+  background-color: var(--landing-container);
+  border-radius: 16px;
+}
+
+@media (min-width: 768px) {
+  .landing-container {
+    min-height: calc(100dvh - 8rem);
   }
 }
 
