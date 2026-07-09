@@ -10,15 +10,20 @@ import {
 const validResumeId = "550e8400-e29b-41d4-a716-446655440000";
 
 describe("createSessionSchema", () => {
-  it("accepts a valid resumeId and level", () => {
+  it("accepts a valid resumeId, level, and interviewLocale", () => {
     const result = createSessionSchema.safeParse({
       resumeId: validResumeId,
       level: "mid",
+      interviewLocale: "en",
     });
 
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data).toEqual({ resumeId: validResumeId, level: "mid" });
+      expect(result.data).toEqual({
+        resumeId: validResumeId,
+        level: "mid",
+        interviewLocale: "en",
+      });
     }
   });
 
@@ -26,15 +31,33 @@ describe("createSessionSchema", () => {
     const result = createSessionSchema.safeParse({
       resumeId: validResumeId,
       level,
+      interviewLocale: "en",
     });
 
     expect(result.success).toBe(true);
   });
 
+  it.each(["en", "pt"] as const)(
+    "accepts interviewLocale %s",
+    (interviewLocale) => {
+      const result = createSessionSchema.safeParse({
+        resumeId: validResumeId,
+        level: "mid",
+        interviewLocale,
+      });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.interviewLocale).toBe(interviewLocale);
+      }
+    },
+  );
+
   it("rejects invalid resumeId", () => {
     const result = createSessionSchema.safeParse({
       resumeId: "not-a-uuid",
       level: "entry",
+      interviewLocale: "en",
     });
 
     expect(result.success).toBe(false);
@@ -44,6 +67,7 @@ describe("createSessionSchema", () => {
     const result = createSessionSchema.safeParse({
       resumeId: validResumeId,
       level: "staff",
+      interviewLocale: "en",
     });
 
     expect(result.success).toBe(false);
@@ -51,17 +75,40 @@ describe("createSessionSchema", () => {
 
   it("rejects missing fields", () => {
     expect(
-      createSessionSchema.safeParse({ resumeId: validResumeId }).success,
+      createSessionSchema.safeParse({
+        resumeId: validResumeId,
+        interviewLocale: "en",
+      }).success,
     ).toBe(false);
-    expect(createSessionSchema.safeParse({ level: "entry" }).success).toBe(
-      false,
-    );
+    expect(
+      createSessionSchema.safeParse({
+        level: "entry",
+        interviewLocale: "en",
+      }).success,
+    ).toBe(false);
+    expect(
+      createSessionSchema.safeParse({
+        resumeId: validResumeId,
+        level: "entry",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects invalid interviewLocale", () => {
+    const result = createSessionSchema.safeParse({
+      resumeId: validResumeId,
+      level: "mid",
+      interviewLocale: "pt-BR",
+    });
+
+    expect(result.success).toBe(false);
   });
 
   it("accepts an optional job description", () => {
     const result = createSessionSchema.safeParse({
       resumeId: validResumeId,
       level: "mid",
+      interviewLocale: "pt",
       jobDescription: "Senior Backend Engineer",
     });
 
@@ -75,6 +122,7 @@ describe("createSessionSchema", () => {
     const result = createSessionSchema.safeParse({
       resumeId: validResumeId,
       level: "mid",
+      interviewLocale: "en",
       jobDescription: "x".repeat(5_001),
     });
 
@@ -83,22 +131,40 @@ describe("createSessionSchema", () => {
 });
 
 describe("streamMessageSchema", () => {
-  it("accepts non-empty content", () => {
+  it("accepts non-empty content with interviewLocale", () => {
     const result = streamMessageSchema.safeParse({
       content: "I would use a hash map for O(1) lookups.",
+      interviewLocale: "en",
     });
 
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.content).toBe(
-        "I would use a hash map for O(1) lookups.",
-      );
+      expect(result.data).toEqual({
+        content: "I would use a hash map for O(1) lookups.",
+        interviewLocale: "en",
+      });
     }
   });
+
+  it.each(["en", "pt"] as const)(
+    "accepts interviewLocale %s",
+    (interviewLocale) => {
+      const result = streamMessageSchema.safeParse({
+        content: "Hello interviewer",
+        interviewLocale,
+      });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.interviewLocale).toBe(interviewLocale);
+      }
+    },
+  );
 
   it("trims surrounding whitespace from content", () => {
     const result = streamMessageSchema.safeParse({
       content: "  Hello interviewer  ",
+      interviewLocale: "pt",
     });
 
     expect(result.success).toBe(true);
@@ -108,13 +174,19 @@ describe("streamMessageSchema", () => {
   });
 
   it("rejects empty content", () => {
-    const result = streamMessageSchema.safeParse({ content: "" });
+    const result = streamMessageSchema.safeParse({
+      content: "",
+      interviewLocale: "en",
+    });
 
     expect(result.success).toBe(false);
   });
 
   it("rejects whitespace-only content", () => {
-    const result = streamMessageSchema.safeParse({ content: "   " });
+    const result = streamMessageSchema.safeParse({
+      content: "   ",
+      interviewLocale: "en",
+    });
 
     expect(result.success).toBe(false);
   });
@@ -122,6 +194,7 @@ describe("streamMessageSchema", () => {
   it("rejects content over 10000 characters", () => {
     const result = streamMessageSchema.safeParse({
       content: "x".repeat(10_001),
+      interviewLocale: "en",
     });
 
     expect(result.success).toBe(false);
@@ -133,7 +206,26 @@ describe("streamMessageSchema", () => {
   });
 
   it("rejects missing content", () => {
-    const result = streamMessageSchema.safeParse({});
+    const result = streamMessageSchema.safeParse({
+      interviewLocale: "en",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects missing interviewLocale", () => {
+    const result = streamMessageSchema.safeParse({
+      content: "Hello interviewer",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects invalid interviewLocale", () => {
+    const result = streamMessageSchema.safeParse({
+      content: "Hello interviewer",
+      interviewLocale: "EN",
+    });
 
     expect(result.success).toBe(false);
   });
