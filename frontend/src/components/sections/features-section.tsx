@@ -1,65 +1,53 @@
+"use client";
+
+import { type RefObject } from "react";
 import {
-  FeatureCard,
-  type FeatureCardProps,
-} from "@/components/patterns/feature-card";
-import {
-  TopicStatusCard,
-  type TopicStatusCardProps,
-} from "@/components/patterns/topic-status-card";
-import { SectionHeader } from "@/components/ui/section-header";
-import { Surface } from "@/components/ui/surface";
+  motion,
+  useScroll,
+  useTransform,
+  useReducedMotion,
+} from "motion/react";
 
-type FeaturesSectionProps = {
-  features: readonly FeatureCardProps[];
-  topics: readonly TopicStatusCardProps[];
-};
+const REVEAL_OFFSET: [string, string] = ["start start", "end start"];
+const REVEAL_TRANSLATE_Y = -250;
+const OPACITY_FADE_END = 1;
 
-function FeaturesSection({ features, topics }: FeaturesSectionProps) {
-  return (
-    <section id="features" className="content-width section-spacing">
-      <SectionHeader
-        align="center"
-        title={
-          <>
-            Do anything with{" "}
-            <span className="font-normal italic text-primary">Hone</span>
-          </>
-        }
-      />
-
-      <div className="mt-16 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-        {features.map((card) => (
-          <FeatureCard key={card.title} {...card} />
-        ))}
-
-        <Surface
-          variant="elevated"
-          padding="xl"
-          radius="xl"
-          className="xl:col-span-4"
-        >
-          <div className="grid gap-8 md:grid-cols-[0.9fr_1.1fr] md:items-center">
-            <div>
-              <h3 className="font-display text-[2.4rem] leading-none tracking-[-0.05em] text-text-strong md:text-[3.3rem]">
-                Topic
-                <span className="block">Tracking</span>
-              </h3>
-              <p className="mt-5 max-w-md text-sm leading-7 text-text-muted md:text-base">
-                Hone monitors 40+ engineering domains to ensure you&apos;re
-                covered across the entire full-stack spectrum.
-              </p>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {topics.map((card) => (
-                <TopicStatusCard key={card.title} {...card} />
-              ))}
-            </div>
-          </div>
-        </Surface>
-      </div>
-    </section>
-  );
+interface FeaturesSectionProps {
+  parallaxRef: RefObject<HTMLDivElement | null>;
 }
 
-export { FeaturesSection };
+const FeaturesSection = ({ parallaxRef }: FeaturesSectionProps) => {
+  const prefersReducedMotion = useReducedMotion();
+
+  const { scrollYProgress } = useScroll({
+    target: parallaxRef,
+    offset: REVEAL_OFFSET,
+  });
+
+  const y = useTransform(
+    scrollYProgress,
+    [0, 1],
+    prefersReducedMotion ? [0, 0] : [REVEAL_TRANSLATE_Y, 0],
+    { clamp: true }
+  );
+
+  const opacity = useTransform(
+    scrollYProgress,
+    [0, OPACITY_FADE_END],
+    prefersReducedMotion ? [1, 1] : [0, 1],
+    { clamp: true }
+  );
+
+  return (
+    <section className="flex justify-center items-start h-screen">
+      <motion.div
+        className="text-center text-9xl mt-30 font-normal text-white instrument-serif sticky top-2"
+        style={{ y, opacity }}
+      >
+        Sharpen Engineering Thinking
+      </motion.div>
+    </section>
+  );
+};
+
+export default FeaturesSection;
