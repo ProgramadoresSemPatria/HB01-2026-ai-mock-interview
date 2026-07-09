@@ -33,3 +33,13 @@ export {
   makeAiRateLimiter,
 } from "./middlewares/rate-limit-middleware";
 export { validate } from "./middlewares/validation-middleware";
+export {
+  interviewLocaleSchema,
+  buildInterviewLocalePromptBlock,
+  getClosingFeedbackCopy,
+  LANGUAGE_SECTION_HEADER,
+} from "./interview-locale/interview-locale";
+export type {
+  InterviewLocale,
+  ClosingFeedbackCopy,
+} from "./interview-locale/interview-locale";
