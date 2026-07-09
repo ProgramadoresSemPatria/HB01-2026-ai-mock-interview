@@ -26,6 +26,7 @@ async function seedSession() {
       userId: user.id,
       resumeId: resume.id,
       level: "entry",
+      interviewLocale: "en",
       maxTurns: 5,
     },
   });
@@ -67,7 +68,8 @@ describe("ReviewRepository (integration)", () => {
         userId: user.id,
         resumeId: session.resumeId,
         level: "senior",
-        maxTurns: 8,
+        interviewLocale: "en",
+      maxTurns: 8,
       },
     });
 
@@ -108,7 +110,8 @@ describe("ReviewRepository (integration)", () => {
         userId: user.id,
         resumeId: session.resumeId,
         level: "mid",
-        maxTurns: 7,
+        interviewLocale: "en",
+      maxTurns: 7,
       },
     });
 
@@ -214,7 +217,8 @@ describe("ReviewRepository (integration)", () => {
         userId: otherUser.id,
         resumeId: otherResume.id,
         level: "entry",
-        maxTurns: 5,
+        interviewLocale: "en",
+      maxTurns: 5,
       },
     });
 

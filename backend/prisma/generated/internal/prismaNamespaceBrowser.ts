@@ -101,6 +101,7 @@ export const InterviewSessionScalarFieldEnum = {
   resumeId: 'resumeId',
   level: 'level',
   jobDescription: 'jobDescription',
+  interviewLocale: 'interviewLocale',
   turnCount: 'turnCount',
   maxTurns: 'maxTurns',
   isFinished: 'isFinished',
@@ -142,6 +143,7 @@ export const ReviewSessionScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   status: 'status',
+  interviewLocale: 'interviewLocale',
   createdAt: 'createdAt',
   evaluatedAt: 'evaluatedAt',
   completedAt: 'completedAt'
@@ -189,6 +191,7 @@ export const UserScalarFieldEnum = {
   name: 'name',
   email: 'email',
   password: 'password',
+  interviewLocale: 'interviewLocale',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

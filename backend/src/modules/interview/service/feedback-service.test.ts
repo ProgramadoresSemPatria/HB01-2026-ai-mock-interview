@@ -85,6 +85,7 @@ describe("FeedbackService", () => {
       resumeId: "resume-id",
       level: "entry",
       jobDescription: null,
+      interviewLocale: "en",
       turnCount: 3,
       maxTurns: 5,
       isFinished: true,

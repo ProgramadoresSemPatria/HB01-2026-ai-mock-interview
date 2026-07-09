@@ -84,6 +84,8 @@ export class ReviewSessionRepository {
     const row = await prisma.reviewSession.create({
       data: {
         userId,
+        // Temporary stub until T11 wires create(interviewLocale)
+        interviewLocale: "en",
         items: {
           create: items.map((item, index) => ({
             reviewItemId: item.reviewItemId,

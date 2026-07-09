@@ -37,6 +37,11 @@ enum FeedbackRating {
   down
 }
 
+enum InterviewLocale {
+  en
+  pt
+}
+
 model Resume {
   id                String       @id @default(uuid())
   userId            Int
@@ -59,15 +64,16 @@ model Resume {
 }
 
 model InterviewSession {
-  id             String         @id @default(uuid())
-  userId         Int
-  resumeId       String         @map("resume_id")
-  level          InterviewLevel
-  jobDescription String?        @map("job_description") @db.Text
-  turnCount      Int            @default(0) @map("turn_count")
-  maxTurns       Int            @map("max_turns")
-  isFinished     Boolean        @default(false) @map("is_finished")
-  createdAt      DateTime       @default(now()) @map("created_at")
+  id              String          @id @default(uuid())
+  userId          Int
+  resumeId        String          @map("resume_id")
+  level           InterviewLevel
+  jobDescription  String?         @map("job_description") @db.Text
+  interviewLocale InterviewLocale @default(en) @map("interview_locale")
+  turnCount       Int             @default(0) @map("turn_count")
+  maxTurns        Int             @map("max_turns")
+  isFinished      Boolean         @default(false) @map("is_finished")
+  createdAt       DateTime        @default(now()) @map("created_at")
 
   user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   resume      Resume             @relation(fields: [resumeId], references: [id], onDelete: Cascade)
@@ -118,12 +124,13 @@ model ReviewItem {
 }
 
 model ReviewSession {
-  id          String              @id @default(uuid())
-  userId      Int                 @map("user_id")
-  status      ReviewSessionStatus @default(in_progress)
-  createdAt   DateTime            @default(now()) @map("created_at")
-  evaluatedAt DateTime?           @map("evaluated_at")
-  completedAt DateTime?           @map("completed_at")
+  id              String              @id @default(uuid())
+  userId          Int                 @map("user_id")
+  status          ReviewSessionStatus @default(in_progress)
+  interviewLocale InterviewLocale     @default(en) @map("interview_locale")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  evaluatedAt     DateTime?           @map("evaluated_at")
+  completedAt     DateTime?           @map("completed_at")
 
   user  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   items ReviewSessionItem[]

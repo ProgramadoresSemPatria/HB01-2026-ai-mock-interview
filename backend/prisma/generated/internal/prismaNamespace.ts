@@ -1214,6 +1214,7 @@ export const InterviewSessionScalarFieldEnum = {
   resumeId: 'resumeId',
   level: 'level',
   jobDescription: 'jobDescription',
+  interviewLocale: 'interviewLocale',
   turnCount: 'turnCount',
   maxTurns: 'maxTurns',
   isFinished: 'isFinished',
@@ -1255,6 +1256,7 @@ export const ReviewSessionScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   status: 'status',
+  interviewLocale: 'interviewLocale',
   createdAt: 'createdAt',
   evaluatedAt: 'evaluatedAt',
   completedAt: 'completedAt'
@@ -1302,6 +1304,7 @@ export const UserScalarFieldEnum = {
   name: 'name',
   email: 'email',
   password: 'password',
+  interviewLocale: 'interviewLocale',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1466,6 +1469,20 @@ export type EnumInterviewLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$P
  * Reference to a field of type 'InterviewLevel[]'
  */
 export type ListEnumInterviewLevelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InterviewLevel[]'>
+    
+
+
+/**
+ * Reference to a field of type 'InterviewLocale'
+ */
+export type EnumInterviewLocaleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InterviewLocale'>
+    
+
+
+/**
+ * Reference to a field of type 'InterviewLocale[]'
+ */
+export type ListEnumInterviewLocaleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InterviewLocale[]'>
     
 
 

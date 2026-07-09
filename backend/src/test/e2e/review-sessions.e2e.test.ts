@@ -111,6 +111,7 @@ async function seedReviewItem(
       userId,
       resumeId: resume.id,
       level: "entry",
+      interviewLocale: "en",
       maxTurns: 5,
     },
   });

@@ -38,6 +38,7 @@ export type ReviewSessionMinAggregateOutputType = {
   id: string | null
   userId: number | null
   status: $Enums.ReviewSessionStatus | null
+  interviewLocale: $Enums.InterviewLocale | null
   createdAt: Date | null
   evaluatedAt: Date | null
   completedAt: Date | null
@@ -47,6 +48,7 @@ export type ReviewSessionMaxAggregateOutputType = {
   id: string | null
   userId: number | null
   status: $Enums.ReviewSessionStatus | null
+  interviewLocale: $Enums.InterviewLocale | null
   createdAt: Date | null
   evaluatedAt: Date | null
   completedAt: Date | null
@@ -56,6 +58,7 @@ export type ReviewSessionCountAggregateOutputType = {
   id: number
   userId: number
   status: number
+  interviewLocale: number
   createdAt: number
   evaluatedAt: number
   completedAt: number
@@ -75,6 +78,7 @@ export type ReviewSessionMinAggregateInputType = {
   id?: true
   userId?: true
   status?: true
+  interviewLocale?: true
   createdAt?: true
   evaluatedAt?: true
   completedAt?: true
@@ -84,6 +88,7 @@ export type ReviewSessionMaxAggregateInputType = {
   id?: true
   userId?: true
   status?: true
+  interviewLocale?: true
   createdAt?: true
   evaluatedAt?: true
   completedAt?: true
@@ -93,6 +98,7 @@ export type ReviewSessionCountAggregateInputType = {
   id?: true
   userId?: true
   status?: true
+  interviewLocale?: true
   createdAt?: true
   evaluatedAt?: true
   completedAt?: true
@@ -189,6 +195,7 @@ export type ReviewSessionGroupByOutputType = {
   id: string
   userId: number
   status: $Enums.ReviewSessionStatus
+  interviewLocale: $Enums.InterviewLocale
   createdAt: Date
   evaluatedAt: Date | null
   completedAt: Date | null
@@ -221,6 +228,7 @@ export type ReviewSessionWhereInput = {
   id?: Prisma.StringFilter<"ReviewSession"> | string
   userId?: Prisma.IntFilter<"ReviewSession"> | number
   status?: Prisma.EnumReviewSessionStatusFilter<"ReviewSession"> | $Enums.ReviewSessionStatus
+  interviewLocale?: Prisma.EnumInterviewLocaleFilter<"ReviewSession"> | $Enums.InterviewLocale
   createdAt?: Prisma.DateTimeFilter<"ReviewSession"> | Date | string
   evaluatedAt?: Prisma.DateTimeNullableFilter<"ReviewSession"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"ReviewSession"> | Date | string | null
@@ -232,6 +240,7 @@ export type ReviewSessionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  interviewLocale?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   evaluatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -246,6 +255,7 @@ export type ReviewSessionWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ReviewSessionWhereInput | Prisma.ReviewSessionWhereInput[]
   userId?: Prisma.IntFilter<"ReviewSession"> | number
   status?: Prisma.EnumReviewSessionStatusFilter<"ReviewSession"> | $Enums.ReviewSessionStatus
+  interviewLocale?: Prisma.EnumInterviewLocaleFilter<"ReviewSession"> | $Enums.InterviewLocale
   createdAt?: Prisma.DateTimeFilter<"ReviewSession"> | Date | string
   evaluatedAt?: Prisma.DateTimeNullableFilter<"ReviewSession"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"ReviewSession"> | Date | string | null
@@ -257,6 +267,7 @@ export type ReviewSessionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  interviewLocale?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   evaluatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -274,6 +285,7 @@ export type ReviewSessionScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"ReviewSession"> | string
   userId?: Prisma.IntWithAggregatesFilter<"ReviewSession"> | number
   status?: Prisma.EnumReviewSessionStatusWithAggregatesFilter<"ReviewSession"> | $Enums.ReviewSessionStatus
+  interviewLocale?: Prisma.EnumInterviewLocaleWithAggregatesFilter<"ReviewSession"> | $Enums.InterviewLocale
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ReviewSession"> | Date | string
   evaluatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReviewSession"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReviewSession"> | Date | string | null
@@ -282,6 +294,7 @@ export type ReviewSessionScalarWhereWithAggregatesInput = {
 export type ReviewSessionCreateInput = {
   id?: string
   status?: $Enums.ReviewSessionStatus
+  interviewLocale?: $Enums.InterviewLocale
   createdAt?: Date | string
   evaluatedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -293,6 +306,7 @@ export type ReviewSessionUncheckedCreateInput = {
   id?: string
   userId: number
   status?: $Enums.ReviewSessionStatus
+  interviewLocale?: $Enums.InterviewLocale
   createdAt?: Date | string
   evaluatedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -302,6 +316,7 @@ export type ReviewSessionUncheckedCreateInput = {
 export type ReviewSessionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumReviewSessionStatusFieldUpdateOperationsInput | $Enums.ReviewSessionStatus
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evaluatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -313,6 +328,7 @@ export type ReviewSessionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumReviewSessionStatusFieldUpdateOperationsInput | $Enums.ReviewSessionStatus
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evaluatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -323,6 +339,7 @@ export type ReviewSessionCreateManyInput = {
   id?: string
   userId: number
   status?: $Enums.ReviewSessionStatus
+  interviewLocale?: $Enums.InterviewLocale
   createdAt?: Date | string
   evaluatedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -331,6 +348,7 @@ export type ReviewSessionCreateManyInput = {
 export type ReviewSessionUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumReviewSessionStatusFieldUpdateOperationsInput | $Enums.ReviewSessionStatus
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evaluatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -340,6 +358,7 @@ export type ReviewSessionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumReviewSessionStatusFieldUpdateOperationsInput | $Enums.ReviewSessionStatus
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evaluatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -349,6 +368,7 @@ export type ReviewSessionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  interviewLocale?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   evaluatedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
@@ -362,6 +382,7 @@ export type ReviewSessionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  interviewLocale?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   evaluatedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
@@ -371,6 +392,7 @@ export type ReviewSessionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  interviewLocale?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   evaluatedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
@@ -458,6 +480,7 @@ export type ReviewSessionUncheckedUpdateManyWithoutUserNestedInput = {
 export type ReviewSessionCreateWithoutItemsInput = {
   id?: string
   status?: $Enums.ReviewSessionStatus
+  interviewLocale?: $Enums.InterviewLocale
   createdAt?: Date | string
   evaluatedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -468,6 +491,7 @@ export type ReviewSessionUncheckedCreateWithoutItemsInput = {
   id?: string
   userId: number
   status?: $Enums.ReviewSessionStatus
+  interviewLocale?: $Enums.InterviewLocale
   createdAt?: Date | string
   evaluatedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -492,6 +516,7 @@ export type ReviewSessionUpdateToOneWithWhereWithoutItemsInput = {
 export type ReviewSessionUpdateWithoutItemsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumReviewSessionStatusFieldUpdateOperationsInput | $Enums.ReviewSessionStatus
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evaluatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -502,6 +527,7 @@ export type ReviewSessionUncheckedUpdateWithoutItemsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumReviewSessionStatusFieldUpdateOperationsInput | $Enums.ReviewSessionStatus
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evaluatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -510,6 +536,7 @@ export type ReviewSessionUncheckedUpdateWithoutItemsInput = {
 export type ReviewSessionCreateWithoutUserInput = {
   id?: string
   status?: $Enums.ReviewSessionStatus
+  interviewLocale?: $Enums.InterviewLocale
   createdAt?: Date | string
   evaluatedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -519,6 +546,7 @@ export type ReviewSessionCreateWithoutUserInput = {
 export type ReviewSessionUncheckedCreateWithoutUserInput = {
   id?: string
   status?: $Enums.ReviewSessionStatus
+  interviewLocale?: $Enums.InterviewLocale
   createdAt?: Date | string
   evaluatedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -558,6 +586,7 @@ export type ReviewSessionScalarWhereInput = {
   id?: Prisma.StringFilter<"ReviewSession"> | string
   userId?: Prisma.IntFilter<"ReviewSession"> | number
   status?: Prisma.EnumReviewSessionStatusFilter<"ReviewSession"> | $Enums.ReviewSessionStatus
+  interviewLocale?: Prisma.EnumInterviewLocaleFilter<"ReviewSession"> | $Enums.InterviewLocale
   createdAt?: Prisma.DateTimeFilter<"ReviewSession"> | Date | string
   evaluatedAt?: Prisma.DateTimeNullableFilter<"ReviewSession"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"ReviewSession"> | Date | string | null
@@ -566,6 +595,7 @@ export type ReviewSessionScalarWhereInput = {
 export type ReviewSessionCreateManyUserInput = {
   id?: string
   status?: $Enums.ReviewSessionStatus
+  interviewLocale?: $Enums.InterviewLocale
   createdAt?: Date | string
   evaluatedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -574,6 +604,7 @@ export type ReviewSessionCreateManyUserInput = {
 export type ReviewSessionUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumReviewSessionStatusFieldUpdateOperationsInput | $Enums.ReviewSessionStatus
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evaluatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -583,6 +614,7 @@ export type ReviewSessionUpdateWithoutUserInput = {
 export type ReviewSessionUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumReviewSessionStatusFieldUpdateOperationsInput | $Enums.ReviewSessionStatus
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evaluatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -592,6 +624,7 @@ export type ReviewSessionUncheckedUpdateWithoutUserInput = {
 export type ReviewSessionUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumReviewSessionStatusFieldUpdateOperationsInput | $Enums.ReviewSessionStatus
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evaluatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -632,6 +665,7 @@ export type ReviewSessionSelect<ExtArgs extends runtime.Types.Extensions.Interna
   id?: boolean
   userId?: boolean
   status?: boolean
+  interviewLocale?: boolean
   createdAt?: boolean
   evaluatedAt?: boolean
   completedAt?: boolean
@@ -644,6 +678,7 @@ export type ReviewSessionSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   id?: boolean
   userId?: boolean
   status?: boolean
+  interviewLocale?: boolean
   createdAt?: boolean
   evaluatedAt?: boolean
   completedAt?: boolean
@@ -654,6 +689,7 @@ export type ReviewSessionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   id?: boolean
   userId?: boolean
   status?: boolean
+  interviewLocale?: boolean
   createdAt?: boolean
   evaluatedAt?: boolean
   completedAt?: boolean
@@ -664,12 +700,13 @@ export type ReviewSessionSelectScalar = {
   id?: boolean
   userId?: boolean
   status?: boolean
+  interviewLocale?: boolean
   createdAt?: boolean
   evaluatedAt?: boolean
   completedAt?: boolean
 }
 
-export type ReviewSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "status" | "createdAt" | "evaluatedAt" | "completedAt", ExtArgs["result"]["reviewSession"]>
+export type ReviewSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "status" | "interviewLocale" | "createdAt" | "evaluatedAt" | "completedAt", ExtArgs["result"]["reviewSession"]>
 export type ReviewSessionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   items?: boolean | Prisma.ReviewSession$itemsArgs<ExtArgs>
@@ -692,6 +729,7 @@ export type $ReviewSessionPayload<ExtArgs extends runtime.Types.Extensions.Inter
     id: string
     userId: number
     status: $Enums.ReviewSessionStatus
+    interviewLocale: $Enums.InterviewLocale
     createdAt: Date
     evaluatedAt: Date | null
     completedAt: Date | null
@@ -1123,6 +1161,7 @@ export interface ReviewSessionFieldRefs {
   readonly id: Prisma.FieldRef<"ReviewSession", 'String'>
   readonly userId: Prisma.FieldRef<"ReviewSession", 'Int'>
   readonly status: Prisma.FieldRef<"ReviewSession", 'ReviewSessionStatus'>
+  readonly interviewLocale: Prisma.FieldRef<"ReviewSession", 'InterviewLocale'>
   readonly createdAt: Prisma.FieldRef<"ReviewSession", 'DateTime'>
   readonly evaluatedAt: Prisma.FieldRef<"ReviewSession", 'DateTime'>
   readonly completedAt: Prisma.FieldRef<"ReviewSession", 'DateTime'>

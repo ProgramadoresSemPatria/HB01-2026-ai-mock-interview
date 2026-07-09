@@ -27,6 +27,7 @@ async function seedReviewItems() {
       userId: user.id,
       resumeId: resume.id,
       level: "entry",
+      interviewLocale: "en",
       maxTurns: 5,
     },
   });

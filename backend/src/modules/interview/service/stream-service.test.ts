@@ -49,6 +49,7 @@ const baseSession = {
   resumeId: "resume-1",
   level: "entry" as const,
   jobDescription: "Backend Engineer role",
+  interviewLocale: "en" as const,
   turnCount: 0,
   maxTurns: 5,
   isFinished: false,

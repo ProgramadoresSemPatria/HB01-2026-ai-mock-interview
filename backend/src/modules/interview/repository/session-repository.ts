@@ -26,6 +26,8 @@ export class SessionRepository {
         resumeId,
         level,
         jobDescription: jobDescription ?? null,
+        // Temporary stub until T6 wires CreateSessionParams.interviewLocale
+        interviewLocale: "en",
         maxTurns: MAX_TURNS_BY_LEVEL[level],
       },
     });
