@@ -8,6 +8,8 @@ import {
   useReducedMotion,
 } from "motion/react";
 
+import ScrollGrid from "../patterns/scroll-grid";
+
 const REVEAL_OFFSET: [string, string] = ["start start", "end start"];
 const REVEAL_TRANSLATE_Y = -250;
 const OPACITY_FADE_END = 1 ;
@@ -39,13 +41,14 @@ const FeaturesSection = ({ parallaxRef }: FeaturesSectionProps) => {
   );
 
   return (
-    <section className="flex justify-center items-start h-screen">
+    <section className="flex flex-col justify-start items-center">
       <motion.div
         className="text-center text-9xl mt-50 font-normal text-white instrument-serif sticky top-2"
         style={{ y, opacity }}
       >
         Sharpen Engineering Thinking
       </motion.div>
+      <ScrollGrid />
     </section>
   );
 };
