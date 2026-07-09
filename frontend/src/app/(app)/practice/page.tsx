@@ -16,6 +16,7 @@ import {
 
 import { AppShell } from "@/features/dashboard/app-shell";
 import { useAuth } from "@/features/auth/session-provider";
+import { InterviewLocaleSelector } from "@/features/interview-locale/interview-locale-selector";
 import { useResumes } from "@/lib/query/hooks/use-resumes";
 import { useSessions } from "@/lib/query/hooks/use-sessions";
 import { interviewApi } from "@/lib/api/interview";
@@ -193,6 +194,8 @@ function PracticeContent() {
               </select>
             )}
           </div>
+
+          <InterviewLocaleSelector />
 
           {/* Choose level */}
           <div className="space-y-1.5">
