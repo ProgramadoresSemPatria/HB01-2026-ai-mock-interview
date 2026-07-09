@@ -380,7 +380,8 @@ export class ReviewSessionStreamService {
       return;
     }
 
-    await this.reviewSessionRepository.markPendingReview(sessionId);
+    // Temporary stub until T13 wires markPendingReview(sessionId, interviewLocale)
+    await this.reviewSessionRepository.markPendingReview(sessionId, "en");
 
     const updatedSession =
       await this.reviewSessionRepository.findByIdAndUserId(sessionId, userId);

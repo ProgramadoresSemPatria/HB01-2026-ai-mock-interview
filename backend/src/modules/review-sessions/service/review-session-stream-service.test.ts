@@ -55,6 +55,7 @@ function createSession(
     id: overrides.id ?? "review-session-id",
     userId: overrides.userId ?? 1,
     status: overrides.status ?? "in_progress",
+    interviewLocale: overrides.interviewLocale ?? "en",
     createdAt: overrides.createdAt ?? baseDate,
     evaluatedAt: overrides.evaluatedAt ?? null,
     completedAt: overrides.completedAt ?? null,
@@ -473,6 +474,7 @@ describe("ReviewSessionStreamService", () => {
     );
     expect(reviewSessionRepository.markPendingReview).toHaveBeenCalledWith(
       "review-session-id",
+      "en",
     );
 
     const output = res.chunks.join("");
@@ -531,6 +533,7 @@ describe("ReviewSessionStreamService", () => {
     );
     expect(reviewSessionRepository.markPendingReview).toHaveBeenCalledWith(
       "review-session-id",
+      "en",
     );
 
     const output = res.chunks.join("");

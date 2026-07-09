@@ -153,6 +153,8 @@ export class ReviewSessionsService {
     const session = await this.reviewSessionRepository.create(
       userId,
       buildCreateInputs(reviewItemIds, matches),
+      // Temporary stub until T13 wires create(interviewLocale)
+      "en",
     );
 
     return toSummary(session);
