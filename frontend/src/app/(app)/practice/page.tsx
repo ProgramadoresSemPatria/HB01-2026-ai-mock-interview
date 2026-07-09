@@ -16,13 +16,15 @@ import {
 
 import { AppShell } from "@/features/dashboard/app-shell";
 import { useAuth } from "@/features/auth/session-provider";
+import { InterviewLocaleSelector } from "@/features/interview-locale/interview-locale-selector";
+import { useInterviewLocale } from "@/features/interview-locale/use-interview-locale";
 import { useResumes } from "@/lib/query/hooks/use-resumes";
 import { useSessions } from "@/lib/query/hooks/use-sessions";
 import { interviewApi } from "@/lib/api/interview";
 import { InterviewChat } from "@/features/interview/interview-chat";
 import { queryKeys } from "@/lib/query/keys";
 import { cn } from "@/lib/utils";
-import type { InterviewLevel } from "@/types/interview";
+import type { CreateSessionInput, InterviewLevel } from "@/types/interview";
 import { MAX_JOB_DESCRIPTION_LENGTH } from "@/types/interview";
 import {
   getStoredResumeId,
@@ -37,6 +39,7 @@ const LEVELS: { value: InterviewLevel; label: string; turns: string }[] = [
 
 function PracticeContent() {
   const { getAccessToken } = useAuth();
+  const { locale } = useInterviewLocale();
   const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -113,11 +116,11 @@ function PracticeContent() {
 
     setIsCreatingSession(true);
     try {
-      const body: {
-        resumeId: string;
-        level: InterviewLevel;
-        jobDescription?: string;
-      } = { resumeId: resolvedResumeId, level };
+      const body: CreateSessionInput = {
+        resumeId: resolvedResumeId,
+        level,
+        interviewLocale: locale,
+      };
       if (trimmedJobDescription) {
         body.jobDescription = trimmedJobDescription;
       }
@@ -193,6 +196,8 @@ function PracticeContent() {
               </select>
             )}
           </div>
+
+          <InterviewLocaleSelector />
 
           {/* Choose level */}
           <div className="space-y-1.5">

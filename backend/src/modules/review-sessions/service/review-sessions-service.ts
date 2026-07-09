@@ -9,7 +9,10 @@ import type {
   ReviewSessionItemRecord,
   ReviewSessionRecord,
 } from "@/modules/review-sessions/types/review-session-record";
-import type { ApplyReviewSessionInput } from "@/modules/review-sessions/validations/review-session-schemas";
+import type {
+  ApplyReviewSessionInput,
+  CreateReviewSessionInput,
+} from "@/modules/review-sessions/validations/review-session-schemas";
 import {
   BadRequestError,
   ConflictError,
@@ -139,8 +142,9 @@ export class ReviewSessionsService {
 
   async create(
     userId: number,
-    reviewItemIds: string[],
+    input: CreateReviewSessionInput,
   ): Promise<ReviewSessionSummary> {
+    const { reviewItemIds, interviewLocale } = input;
     const matches = await this.reviewRepository.findActiveByIdsAndUserId(
       userId,
       reviewItemIds,
@@ -153,6 +157,7 @@ export class ReviewSessionsService {
     const session = await this.reviewSessionRepository.create(
       userId,
       buildCreateInputs(reviewItemIds, matches),
+      interviewLocale,
     );
 
     return toSummary(session);

@@ -1,10 +1,13 @@
 import { z } from "zod";
 
+import { interviewLocaleSchema } from "@/shared";
+
 export const interviewLevelSchema = z.enum(["entry", "mid", "senior"]);
 
 export const createSessionSchema = z.object({
   resumeId: z.uuid({ message: "Invalid resume ID" }),
   level: interviewLevelSchema,
+  interviewLocale: interviewLocaleSchema,
   jobDescription: z
     .string()
     .trim()
@@ -18,6 +21,7 @@ export const streamMessageSchema = z.object({
     .trim()
     .min(1, "Message content is required")
     .max(10_000, "Message content is too long"),
+  interviewLocale: interviewLocaleSchema,
 });
 
 export const reviewPrioritySchema = z.enum(["low", "medium", "high"]);

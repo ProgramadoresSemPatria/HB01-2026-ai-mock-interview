@@ -44,6 +44,7 @@ export type InterviewSessionMinAggregateOutputType = {
   resumeId: string | null
   level: $Enums.InterviewLevel | null
   jobDescription: string | null
+  interviewLocale: $Enums.InterviewLocale | null
   turnCount: number | null
   maxTurns: number | null
   isFinished: boolean | null
@@ -56,6 +57,7 @@ export type InterviewSessionMaxAggregateOutputType = {
   resumeId: string | null
   level: $Enums.InterviewLevel | null
   jobDescription: string | null
+  interviewLocale: $Enums.InterviewLocale | null
   turnCount: number | null
   maxTurns: number | null
   isFinished: boolean | null
@@ -68,6 +70,7 @@ export type InterviewSessionCountAggregateOutputType = {
   resumeId: number
   level: number
   jobDescription: number
+  interviewLocale: number
   turnCount: number
   maxTurns: number
   isFinished: number
@@ -94,6 +97,7 @@ export type InterviewSessionMinAggregateInputType = {
   resumeId?: true
   level?: true
   jobDescription?: true
+  interviewLocale?: true
   turnCount?: true
   maxTurns?: true
   isFinished?: true
@@ -106,6 +110,7 @@ export type InterviewSessionMaxAggregateInputType = {
   resumeId?: true
   level?: true
   jobDescription?: true
+  interviewLocale?: true
   turnCount?: true
   maxTurns?: true
   isFinished?: true
@@ -118,6 +123,7 @@ export type InterviewSessionCountAggregateInputType = {
   resumeId?: true
   level?: true
   jobDescription?: true
+  interviewLocale?: true
   turnCount?: true
   maxTurns?: true
   isFinished?: true
@@ -217,6 +223,7 @@ export type InterviewSessionGroupByOutputType = {
   resumeId: string
   level: $Enums.InterviewLevel
   jobDescription: string | null
+  interviewLocale: $Enums.InterviewLocale
   turnCount: number
   maxTurns: number
   isFinished: boolean
@@ -252,6 +259,7 @@ export type InterviewSessionWhereInput = {
   resumeId?: Prisma.StringFilter<"InterviewSession"> | string
   level?: Prisma.EnumInterviewLevelFilter<"InterviewSession"> | $Enums.InterviewLevel
   jobDescription?: Prisma.StringNullableFilter<"InterviewSession"> | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFilter<"InterviewSession"> | $Enums.InterviewLocale
   turnCount?: Prisma.IntFilter<"InterviewSession"> | number
   maxTurns?: Prisma.IntFilter<"InterviewSession"> | number
   isFinished?: Prisma.BoolFilter<"InterviewSession"> | boolean
@@ -269,6 +277,7 @@ export type InterviewSessionOrderByWithRelationInput = {
   resumeId?: Prisma.SortOrder
   level?: Prisma.SortOrder
   jobDescription?: Prisma.SortOrderInput | Prisma.SortOrder
+  interviewLocale?: Prisma.SortOrder
   turnCount?: Prisma.SortOrder
   maxTurns?: Prisma.SortOrder
   isFinished?: Prisma.SortOrder
@@ -289,6 +298,7 @@ export type InterviewSessionWhereUniqueInput = Prisma.AtLeast<{
   resumeId?: Prisma.StringFilter<"InterviewSession"> | string
   level?: Prisma.EnumInterviewLevelFilter<"InterviewSession"> | $Enums.InterviewLevel
   jobDescription?: Prisma.StringNullableFilter<"InterviewSession"> | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFilter<"InterviewSession"> | $Enums.InterviewLocale
   turnCount?: Prisma.IntFilter<"InterviewSession"> | number
   maxTurns?: Prisma.IntFilter<"InterviewSession"> | number
   isFinished?: Prisma.BoolFilter<"InterviewSession"> | boolean
@@ -306,6 +316,7 @@ export type InterviewSessionOrderByWithAggregationInput = {
   resumeId?: Prisma.SortOrder
   level?: Prisma.SortOrder
   jobDescription?: Prisma.SortOrderInput | Prisma.SortOrder
+  interviewLocale?: Prisma.SortOrder
   turnCount?: Prisma.SortOrder
   maxTurns?: Prisma.SortOrder
   isFinished?: Prisma.SortOrder
@@ -326,6 +337,7 @@ export type InterviewSessionScalarWhereWithAggregatesInput = {
   resumeId?: Prisma.StringWithAggregatesFilter<"InterviewSession"> | string
   level?: Prisma.EnumInterviewLevelWithAggregatesFilter<"InterviewSession"> | $Enums.InterviewLevel
   jobDescription?: Prisma.StringNullableWithAggregatesFilter<"InterviewSession"> | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleWithAggregatesFilter<"InterviewSession"> | $Enums.InterviewLocale
   turnCount?: Prisma.IntWithAggregatesFilter<"InterviewSession"> | number
   maxTurns?: Prisma.IntWithAggregatesFilter<"InterviewSession"> | number
   isFinished?: Prisma.BoolWithAggregatesFilter<"InterviewSession"> | boolean
@@ -336,6 +348,7 @@ export type InterviewSessionCreateInput = {
   id?: string
   level: $Enums.InterviewLevel
   jobDescription?: string | null
+  interviewLocale?: $Enums.InterviewLocale
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
@@ -353,6 +366,7 @@ export type InterviewSessionUncheckedCreateInput = {
   resumeId: string
   level: $Enums.InterviewLevel
   jobDescription?: string | null
+  interviewLocale?: $Enums.InterviewLocale
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
@@ -366,6 +380,7 @@ export type InterviewSessionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
   jobDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -383,6 +398,7 @@ export type InterviewSessionUncheckedUpdateInput = {
   resumeId?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
   jobDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -398,6 +414,7 @@ export type InterviewSessionCreateManyInput = {
   resumeId: string
   level: $Enums.InterviewLevel
   jobDescription?: string | null
+  interviewLocale?: $Enums.InterviewLocale
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
@@ -408,6 +425,7 @@ export type InterviewSessionUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
   jobDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -420,6 +438,7 @@ export type InterviewSessionUncheckedUpdateManyInput = {
   resumeId?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
   jobDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -442,6 +461,7 @@ export type InterviewSessionCountOrderByAggregateInput = {
   resumeId?: Prisma.SortOrder
   level?: Prisma.SortOrder
   jobDescription?: Prisma.SortOrder
+  interviewLocale?: Prisma.SortOrder
   turnCount?: Prisma.SortOrder
   maxTurns?: Prisma.SortOrder
   isFinished?: Prisma.SortOrder
@@ -460,6 +480,7 @@ export type InterviewSessionMaxOrderByAggregateInput = {
   resumeId?: Prisma.SortOrder
   level?: Prisma.SortOrder
   jobDescription?: Prisma.SortOrder
+  interviewLocale?: Prisma.SortOrder
   turnCount?: Prisma.SortOrder
   maxTurns?: Prisma.SortOrder
   isFinished?: Prisma.SortOrder
@@ -472,6 +493,7 @@ export type InterviewSessionMinOrderByAggregateInput = {
   resumeId?: Prisma.SortOrder
   level?: Prisma.SortOrder
   jobDescription?: Prisma.SortOrder
+  interviewLocale?: Prisma.SortOrder
   turnCount?: Prisma.SortOrder
   maxTurns?: Prisma.SortOrder
   isFinished?: Prisma.SortOrder
@@ -533,6 +555,10 @@ export type InterviewSessionUncheckedUpdateManyWithoutResumeNestedInput = {
 
 export type EnumInterviewLevelFieldUpdateOperationsInput = {
   set?: $Enums.InterviewLevel
+}
+
+export type EnumInterviewLocaleFieldUpdateOperationsInput = {
+  set?: $Enums.InterviewLocale
 }
 
 export type BoolFieldUpdateOperationsInput = {
@@ -627,6 +653,7 @@ export type InterviewSessionCreateWithoutResumeInput = {
   id?: string
   level: $Enums.InterviewLevel
   jobDescription?: string | null
+  interviewLocale?: $Enums.InterviewLocale
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
@@ -642,6 +669,7 @@ export type InterviewSessionUncheckedCreateWithoutResumeInput = {
   userId: number
   level: $Enums.InterviewLevel
   jobDescription?: string | null
+  interviewLocale?: $Enums.InterviewLocale
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
@@ -686,6 +714,7 @@ export type InterviewSessionScalarWhereInput = {
   resumeId?: Prisma.StringFilter<"InterviewSession"> | string
   level?: Prisma.EnumInterviewLevelFilter<"InterviewSession"> | $Enums.InterviewLevel
   jobDescription?: Prisma.StringNullableFilter<"InterviewSession"> | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFilter<"InterviewSession"> | $Enums.InterviewLocale
   turnCount?: Prisma.IntFilter<"InterviewSession"> | number
   maxTurns?: Prisma.IntFilter<"InterviewSession"> | number
   isFinished?: Prisma.BoolFilter<"InterviewSession"> | boolean
@@ -696,6 +725,7 @@ export type InterviewSessionCreateWithoutMessagesInput = {
   id?: string
   level: $Enums.InterviewLevel
   jobDescription?: string | null
+  interviewLocale?: $Enums.InterviewLocale
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
@@ -712,6 +742,7 @@ export type InterviewSessionUncheckedCreateWithoutMessagesInput = {
   resumeId: string
   level: $Enums.InterviewLevel
   jobDescription?: string | null
+  interviewLocale?: $Enums.InterviewLocale
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
@@ -740,6 +771,7 @@ export type InterviewSessionUpdateWithoutMessagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
   jobDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -756,6 +788,7 @@ export type InterviewSessionUncheckedUpdateWithoutMessagesInput = {
   resumeId?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
   jobDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -768,6 +801,7 @@ export type InterviewSessionCreateWithoutReviewItemsInput = {
   id?: string
   level: $Enums.InterviewLevel
   jobDescription?: string | null
+  interviewLocale?: $Enums.InterviewLocale
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
@@ -784,6 +818,7 @@ export type InterviewSessionUncheckedCreateWithoutReviewItemsInput = {
   resumeId: string
   level: $Enums.InterviewLevel
   jobDescription?: string | null
+  interviewLocale?: $Enums.InterviewLocale
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
@@ -812,6 +847,7 @@ export type InterviewSessionUpdateWithoutReviewItemsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
   jobDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -828,6 +864,7 @@ export type InterviewSessionUncheckedUpdateWithoutReviewItemsInput = {
   resumeId?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
   jobDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -840,6 +877,7 @@ export type InterviewSessionCreateWithoutInterviewFeedbacksInput = {
   id?: string
   level: $Enums.InterviewLevel
   jobDescription?: string | null
+  interviewLocale?: $Enums.InterviewLocale
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
@@ -856,6 +894,7 @@ export type InterviewSessionUncheckedCreateWithoutInterviewFeedbacksInput = {
   resumeId: string
   level: $Enums.InterviewLevel
   jobDescription?: string | null
+  interviewLocale?: $Enums.InterviewLocale
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
@@ -884,6 +923,7 @@ export type InterviewSessionUpdateWithoutInterviewFeedbacksInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
   jobDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -900,6 +940,7 @@ export type InterviewSessionUncheckedUpdateWithoutInterviewFeedbacksInput = {
   resumeId?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
   jobDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -912,6 +953,7 @@ export type InterviewSessionCreateWithoutUserInput = {
   id?: string
   level: $Enums.InterviewLevel
   jobDescription?: string | null
+  interviewLocale?: $Enums.InterviewLocale
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
@@ -927,6 +969,7 @@ export type InterviewSessionUncheckedCreateWithoutUserInput = {
   resumeId: string
   level: $Enums.InterviewLevel
   jobDescription?: string | null
+  interviewLocale?: $Enums.InterviewLocale
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
@@ -967,6 +1010,7 @@ export type InterviewSessionCreateManyResumeInput = {
   userId: number
   level: $Enums.InterviewLevel
   jobDescription?: string | null
+  interviewLocale?: $Enums.InterviewLocale
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
@@ -977,6 +1021,7 @@ export type InterviewSessionUpdateWithoutResumeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
   jobDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -992,6 +1037,7 @@ export type InterviewSessionUncheckedUpdateWithoutResumeInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
   jobDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1006,6 +1052,7 @@ export type InterviewSessionUncheckedUpdateManyWithoutResumeInput = {
   userId?: Prisma.IntFieldUpdateOperationsInput | number
   level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
   jobDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1017,6 +1064,7 @@ export type InterviewSessionCreateManyUserInput = {
   resumeId: string
   level: $Enums.InterviewLevel
   jobDescription?: string | null
+  interviewLocale?: $Enums.InterviewLocale
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
@@ -1027,6 +1075,7 @@ export type InterviewSessionUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
   jobDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1042,6 +1091,7 @@ export type InterviewSessionUncheckedUpdateWithoutUserInput = {
   resumeId?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
   jobDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1056,6 +1106,7 @@ export type InterviewSessionUncheckedUpdateManyWithoutUserInput = {
   resumeId?: Prisma.StringFieldUpdateOperationsInput | string
   level?: Prisma.EnumInterviewLevelFieldUpdateOperationsInput | $Enums.InterviewLevel
   jobDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  interviewLocale?: Prisma.EnumInterviewLocaleFieldUpdateOperationsInput | $Enums.InterviewLocale
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1117,6 +1168,7 @@ export type InterviewSessionSelect<ExtArgs extends runtime.Types.Extensions.Inte
   resumeId?: boolean
   level?: boolean
   jobDescription?: boolean
+  interviewLocale?: boolean
   turnCount?: boolean
   maxTurns?: boolean
   isFinished?: boolean
@@ -1135,6 +1187,7 @@ export type InterviewSessionSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   resumeId?: boolean
   level?: boolean
   jobDescription?: boolean
+  interviewLocale?: boolean
   turnCount?: boolean
   maxTurns?: boolean
   isFinished?: boolean
@@ -1149,6 +1202,7 @@ export type InterviewSessionSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   resumeId?: boolean
   level?: boolean
   jobDescription?: boolean
+  interviewLocale?: boolean
   turnCount?: boolean
   maxTurns?: boolean
   isFinished?: boolean
@@ -1163,13 +1217,14 @@ export type InterviewSessionSelectScalar = {
   resumeId?: boolean
   level?: boolean
   jobDescription?: boolean
+  interviewLocale?: boolean
   turnCount?: boolean
   maxTurns?: boolean
   isFinished?: boolean
   createdAt?: boolean
 }
 
-export type InterviewSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "resumeId" | "level" | "jobDescription" | "turnCount" | "maxTurns" | "isFinished" | "createdAt", ExtArgs["result"]["interviewSession"]>
+export type InterviewSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "resumeId" | "level" | "jobDescription" | "interviewLocale" | "turnCount" | "maxTurns" | "isFinished" | "createdAt", ExtArgs["result"]["interviewSession"]>
 export type InterviewSessionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   resume?: boolean | Prisma.ResumeDefaultArgs<ExtArgs>
@@ -1202,6 +1257,7 @@ export type $InterviewSessionPayload<ExtArgs extends runtime.Types.Extensions.In
     resumeId: string
     level: $Enums.InterviewLevel
     jobDescription: string | null
+    interviewLocale: $Enums.InterviewLocale
     turnCount: number
     maxTurns: number
     isFinished: boolean
@@ -1639,6 +1695,7 @@ export interface InterviewSessionFieldRefs {
   readonly resumeId: Prisma.FieldRef<"InterviewSession", 'String'>
   readonly level: Prisma.FieldRef<"InterviewSession", 'InterviewLevel'>
   readonly jobDescription: Prisma.FieldRef<"InterviewSession", 'String'>
+  readonly interviewLocale: Prisma.FieldRef<"InterviewSession", 'InterviewLocale'>
   readonly turnCount: Prisma.FieldRef<"InterviewSession", 'Int'>
   readonly maxTurns: Prisma.FieldRef<"InterviewSession", 'Int'>
   readonly isFinished: Prisma.FieldRef<"InterviewSession", 'Boolean'>

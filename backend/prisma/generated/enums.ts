@@ -67,3 +67,11 @@ export const FeedbackRating = {
 } as const
 
 export type FeedbackRating = (typeof FeedbackRating)[keyof typeof FeedbackRating]
+
+
+export const InterviewLocale = {
+  en: 'en',
+  pt: 'pt'
+} as const
+
+export type InterviewLocale = (typeof InterviewLocale)[keyof typeof InterviewLocale]

@@ -44,6 +44,7 @@ async function seedReviewItem(
       userId,
       resumeId: resume.id,
       level: "entry",
+      interviewLocale: "en",
       maxTurns: 5,
     },
   });
@@ -106,7 +107,8 @@ describe("Review Items API E2E", () => {
           userId,
           resumeId: resume.id,
           level: "entry",
-          maxTurns: 5,
+          interviewLocale: "en",
+      maxTurns: 5,
         },
       });
 
@@ -148,7 +150,8 @@ describe("Review Items API E2E", () => {
           userId,
           resumeId: resume.id,
           level: "entry",
-          maxTurns: 5,
+          interviewLocale: "en",
+      maxTurns: 5,
         },
       });
 
@@ -380,7 +383,8 @@ describe("Review Items API E2E", () => {
           userId,
           resumeId: resume.id,
           level: "entry",
-          maxTurns: 5,
+          interviewLocale: "en",
+      maxTurns: 5,
         },
       });
 
@@ -434,7 +438,8 @@ describe("Review Items API E2E", () => {
           userId,
           resumeId: resume.id,
           level: "entry",
-          maxTurns: 5,
+          interviewLocale: "en",
+      maxTurns: 5,
         },
       });
 

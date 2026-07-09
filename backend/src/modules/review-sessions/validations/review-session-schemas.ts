@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { reviewPrioritySchema } from "@/modules/interview/validations/interview-schemas";
+import { interviewLocaleSchema } from "@/shared";
 
 export const reviewItemStatusSchema = z.enum(["active", "learned"]);
 
@@ -16,10 +17,12 @@ export const createReviewSessionSchema = z.object({
     .min(1, "Select at least one review item")
     .max(10, "Select at most 10 review items per session")
     .refine((ids) => new Set(ids).size === ids.length, "Duplicate item IDs"),
+  interviewLocale: interviewLocaleSchema,
 });
 
 export const reviewSessionStreamBodySchema = z.object({
   answer: z.string().trim().min(1).max(4_000).optional(),
+  interviewLocale: interviewLocaleSchema,
 });
 
 const applyReviewSessionItemSchema = z.object({

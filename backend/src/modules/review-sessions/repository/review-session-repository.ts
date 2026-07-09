@@ -5,6 +5,7 @@ import type {
   ReviewSessionRecord,
   ReviewSessionTurn,
 } from "@/modules/review-sessions/types/review-session-record";
+import type { InterviewLocale } from "@/shared";
 import type {
   ReviewItemStatus,
   ReviewSession as PrismaReviewSession,
@@ -69,6 +70,7 @@ function toReviewSessionRecord(
     id: row.id,
     userId: row.userId,
     status: row.status,
+    interviewLocale: row.interviewLocale,
     createdAt: row.createdAt,
     evaluatedAt: row.evaluatedAt,
     completedAt: row.completedAt,
@@ -80,10 +82,12 @@ export class ReviewSessionRepository {
   async create(
     userId: number,
     items: CreateReviewSessionItemInput[],
+    interviewLocale: InterviewLocale,
   ): Promise<ReviewSessionRecord> {
     const row = await prisma.reviewSession.create({
       data: {
         userId,
+        interviewLocale,
         items: {
           create: items.map((item, index) => ({
             reviewItemId: item.reviewItemId,
@@ -162,11 +166,15 @@ export class ReviewSessionRepository {
     });
   }
 
-  async markPendingReview(sessionId: string): Promise<void> {
+  async markPendingReview(
+    sessionId: string,
+    interviewLocale: InterviewLocale,
+  ): Promise<void> {
     await prisma.reviewSession.update({
       where: { id: sessionId },
       data: {
         status: "pending_review",
+        interviewLocale,
         evaluatedAt: new Date(),
       },
     });

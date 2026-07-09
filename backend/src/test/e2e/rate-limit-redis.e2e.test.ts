@@ -118,7 +118,7 @@ async function createSessionAndGetId(
 
     .set(authHeader(token))
 
-    .send({ resumeId, level: "entry" })
+    .send({ resumeId, level: "entry", interviewLocale: "en" })
 
     .expect(201);
 
@@ -138,7 +138,7 @@ function streamTurn(app: Express, token: string, sessionId: string) {
 
     .set(authHeader(token))
 
-    .send({ content: "Hello interviewer" });
+    .send({ content: "Hello interviewer", interviewLocale: "en" });
 
 }
 

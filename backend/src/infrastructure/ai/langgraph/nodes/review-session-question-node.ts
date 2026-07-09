@@ -62,6 +62,7 @@ export function createReviewSessionQuestionNode(
         topic: input.topic,
         description: input.description,
         turns: input.turns,
+        interviewLocale: input.interviewLocale,
       });
 
       const stream = await model.stream([new HumanMessage(promptText)], {

@@ -6,6 +6,7 @@ import type {
   UpdateUserParams,
   User,
 } from "@/modules/auth/types/user";
+import type { InterviewLocale } from "@/shared";
 import prisma from "@/infrastructure/database";
 import { env } from "@/config/env";
 
@@ -26,6 +27,16 @@ export class UserRepository {
     return prisma.user.update({
       where: { id },
       data: params,
+    });
+  }
+
+  async updateInterviewLocale(
+    userId: number,
+    locale: InterviewLocale,
+  ): Promise<User> {
+    return prisma.user.update({
+      where: { id: userId },
+      data: { interviewLocale: locale },
     });
   }
 

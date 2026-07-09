@@ -26,6 +26,7 @@ const baseInput: ReviewItemsGeneratorInput = {
   transcript: "Q: Tell me about yourself.\nA: I build APIs.",
   existingItems: [],
   structuredSummary,
+  interviewLocale: "en",
 };
 
 function humanMessageContentFromInvokeArg(input: unknown): string {

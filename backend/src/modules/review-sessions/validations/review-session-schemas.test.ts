@@ -35,29 +35,54 @@ describe("reviewSessionStatusSchema", () => {
 });
 
 describe("createReviewSessionSchema", () => {
-  it("accepts a single valid review item id", () => {
+  it("accepts a single valid review item id with interviewLocale", () => {
     const result = createReviewSessionSchema.safeParse({
       reviewItemIds: [reviewItemId1],
+      interviewLocale: "en",
     });
 
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.reviewItemIds).toEqual([reviewItemId1]);
+      expect(result.data).toEqual({
+        reviewItemIds: [reviewItemId1],
+        interviewLocale: "en",
+      });
     }
   });
+
+  it.each(["en", "pt"] as const)(
+    "accepts interviewLocale %s",
+    (interviewLocale) => {
+      const result = createReviewSessionSchema.safeParse({
+        reviewItemIds: [reviewItemId1],
+        interviewLocale,
+      });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.interviewLocale).toBe(interviewLocale);
+      }
+    },
+  );
 
   it("accepts up to 10 unique review item ids", () => {
     const reviewItemIds = Array.from({ length: 10 }, (_, index) =>
       `550e8400-e29b-41d4-a716-4466554400${String(index).padStart(2, "0")}`,
     );
 
-    const result = createReviewSessionSchema.safeParse({ reviewItemIds });
+    const result = createReviewSessionSchema.safeParse({
+      reviewItemIds,
+      interviewLocale: "pt",
+    });
 
     expect(result.success).toBe(true);
   });
 
   it("rejects an empty reviewItemIds array", () => {
-    const result = createReviewSessionSchema.safeParse({ reviewItemIds: [] });
+    const result = createReviewSessionSchema.safeParse({
+      reviewItemIds: [],
+      interviewLocale: "en",
+    });
 
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -72,7 +97,10 @@ describe("createReviewSessionSchema", () => {
       `550e8400-e29b-41d4-a716-44665544${String(index).padStart(4, "0")}`,
     );
 
-    const result = createReviewSessionSchema.safeParse({ reviewItemIds });
+    const result = createReviewSessionSchema.safeParse({
+      reviewItemIds,
+      interviewLocale: "en",
+    });
 
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -85,6 +113,7 @@ describe("createReviewSessionSchema", () => {
   it("rejects duplicate review item ids", () => {
     const result = createReviewSessionSchema.safeParse({
       reviewItemIds: [reviewItemId1, reviewItemId1],
+      interviewLocale: "en",
     });
 
     expect(result.success).toBe(false);
@@ -96,6 +125,24 @@ describe("createReviewSessionSchema", () => {
   it("rejects invalid uuid values", () => {
     const result = createReviewSessionSchema.safeParse({
       reviewItemIds: ["not-a-uuid"],
+      interviewLocale: "en",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects missing interviewLocale", () => {
+    const result = createReviewSessionSchema.safeParse({
+      reviewItemIds: [reviewItemId1],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects invalid interviewLocale", () => {
+    const result = createReviewSessionSchema.safeParse({
+      reviewItemIds: [reviewItemId1],
+      interviewLocale: "pt-BR",
     });
 
     expect(result.success).toBe(false);
@@ -103,36 +150,60 @@ describe("createReviewSessionSchema", () => {
 });
 
 describe("reviewSessionStreamBodySchema", () => {
-  it("accepts an empty body for the first stream call", () => {
-    const result = reviewSessionStreamBodySchema.safeParse({});
-
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.answer).toBeUndefined();
-    }
-  });
-
-  it("accepts a non-empty trimmed answer", () => {
+  it("accepts interviewLocale without answer for the first stream call", () => {
     const result = reviewSessionStreamBodySchema.safeParse({
-      answer: "  I would use a hash map for O(1) lookups.  ",
+      interviewLocale: "en",
     });
 
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.answer).toBe(
-        "I would use a hash map for O(1) lookups.",
-      );
+      expect(result.data).toEqual({ interviewLocale: "en" });
+    }
+  });
+
+  it.each(["en", "pt"] as const)(
+    "accepts interviewLocale %s",
+    (interviewLocale) => {
+      const result = reviewSessionStreamBodySchema.safeParse({
+        interviewLocale,
+      });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.interviewLocale).toBe(interviewLocale);
+      }
+    },
+  );
+
+  it("accepts a non-empty trimmed answer with interviewLocale", () => {
+    const result = reviewSessionStreamBodySchema.safeParse({
+      answer: "  I would use a hash map for O(1) lookups.  ",
+      interviewLocale: "pt",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual({
+        answer: "I would use a hash map for O(1) lookups.",
+        interviewLocale: "pt",
+      });
     }
   });
 
   it("rejects empty answer strings", () => {
-    const result = reviewSessionStreamBodySchema.safeParse({ answer: "" });
+    const result = reviewSessionStreamBodySchema.safeParse({
+      answer: "",
+      interviewLocale: "en",
+    });
 
     expect(result.success).toBe(false);
   });
 
   it("rejects whitespace-only answer strings", () => {
-    const result = reviewSessionStreamBodySchema.safeParse({ answer: "   " });
+    const result = reviewSessionStreamBodySchema.safeParse({
+      answer: "   ",
+      interviewLocale: "en",
+    });
 
     expect(result.success).toBe(false);
   });
@@ -140,6 +211,21 @@ describe("reviewSessionStreamBodySchema", () => {
   it("rejects answers longer than 4000 characters", () => {
     const result = reviewSessionStreamBodySchema.safeParse({
       answer: "x".repeat(4_001),
+      interviewLocale: "en",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects missing interviewLocale", () => {
+    const result = reviewSessionStreamBodySchema.safeParse({});
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects invalid interviewLocale", () => {
+    const result = reviewSessionStreamBodySchema.safeParse({
+      interviewLocale: "EN",
     });
 
     expect(result.success).toBe(false);

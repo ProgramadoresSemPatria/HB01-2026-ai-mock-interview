@@ -3,6 +3,7 @@
 | Priority | Feature | Status | Spec |
 |----------|---------|--------|------|
 | P1 | AI Mock Interview (backend) | Specified | [spec.md](../features/ai-mock-interview/spec.md) |
+| P1 | Interview Locale (EN \| PT) | Done | [spec.md](../features/interview-locale/spec.md) · [design.md](../features/interview-locale/design.md) · [tasks.md](../features/interview-locale/tasks.md) |
 | P2 | AI Mock Interview (frontend) | Pending | — |
 | P2 | Interview Human Feedback (frontend integration) | Specified | [spec.md](../../frontend/.specs/features/interview-human-feedback/spec.md) |
 

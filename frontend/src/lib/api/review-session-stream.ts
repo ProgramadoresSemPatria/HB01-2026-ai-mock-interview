@@ -1,4 +1,5 @@
 import { env } from "@/config/env";
+import type { InterviewLocale } from "@/types/interview";
 import type { ReviewSessionStreamMeta } from "@/types/review-sessions";
 
 import { ApiError } from "./client";
@@ -13,6 +14,7 @@ export type StreamReviewSessionCallbacks = {
 export async function streamReviewSessionTurn(
   sessionId: string,
   answer: string | undefined,
+  interviewLocale: InterviewLocale,
   token: string,
   callbacks: StreamReviewSessionCallbacks,
 ): Promise<void> {
@@ -25,7 +27,11 @@ export async function streamReviewSessionTurn(
         "Content-Type": "application/json",
         Accept: "text/event-stream",
       },
-      body: JSON.stringify(answer !== undefined ? { answer } : {}),
+      body: JSON.stringify(
+        answer !== undefined
+          ? { answer, interviewLocale }
+          : { interviewLocale },
+      ),
       credentials: "include",
       signal: callbacks.signal,
     },

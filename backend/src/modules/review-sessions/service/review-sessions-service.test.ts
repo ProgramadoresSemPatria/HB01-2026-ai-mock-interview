@@ -62,6 +62,7 @@ function createReviewSessionRecord(
     id: overrides.id ?? "review-session-id",
     userId: overrides.userId ?? 1,
     status: overrides.status ?? "in_progress",
+    interviewLocale: overrides.interviewLocale ?? "en",
     createdAt: overrides.createdAt ?? baseDate,
     evaluatedAt: overrides.evaluatedAt ?? null,
     completedAt: overrides.completedAt ?? null,
@@ -134,26 +135,33 @@ describe("ReviewSessionsService", () => {
         }),
       );
 
-      const result = await service.create(1, ["review-item-1", "review-item-2"]);
+      const result = await service.create(1, {
+        reviewItemIds: ["review-item-1", "review-item-2"],
+        interviewLocale: "pt",
+      });
 
       expect(reviewRepository.findActiveByIdsAndUserId).toHaveBeenCalledWith(1, [
         "review-item-1",
         "review-item-2",
       ]);
-      expect(reviewSessionRepository.create).toHaveBeenCalledWith(1, [
-        {
-          reviewItemId: "review-item-1",
-          topic: "system design",
-          description: "Need to study sharding",
-          currentPriority: "high",
-        },
-        {
-          reviewItemId: "review-item-2",
-          topic: "rest apis",
-          description: "Practice REST semantics",
-          currentPriority: "medium",
-        },
-      ]);
+      expect(reviewSessionRepository.create).toHaveBeenCalledWith(
+        1,
+        [
+          {
+            reviewItemId: "review-item-1",
+            topic: "system design",
+            description: "Need to study sharding",
+            currentPriority: "high",
+          },
+          {
+            reviewItemId: "review-item-2",
+            topic: "rest apis",
+            description: "Practice REST semantics",
+            currentPriority: "medium",
+          },
+        ],
+        "pt",
+      );
       expect(result).toEqual({
         id: "review-session-id",
         status: "in_progress",
@@ -180,7 +188,10 @@ describe("ReviewSessionsService", () => {
       ]);
 
       await expect(
-        service.create(1, ["review-item-1", "review-item-missing"]),
+        service.create(1, {
+          reviewItemIds: ["review-item-1", "review-item-missing"],
+          interviewLocale: "en",
+        }),
       ).rejects.toBeInstanceOf(NotFoundError);
 
       expect(reviewSessionRepository.create).not.toHaveBeenCalled();

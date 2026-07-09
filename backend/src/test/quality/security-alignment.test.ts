@@ -97,6 +97,7 @@ describe("security and alignment quality checks", () => {
       level: "mid",
       userId: 1,
       resumeSummary: sampleResumeSummary,
+      interviewLocale: "en",
       messages: history,
     });
 

@@ -1,6 +1,7 @@
 import { env } from "@/config/env";
 import type {
   ApplyReviewSessionRequest,
+  CreateReviewSessionInput,
   CreateReviewSessionResponse,
   ReviewSession,
 } from "@/types/review-sessions";
@@ -8,10 +9,10 @@ import type {
 import { apiRequest } from "./client";
 
 export const reviewSessionsApi = {
-  create(token: string, reviewItemIds: string[]) {
+  create(token: string, body: CreateReviewSessionInput) {
     return apiRequest<CreateReviewSessionResponse>("/api/review-sessions", {
       method: "POST",
-      body: { reviewItemIds },
+      body,
       token,
     });
   },

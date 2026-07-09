@@ -27,6 +27,7 @@ async function seedReviewItems() {
       userId: user.id,
       resumeId: resume.id,
       level: "entry",
+      interviewLocale: "en",
       maxTurns: 5,
     },
   });
@@ -59,24 +60,29 @@ describe("ReviewSessionRepository (integration)", () => {
   it("create snapshots topic, description, and currentPriority with order by input index", async () => {
     const { user, first, second } = await seedReviewItems();
 
-    const created = await repository.create(user.id, [
-      {
-        reviewItemId: second.id,
-        topic: second.topic,
-        description: second.description,
-        currentPriority: second.priority,
-      },
-      {
-        reviewItemId: first.id,
-        topic: first.topic,
-        description: first.description,
-        currentPriority: first.priority,
-      },
-    ]);
+    const created = await repository.create(
+      user.id,
+      [
+        {
+          reviewItemId: second.id,
+          topic: second.topic,
+          description: second.description,
+          currentPriority: second.priority,
+        },
+        {
+          reviewItemId: first.id,
+          topic: first.topic,
+          description: first.description,
+          currentPriority: first.priority,
+        },
+      ],
+      "en",
+    );
 
     expect(created).toMatchObject({
       userId: user.id,
       status: "in_progress",
+      interviewLocale: "en",
       evaluatedAt: null,
       completedAt: null,
     });
@@ -104,17 +110,43 @@ describe("ReviewSessionRepository (integration)", () => {
     });
   });
 
+  it("create persists interviewLocale from params", async () => {
+    const { user, first } = await seedReviewItems();
+
+    const created = await repository.create(
+      user.id,
+      [
+        {
+          reviewItemId: first.id,
+          topic: first.topic,
+          description: first.description,
+          currentPriority: first.priority,
+        },
+      ],
+      "pt",
+    );
+
+    expect(created.interviewLocale).toBe("pt");
+
+    const found = await repository.findByIdAndUserId(created.id, user.id);
+    expect(found?.interviewLocale).toBe("pt");
+  });
+
   it("findByIdAndUserId returns the session with ordered items or null", async () => {
     const { user, first } = await seedReviewItems();
 
-    const created = await repository.create(user.id, [
-      {
-        reviewItemId: first.id,
-        topic: first.topic,
-        description: first.description,
-        currentPriority: first.priority,
-      },
-    ]);
+    const created = await repository.create(
+      user.id,
+      [
+        {
+          reviewItemId: first.id,
+          topic: first.topic,
+          description: first.description,
+          currentPriority: first.priority,
+        },
+      ],
+      "en",
+    );
 
     const found = await repository.findByIdAndUserId(created.id, user.id);
     const notFound = await repository.findByIdAndUserId(
@@ -132,14 +164,18 @@ describe("ReviewSessionRepository (integration)", () => {
   it("appendTurn appends to the item turns JSON array", async () => {
     const { user, first } = await seedReviewItems();
 
-    const created = await repository.create(user.id, [
-      {
-        reviewItemId: first.id,
-        topic: first.topic,
-        description: first.description,
-        currentPriority: first.priority,
-      },
-    ]);
+    const created = await repository.create(
+      user.id,
+      [
+        {
+          reviewItemId: first.id,
+          topic: first.topic,
+          description: first.description,
+          currentPriority: first.priority,
+        },
+      ],
+      "en",
+    );
     const itemId = created.items[0]!.id;
 
     await repository.setPendingQuestion(itemId, "What is sharding?");
@@ -162,14 +198,18 @@ describe("ReviewSessionRepository (integration)", () => {
   it("setPendingQuestion sets and clears the pending question", async () => {
     const { user, first } = await seedReviewItems();
 
-    const created = await repository.create(user.id, [
-      {
-        reviewItemId: first.id,
-        topic: first.topic,
-        description: first.description,
-        currentPriority: first.priority,
-      },
-    ]);
+    const created = await repository.create(
+      user.id,
+      [
+        {
+          reviewItemId: first.id,
+          topic: first.topic,
+          description: first.description,
+          currentPriority: first.priority,
+        },
+      ],
+      "en",
+    );
     const itemId = created.items[0]!.id;
 
     await repository.setPendingQuestion(itemId, "Next question?");
@@ -184,14 +224,18 @@ describe("ReviewSessionRepository (integration)", () => {
   it("saveSuggestions persists suggested status and priority", async () => {
     const { user, first } = await seedReviewItems();
 
-    const created = await repository.create(user.id, [
-      {
-        reviewItemId: first.id,
-        topic: first.topic,
-        description: first.description,
-        currentPriority: first.priority,
-      },
-    ]);
+    const created = await repository.create(
+      user.id,
+      [
+        {
+          reviewItemId: first.id,
+          topic: first.topic,
+          description: first.description,
+          currentPriority: first.priority,
+        },
+      ],
+      "en",
+    );
     const itemId = created.items[0]!.id;
 
     await repository.saveSuggestions(itemId, {
@@ -213,27 +257,57 @@ describe("ReviewSessionRepository (integration)", () => {
     });
   });
 
+  it("markPendingReview sets status and overwrites interviewLocale", async () => {
+    const { user, first } = await seedReviewItems();
+
+    const created = await repository.create(
+      user.id,
+      [
+        {
+          reviewItemId: first.id,
+          topic: first.topic,
+          description: first.description,
+          currentPriority: first.priority,
+        },
+      ],
+      "en",
+    );
+    expect(created.interviewLocale).toBe("en");
+    expect(created.status).toBe("in_progress");
+
+    await repository.markPendingReview(created.id, "pt");
+
+    const found = await repository.findByIdAndUserId(created.id, user.id);
+    expect(found!.status).toBe("pending_review");
+    expect(found!.interviewLocale).toBe("pt");
+    expect(found!.evaluatedAt).toBeInstanceOf(Date);
+  });
+
   it("transitions session status from in_progress to pending_review to completed", async () => {
     const { user, first, second } = await seedReviewItems();
 
-    const created = await repository.create(user.id, [
-      {
-        reviewItemId: first.id,
-        topic: first.topic,
-        description: first.description,
-        currentPriority: first.priority,
-      },
-      {
-        reviewItemId: second.id,
-        topic: second.topic,
-        description: second.description,
-        currentPriority: second.priority,
-      },
-    ]);
+    const created = await repository.create(
+      user.id,
+      [
+        {
+          reviewItemId: first.id,
+          topic: first.topic,
+          description: first.description,
+          currentPriority: first.priority,
+        },
+        {
+          reviewItemId: second.id,
+          topic: second.topic,
+          description: second.description,
+          currentPriority: second.priority,
+        },
+      ],
+      "en",
+    );
 
     expect(created.status).toBe("in_progress");
 
-    await repository.markPendingReview(created.id);
+    await repository.markPendingReview(created.id, "en");
     let found = await repository.findByIdAndUserId(created.id, user.id);
     expect(found!.status).toBe("pending_review");
     expect(found!.evaluatedAt).toBeInstanceOf(Date);

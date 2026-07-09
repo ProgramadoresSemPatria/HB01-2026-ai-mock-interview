@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { useAuth } from "@/features/auth/session-provider";
+import { useInterviewLocale } from "@/features/interview-locale/use-interview-locale";
 import { streamInterviewTurn } from "@/lib/api/interview-stream";
 import { useSessionMessages } from "@/lib/query/hooks/use-session-messages";
 import { useSessions } from "@/lib/query/hooks/use-sessions";
@@ -29,6 +30,7 @@ import { InterviewReviewPanel } from "./interview-review-panel";
 
 export function InterviewChat({ sessionId }: { sessionId: string }) {
   const { getAccessToken } = useAuth();
+  const { locale } = useInterviewLocale();
   const queryClient = useQueryClient();
   const messagesQuery = useSessionMessages(sessionId);
   const sessionsQuery = useSessions();
@@ -172,7 +174,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
     abortRef.current = new AbortController();
 
     try {
-      await streamInterviewTurn(sessionId, content, token, {
+      await streamInterviewTurn(sessionId, content, locale, token, {
         signal: abortRef.current.signal,
         onToken: (chunk) => {
           streamingContentRef.current += chunk;

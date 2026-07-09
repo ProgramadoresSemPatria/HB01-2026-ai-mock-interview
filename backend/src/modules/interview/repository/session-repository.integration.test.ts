@@ -42,6 +42,7 @@ describe("SessionRepository (integration)", () => {
         userId: user.id,
         resumeId,
         level,
+        interviewLocale: "en",
       });
 
       expect(session).toMatchObject({
@@ -56,6 +57,22 @@ describe("SessionRepository (integration)", () => {
     },
   );
 
+  it("create persists interviewLocale from params", async () => {
+    const { user, resumeId } = await seedUserAndResume();
+
+    const session = await repository.create({
+      userId: user.id,
+      resumeId,
+      level: "mid",
+      interviewLocale: "pt",
+    });
+
+    expect(session.interviewLocale).toBe("pt");
+
+    const found = await repository.findByIdAndUserId(session.id, user.id);
+    expect(found?.interviewLocale).toBe("pt");
+  });
+
   it("listByUserId returns sessions for the user ordered by createdAt desc", async () => {
     const { user, resumeId } = await seedUserAndResume();
 
@@ -63,12 +80,14 @@ describe("SessionRepository (integration)", () => {
       userId: user.id,
       resumeId,
       level: "entry",
+      interviewLocale: "en",
     });
     await new Promise((resolve) => setTimeout(resolve, 15));
     const newer = await repository.create({
       userId: user.id,
       resumeId,
       level: "mid",
+      interviewLocale: "pt",
     });
 
     const sessions = await repository.listByUserId(user.id);
@@ -85,6 +104,7 @@ describe("SessionRepository (integration)", () => {
       userId: user.id,
       resumeId,
       level: "entry",
+      interviewLocale: "en",
     });
 
     const found = await repository.findByIdAndUserId(created.id, user.id);
@@ -109,6 +129,7 @@ describe("SessionRepository (integration)", () => {
       userId: user.id,
       resumeId,
       level: "entry",
+      interviewLocale: "en",
     });
 
     const found = await repository.findByIdAndUserId(created.id, other.id);
@@ -123,6 +144,7 @@ describe("SessionRepository (integration)", () => {
       userId: user.id,
       resumeId,
       level: "entry",
+      interviewLocale: "en",
     });
     expect(created.turnCount).toBe(0);
 
@@ -131,18 +153,25 @@ describe("SessionRepository (integration)", () => {
     expect(updated.turnCount).toBe(1);
   });
 
-  it("markFinished", async () => {
+  it("markFinished sets isFinished and overwrites interviewLocale", async () => {
     const { user, resumeId } = await seedUserAndResume();
 
     const created = await repository.create({
       userId: user.id,
       resumeId,
       level: "entry",
+      interviewLocale: "en",
     });
     expect(created.isFinished).toBe(false);
+    expect(created.interviewLocale).toBe("en");
 
-    const updated = await repository.markFinished(created.id);
+    const updated = await repository.markFinished(created.id, "pt");
 
     expect(updated.isFinished).toBe(true);
+    expect(updated.interviewLocale).toBe("pt");
+
+    const found = await repository.findByIdAndUserId(created.id, user.id);
+    expect(found?.isFinished).toBe(true);
+    expect(found?.interviewLocale).toBe("pt");
   });
 });

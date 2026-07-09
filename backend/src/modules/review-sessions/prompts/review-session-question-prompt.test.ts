@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildInterviewLocalePromptBlock,
+  LANGUAGE_SECTION_HEADER,
+} from "@/shared/interview-locale/interview-locale";
+
+import {
   buildReviewSessionQuestionPrompt,
   DESCRIPTION_SECTION_HEADER,
   INSTRUCTIONS_SECTION_HEADER,
@@ -18,6 +23,7 @@ describe("buildReviewSessionQuestionPrompt", () => {
       topic,
       description,
       turns: [],
+      interviewLocale: "en",
     });
 
     expect(prompt).toContain(PERSONA_SECTION_HEADER);
@@ -48,6 +54,7 @@ describe("buildReviewSessionQuestionPrompt", () => {
       topic,
       description,
       turns,
+      interviewLocale: "en",
     });
 
     expect(prompt).toContain(PRIOR_TURNS_SECTION_HEADER);
@@ -58,4 +65,23 @@ describe("buildReviewSessionQuestionPrompt", () => {
     expect(prompt).not.toContain("Other item topic");
     expect(prompt).not.toContain("Unrelated answer");
   });
+
+  it.each(["en", "pt"] as const)(
+    "ends with the %s language block as the last section",
+    (interviewLocale) => {
+      const prompt = buildReviewSessionQuestionPrompt({
+        topic,
+        description,
+        turns: [],
+        interviewLocale,
+      });
+
+      const lastSection = prompt.split("\n\n").at(-1);
+      expect(lastSection).toBe(buildInterviewLocalePromptBlock(interviewLocale));
+      expect(prompt).toContain(LANGUAGE_SECTION_HEADER);
+      expect(prompt.indexOf(INSTRUCTIONS_SECTION_HEADER)).toBeLessThan(
+        prompt.indexOf(LANGUAGE_SECTION_HEADER),
+      );
+    },
+  );
 });

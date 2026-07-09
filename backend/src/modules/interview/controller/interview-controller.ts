@@ -30,9 +30,14 @@ export class InterviewController {
 
   stream = async (req: Request, res: Response): Promise<void> => {
     const sessionId = String(req.params.sessionId);
-    const { content } = req.body as StreamMessageInput;
+    const { content, interviewLocale } = req.body as StreamMessageInput;
 
-    await this.streamService.streamTurn(req.userId!, sessionId, content, res);
+    await this.streamService.streamTurn(
+      req.userId!,
+      sessionId,
+      { content, interviewLocale },
+      res,
+    );
   };
 
   getMessages = async (req: Request, res: Response): Promise<void> => {

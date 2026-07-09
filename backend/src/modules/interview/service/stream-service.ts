@@ -10,7 +10,12 @@ import type { SessionRepository } from "@/modules/interview/repository/session-r
 import type { ReviewMergeService } from "@/modules/interview/service/review-merge-service";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
-import { ConflictError, NotFoundError, logStreamError } from "@/shared";
+import {
+  ConflictError,
+  NotFoundError,
+  logStreamError,
+  type InterviewLocale,
+} from "@/shared";
 import { writeDone, writeEvent } from "@/shared/utils/sse";
 
 const SSE_HEADERS = {
@@ -33,9 +38,10 @@ export class InterviewStreamService {
   async streamTurn(
     userId: number,
     sessionId: string,
-    content: string,
+    body: { content: string; interviewLocale: InterviewLocale },
     res: Response,
   ): Promise<void> {
+    const { content, interviewLocale } = body;
     const session = await this.sessionRepository.findByIdAndUserId(
       sessionId,
       userId,
@@ -90,6 +96,7 @@ export class InterviewStreamService {
         userId,
         resumeSummary,
         jobDescription: session.jobDescription,
+        interviewLocale,
         isFinished: session.isFinished,
         runReview: isFinalTurn,
       },
@@ -195,6 +202,7 @@ export class InterviewStreamService {
             sessionId,
             transcript,
             structuredSummary: resumeSummary,
+            interviewLocale,
             jobDescription: session.jobDescription,
           },
           { callbacks: [reviewUsageCapture.callback] },
@@ -210,7 +218,7 @@ export class InterviewStreamService {
           sessionId,
           review.items,
         );
-        await this.sessionRepository.markFinished(sessionId);
+        await this.sessionRepository.markFinished(sessionId, interviewLocale);
         isFinished = true;
       }
 

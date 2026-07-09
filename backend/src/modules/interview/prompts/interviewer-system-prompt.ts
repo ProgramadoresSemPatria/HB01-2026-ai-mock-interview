@@ -6,13 +6,19 @@ import {
 import type { InterviewLevel } from "@/modules/interview/validations/interview-schemas";
 import { resumeToMarkdown } from "@/modules/resumes/format/resume-to-markdown";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
+import {
+  buildInterviewLocalePromptBlock,
+  LANGUAGE_SECTION_HEADER,
+  type InterviewLocale,
+} from "@/shared/interview-locale/interview-locale";
+
+export { LANGUAGE_SECTION_HEADER };
 
 export const DEFAULT_INTERVIEWER_NAME = "Heno";
 
 export const INTERVIEW_HISTORY_PLACEHOLDER = "history";
 
 export const PERSONA_SECTION_HEADER = "## Role";
-export const LANGUAGE_SECTION_HEADER = "## Language";
 export const CONDUCT_SECTION_HEADER = "## Conduct";
 export const FORMAT_SECTION_HEADER = "## Format";
 export const RESUME_SECTION_HEADER = "## Candidate résumé";
@@ -41,11 +47,6 @@ Act naturally, the way an experienced interviewer would, not as a script-reader.
 Don't narrate your process, announce what you're evaluating, or over-explain transitions between topics.
 You interview candidates; you do not teach, grade homework, or walk through solutions.
 When you introduce yourself, use ${interviewerName} only.`;
-}
-
-function buildLanguageBlock(): string {
-  return `${LANGUAGE_SECTION_HEADER}
-English only throughout the session.`;
 }
 
 function buildConductBlock(): string {
@@ -121,6 +122,7 @@ export type BuildInterviewerSystemPromptParams = {
   resumeSummary: StructuredSummary;
   turnCount: number;
   maxTurns: number;
+  interviewLocale?: InterviewLocale;
   jobDescription?: string | null;
   interviewerName?: string;
 };
@@ -129,11 +131,11 @@ export function buildInterviewerSystemPrompt(
   params: BuildInterviewerSystemPromptParams,
 ): string {
   const interviewerName = params.interviewerName ?? DEFAULT_INTERVIEWER_NAME;
+  const interviewLocale = params.interviewLocale ?? "en";
   const hasJobDescription = Boolean(params.jobDescription);
 
   const sections = [
     buildPersonaBlock(interviewerName, params.level),
-    buildLanguageBlock(),
     buildConductBlock(),
     buildFormatBlock(),
     buildLevelBlock(params.level),
@@ -147,6 +149,7 @@ export function buildInterviewerSystemPrompt(
   sections.push(
     buildContextBlock(params.turnCount, params.maxTurns),
     buildSecurityBlock(hasJobDescription),
+    buildInterviewLocalePromptBlock(interviewLocale),
   );
 
   return sections.join("\n\n");

@@ -212,6 +212,13 @@ export type EnumInterviewLevelFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumInterviewLevelFilter<$PrismaModel> | $Enums.InterviewLevel
 }
 
+export type EnumInterviewLocaleFilter<$PrismaModel = never> = {
+  equals?: $Enums.InterviewLocale | Prisma.EnumInterviewLocaleFieldRefInput<$PrismaModel>
+  in?: $Enums.InterviewLocale[] | Prisma.ListEnumInterviewLocaleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InterviewLocale[] | Prisma.ListEnumInterviewLocaleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInterviewLocaleFilter<$PrismaModel> | $Enums.InterviewLocale
+}
+
 export type BoolFilter<$PrismaModel = never> = {
   equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
   not?: Prisma.NestedBoolFilter<$PrismaModel> | boolean
@@ -225,6 +232,16 @@ export type EnumInterviewLevelWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumInterviewLevelFilter<$PrismaModel>
   _max?: Prisma.NestedEnumInterviewLevelFilter<$PrismaModel>
+}
+
+export type EnumInterviewLocaleWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.InterviewLocale | Prisma.EnumInterviewLocaleFieldRefInput<$PrismaModel>
+  in?: $Enums.InterviewLocale[] | Prisma.ListEnumInterviewLocaleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InterviewLocale[] | Prisma.ListEnumInterviewLocaleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInterviewLocaleWithAggregatesFilter<$PrismaModel> | $Enums.InterviewLocale
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumInterviewLocaleFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumInterviewLocaleFilter<$PrismaModel>
 }
 
 export type BoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -430,6 +447,23 @@ export type EnumFeedbackRatingWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumFeedbackRatingFilter<$PrismaModel>
 }
 
+export type EnumInterviewLocaleNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.InterviewLocale | Prisma.EnumInterviewLocaleFieldRefInput<$PrismaModel> | null
+  in?: $Enums.InterviewLocale[] | Prisma.ListEnumInterviewLocaleFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.InterviewLocale[] | Prisma.ListEnumInterviewLocaleFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumInterviewLocaleNullableFilter<$PrismaModel> | $Enums.InterviewLocale | null
+}
+
+export type EnumInterviewLocaleNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.InterviewLocale | Prisma.EnumInterviewLocaleFieldRefInput<$PrismaModel> | null
+  in?: $Enums.InterviewLocale[] | Prisma.ListEnumInterviewLocaleFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.InterviewLocale[] | Prisma.ListEnumInterviewLocaleFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumInterviewLocaleNullableWithAggregatesFilter<$PrismaModel> | $Enums.InterviewLocale | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumInterviewLocaleNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumInterviewLocaleNullableFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -614,6 +648,13 @@ export type NestedEnumInterviewLevelFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumInterviewLevelFilter<$PrismaModel> | $Enums.InterviewLevel
 }
 
+export type NestedEnumInterviewLocaleFilter<$PrismaModel = never> = {
+  equals?: $Enums.InterviewLocale | Prisma.EnumInterviewLocaleFieldRefInput<$PrismaModel>
+  in?: $Enums.InterviewLocale[] | Prisma.ListEnumInterviewLocaleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InterviewLocale[] | Prisma.ListEnumInterviewLocaleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInterviewLocaleFilter<$PrismaModel> | $Enums.InterviewLocale
+}
+
 export type NestedBoolFilter<$PrismaModel = never> = {
   equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
   not?: Prisma.NestedBoolFilter<$PrismaModel> | boolean
@@ -627,6 +668,16 @@ export type NestedEnumInterviewLevelWithAggregatesFilter<$PrismaModel = never> =
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumInterviewLevelFilter<$PrismaModel>
   _max?: Prisma.NestedEnumInterviewLevelFilter<$PrismaModel>
+}
+
+export type NestedEnumInterviewLocaleWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.InterviewLocale | Prisma.EnumInterviewLocaleFieldRefInput<$PrismaModel>
+  in?: $Enums.InterviewLocale[] | Prisma.ListEnumInterviewLocaleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.InterviewLocale[] | Prisma.ListEnumInterviewLocaleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumInterviewLocaleWithAggregatesFilter<$PrismaModel> | $Enums.InterviewLocale
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumInterviewLocaleFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumInterviewLocaleFilter<$PrismaModel>
 }
 
 export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -803,6 +854,23 @@ export type NestedEnumFeedbackRatingWithAggregatesFilter<$PrismaModel = never> =
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumFeedbackRatingFilter<$PrismaModel>
   _max?: Prisma.NestedEnumFeedbackRatingFilter<$PrismaModel>
+}
+
+export type NestedEnumInterviewLocaleNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.InterviewLocale | Prisma.EnumInterviewLocaleFieldRefInput<$PrismaModel> | null
+  in?: $Enums.InterviewLocale[] | Prisma.ListEnumInterviewLocaleFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.InterviewLocale[] | Prisma.ListEnumInterviewLocaleFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumInterviewLocaleNullableFilter<$PrismaModel> | $Enums.InterviewLocale | null
+}
+
+export type NestedEnumInterviewLocaleNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.InterviewLocale | Prisma.EnumInterviewLocaleFieldRefInput<$PrismaModel> | null
+  in?: $Enums.InterviewLocale[] | Prisma.ListEnumInterviewLocaleFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.InterviewLocale[] | Prisma.ListEnumInterviewLocaleFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumInterviewLocaleNullableWithAggregatesFilter<$PrismaModel> | $Enums.InterviewLocale | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumInterviewLocaleNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumInterviewLocaleNullableFilter<$PrismaModel>
 }
 
 

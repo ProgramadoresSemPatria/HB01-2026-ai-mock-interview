@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildInterviewLocalePromptBlock,
+  LANGUAGE_SECTION_HEADER,
+} from "@/shared/interview-locale/interview-locale";
+
+import {
   buildReviewSessionEvaluationPrompt,
   CURRENT_PRIORITY_SECTION_HEADER,
   DESCRIPTION_SECTION_HEADER,
@@ -20,6 +25,7 @@ describe("buildReviewSessionEvaluationPrompt", () => {
         answer: "It depends on business requirements and failure tolerance.",
       },
     ],
+    interviewLocale: "en" as const,
   };
 
   it("includes scoped item inputs only", () => {
@@ -49,4 +55,21 @@ describe("buildReviewSessionEvaluationPrompt", () => {
     expect(prompt).toContain("keep the same priority");
     expect(prompt).toContain("clear evidence of improvement");
   });
+
+  it.each(["en", "pt"] as const)(
+    "ends with the %s language block as the last section",
+    (interviewLocale) => {
+      const prompt = buildReviewSessionEvaluationPrompt({
+        ...baseParams,
+        interviewLocale,
+      });
+
+      const lastSection = prompt.split("\n\n").at(-1);
+      expect(lastSection).toBe(buildInterviewLocalePromptBlock(interviewLocale));
+      expect(prompt).toContain(LANGUAGE_SECTION_HEADER);
+      expect(prompt.indexOf(INSTRUCTIONS_SECTION_HEADER)).toBeLessThan(
+        prompt.indexOf(LANGUAGE_SECTION_HEADER),
+      );
+    },
+  );
 });

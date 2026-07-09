@@ -1,5 +1,5 @@
 import { env } from "@/config/env";
-import type { StreamMeta } from "@/types/interview";
+import type { InterviewLocale, StreamMeta } from "@/types/interview";
 
 import { ApiError } from "./client";
 import { readSseStream } from "./sse-stream";
@@ -13,6 +13,7 @@ export type StreamTurnCallbacks = {
 export async function streamInterviewTurn(
   sessionId: string,
   content: string,
+  interviewLocale: InterviewLocale,
   token: string,
   callbacks: StreamTurnCallbacks,
 ): Promise<void> {
@@ -25,7 +26,7 @@ export async function streamInterviewTurn(
         "Content-Type": "application/json",
         Accept: "text/event-stream",
       },
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content, interviewLocale }),
       credentials: "include",
       signal: callbacks.signal,
     },

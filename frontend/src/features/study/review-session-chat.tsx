@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { useAuth } from "@/features/auth/session-provider";
+import { useInterviewLocale } from "@/features/interview-locale/use-interview-locale";
 import { InterviewChatInput } from "@/features/interview/interview-chat-input";
 import {
   InterviewMessageList,
@@ -119,6 +120,7 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { getAccessToken, fetchWithAuth } = useAuth();
+  const { locale } = useInterviewLocale();
   const sessionQuery = useReviewSession(sessionId);
   const session = sessionQuery.data;
 
@@ -300,7 +302,7 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
     let pendingReviewComplete = false;
 
     try {
-      await streamReviewSessionTurn(sessionId, trimmedAnswer, token, {
+      await streamReviewSessionTurn(sessionId, trimmedAnswer, locale, token, {
         signal: abortRef.current.signal,
         onToken: (chunk) => {
           streamingContentRef.current += chunk;

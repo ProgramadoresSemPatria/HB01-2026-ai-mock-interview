@@ -49,6 +49,7 @@ const baseSession = {
   resumeId: "resume-1",
   level: "entry" as const,
   jobDescription: "Backend Engineer role",
+  interviewLocale: "en" as const,
   turnCount: 0,
   maxTurns: 5,
   isFinished: false,
@@ -164,7 +165,7 @@ describe("InterviewStreamService", () => {
     const res = createMockResponse();
 
     await expect(
-      service.streamTurn(1, baseSession.id, "Hello", res),
+      service.streamTurn(1, baseSession.id, { content: "Hello", interviewLocale: "en" }, res),
     ).rejects.toBeInstanceOf(TokenLimitExceededError);
 
     expect(res.writeHead).not.toHaveBeenCalled();
@@ -180,7 +181,7 @@ describe("InterviewStreamService", () => {
     const res = createMockResponse();
 
     await expect(
-      service.streamTurn(1, baseSession.id, "Hello", res),
+      service.streamTurn(1, baseSession.id, { content: "Hello", interviewLocale: "en" }, res),
     ).rejects.toBeInstanceOf(ConflictError);
 
     expect(res.writeHead).not.toHaveBeenCalled();
@@ -196,7 +197,7 @@ describe("InterviewStreamService", () => {
     const res = createMockResponse();
 
     await expect(
-      service.streamTurn(1, baseSession.id, "Hello", res),
+      service.streamTurn(1, baseSession.id, { content: "Hello", interviewLocale: "en" }, res),
     ).rejects.toBeInstanceOf(ConflictError);
 
     expect(res.writeHead).not.toHaveBeenCalled();
@@ -208,7 +209,7 @@ describe("InterviewStreamService", () => {
     const res = createMockResponse();
 
     await expect(
-      service.streamTurn(1, baseSession.id, "Hello", res),
+      service.streamTurn(1, baseSession.id, { content: "Hello", interviewLocale: "en" }, res),
     ).rejects.toBeInstanceOf(NotFoundError);
   });
 
@@ -236,12 +237,13 @@ describe("InterviewStreamService", () => {
 
     const res = createMockResponse();
 
-    await service.streamTurn(1, baseSession.id, "Hello", res);
+    await service.streamTurn(1, baseSession.id, { content: "Hello", interviewLocale: "en" }, res);
 
     expect(graph.streamMessages).toHaveBeenCalledWith(
       expect.objectContaining({
         runReview: false,
         jobDescription: "Backend Engineer role",
+        interviewLocale: "en",
       }),
       expect.objectContaining({
         threadId: baseSession.id,
@@ -312,10 +314,18 @@ describe("InterviewStreamService", () => {
 
     const res = createMockResponse();
 
-    await service.streamTurn(1, baseSession.id, "Hello", res);
+    await service.streamTurn(
+      1,
+      baseSession.id,
+      { content: "Hello", interviewLocale: "pt" },
+      res,
+    );
 
     expect(graph.streamMessages).toHaveBeenCalledWith(
-      expect.objectContaining({ runReview: true }),
+      expect.objectContaining({
+        runReview: true,
+        interviewLocale: "pt",
+      }),
       expect.objectContaining({
         threadId: baseSession.id,
         callbacks: expect.any(Array),
@@ -325,6 +335,7 @@ describe("InterviewStreamService", () => {
       expect.objectContaining({
         userId: 1,
         sessionId: baseSession.id,
+        interviewLocale: "pt",
       }),
       expect.objectContaining({ callbacks: expect.any(Array) }),
     );
@@ -339,7 +350,10 @@ describe("InterviewStreamService", () => {
         },
       ],
     );
-    expect(sessionRepository.markFinished).toHaveBeenCalledWith(baseSession.id);
+    expect(sessionRepository.markFinished).toHaveBeenCalledWith(
+      baseSession.id,
+      "pt",
+    );
 
     const output = res.chunks.join("");
     expect(output).toContain('"isFinished":true');
@@ -428,10 +442,18 @@ describe("InterviewStreamService", () => {
 
     const res = createMockResponse();
 
-    await service.streamTurn(1, baseSession.id, "Hello", res);
+    await service.streamTurn(
+      1,
+      baseSession.id,
+      { content: "Hello", interviewLocale: "pt" },
+      res,
+    );
 
     expect(reviewRepository.upsert).not.toHaveBeenCalled();
-    expect(sessionRepository.markFinished).toHaveBeenCalledWith(baseSession.id);
+    expect(sessionRepository.markFinished).toHaveBeenCalledWith(
+      baseSession.id,
+      "pt",
+    );
   });
 
   it("does not persist partial AI message when client disconnects", async () => {
@@ -461,7 +483,7 @@ describe("InterviewStreamService", () => {
 
     const res = createMockResponse();
 
-    const streamPromise = service.streamTurn(1, baseSession.id, "Hello", res);
+    const streamPromise = service.streamTurn(1, baseSession.id, { content: "Hello", interviewLocale: "en" }, res);
 
     await vi.waitFor(() => {
       expect(res.chunks.join("")).toContain("Partial");
@@ -492,7 +514,7 @@ describe("InterviewStreamService", () => {
 
     const res = createMockResponse();
 
-    await service.streamTurn(1, baseSession.id, "Hello", res);
+    await service.streamTurn(1, baseSession.id, { content: "Hello", interviewLocale: "en" }, res);
 
     const output = res.chunks.join("");
     expect(output).toContain("event: token");
@@ -532,7 +554,7 @@ describe("InterviewStreamService", () => {
 
     const res = createMockResponse();
 
-    await service.streamTurn(1, baseSession.id, "Hello", res);
+    await service.streamTurn(1, baseSession.id, { content: "Hello", interviewLocale: "en" }, res);
 
     const output = res.chunks.join("");
     expect(output).toContain("event: error");

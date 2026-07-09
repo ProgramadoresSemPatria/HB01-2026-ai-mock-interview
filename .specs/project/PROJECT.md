@@ -38,5 +38,5 @@ An AI-powered mock interview platform where authenticated users upload a resume,
 
 - Frontend UI implementation (separate track; API contract defined in feature specs)
 - Payment, billing, or subscription tiers
-- Multi-language interview support (v1: Portuguese or English TBD in implementation)
+- App-wide UI i18n (interview/study LLM locale is a separate feature: `interviewLocale`)
 - Admin dashboard for content moderation

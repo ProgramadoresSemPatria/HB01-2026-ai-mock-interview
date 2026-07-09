@@ -1,5 +1,9 @@
 import type { ReviewPriority } from "@/modules/interview/validations/interview-schemas";
 import type { ReviewSessionTurn } from "@/modules/review-sessions/protocols/review-session-evaluator";
+import {
+  buildInterviewLocalePromptBlock,
+  type InterviewLocale,
+} from "@/shared/interview-locale/interview-locale";
 
 export const PERSONA_SECTION_HEADER = "## Role";
 export const TOPIC_SECTION_HEADER = "## Topic";
@@ -13,6 +17,7 @@ export type BuildReviewSessionEvaluationPromptParams = {
   description: string;
   currentPriority: ReviewPriority;
   turns: ReviewSessionTurn[];
+  interviewLocale: InterviewLocale;
 };
 
 function buildPersonaBlock(): string {
@@ -63,5 +68,6 @@ ${params.description}`,
 ${params.currentPriority}`,
     buildTurnsBlock(params.turns),
     buildInstructionsBlock(),
+    buildInterviewLocalePromptBlock(params.interviewLocale),
   ].join("\n\n");
 }

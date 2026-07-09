@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { AlertCircle, BookOpen, Loader2 } from "lucide-react";
 
 import { useAuth } from "@/features/auth/session-provider";
+import { InterviewLocaleSelector } from "@/features/interview-locale/interview-locale-selector";
+import { useInterviewLocale } from "@/features/interview-locale/use-interview-locale";
 import { StudyItemCard } from "@/features/study/study-item-card";
 import { StudyResumeBanner } from "@/features/study/study-resume-banner";
 import { StudySelectionBar } from "@/features/study/study-selection-bar";
@@ -26,6 +28,7 @@ export function StudyHubContent() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { getAccessToken, fetchWithAuth } = useAuth();
+  const { locale } = useInterviewLocale();
 
   const [activeTab, setActiveTab] = useState<StudyTab>("active");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
@@ -150,9 +153,10 @@ export function StudyHubContent() {
 
     setIsStarting(true);
     try {
-      const response = await reviewSessionsApi.create(token, [
-        ...effectiveSelectedIds,
-      ]);
+      const response = await reviewSessionsApi.create(token, {
+        reviewItemIds: [...effectiveSelectedIds],
+        interviewLocale: locale,
+      });
       setLastReviewSessionId(response.id);
       router.push(`/review-session/${response.id}`);
     } catch (err) {
@@ -175,14 +179,19 @@ export function StudyHubContent() {
 
   return (
     <div className="space-y-6 pb-20">
-      <div className="space-y-1">
-        <div className="flex items-center gap-2 text-(--primary)">
-          <BookOpen className="h-5 w-5" />
-          <h1 className="text-xl font-bold text-(--foreground)">Study</h1>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-(--primary)">
+            <BookOpen className="h-5 w-5" />
+            <h1 className="text-xl font-bold text-(--foreground)">Study</h1>
+          </div>
+          <p className="text-sm text-(--muted-foreground)">
+            Manage your study backlog and start focused review sessions.
+          </p>
         </div>
-        <p className="text-sm text-(--muted-foreground)">
-          Manage your study backlog and start focused review sessions.
-        </p>
+        <div className="sm:w-40 shrink-0">
+          <InterviewLocaleSelector />
+        </div>
       </div>
 
       <StudyResumeBanner />

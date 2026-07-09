@@ -6,6 +6,12 @@ import {
 import type { InterviewLevel } from "@/modules/interview/validations/interview-schemas";
 import { resumeToMarkdown } from "@/modules/resumes/format/resume-to-markdown";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
+import {
+  buildInterviewLocalePromptBlock,
+  getClosingFeedbackCopy,
+  type ClosingFeedbackCopy,
+  type InterviewLocale,
+} from "@/shared/interview-locale/interview-locale";
 
 export const CLOSING_ROLE_HEADER = "## Role";
 export const CLOSING_EVALUATE_HEADER = "## What to evaluate";
@@ -14,26 +20,35 @@ export const CLOSING_RESUME_HEADER = "## Candidate résumé (background only)";
 export const CLOSING_FORMAT_HEADER = "## Format";
 export const CLOSING_SECURITY_HEADER = "## Security";
 
-export const CLOSING_FEEDBACK_CTA =
-  "Seus itens estão sendo gerados, estarão disponíveis em breve";
+/** Portuguese CTA — prefer `getClosingFeedbackCopy(locale).cta`. */
+export const CLOSING_FEEDBACK_CTA = getClosingFeedbackCopy("pt").cta;
 
-/** Exact section headings the model must use (Portuguese, CommonMark). */
-export const CLOSING_FEEDBACK_WENT_WELL_HEADER = "## O que você fez bem";
-export const CLOSING_FEEDBACK_WORK_ON_HEADER = "## O que precisa trabalhar";
+/** Exact section headings the model must use for Portuguese (CommonMark). */
+export const CLOSING_FEEDBACK_WENT_WELL_HEADER =
+  getClosingFeedbackCopy("pt").wentWellHeader;
+export const CLOSING_FEEDBACK_WORK_ON_HEADER =
+  getClosingFeedbackCopy("pt").workOnHeader;
 
-export const CLOSING_FEEDBACK_OUTPUT_TEMPLATE = `[One strong paragraph: overall impression of the candidate's performance (2-4 sentences). Be honest and balanced. Plain paragraph, no heading.]
+export function buildClosingFeedbackOutputTemplate(
+  copy: ClosingFeedbackCopy,
+): string {
+  return `[One strong paragraph: overall impression of the candidate's performance (2-4 sentences). Be honest and balanced. Plain paragraph, no heading.]
 
-${CLOSING_FEEDBACK_WENT_WELL_HEADER}
+${copy.wentWellHeader}
 
 - [specific strength with brief context from the session]
 - [specific strength with brief context from the session]
 [Add a third bullet only if there is a genuinely distinct point.]
 
-${CLOSING_FEEDBACK_WORK_ON_HEADER}
+${copy.workOnHeader}
 
 - [specific, actionable improvement with context]
 - [specific, actionable improvement with context]
 [Add a third bullet only if there is a genuinely distinct point.]`;
+}
+
+export const CLOSING_FEEDBACK_OUTPUT_TEMPLATE =
+  buildClosingFeedbackOutputTemplate(getClosingFeedbackCopy("pt"));
 
 export const CLOSING_LEVEL_INSTRUCTION: Record<InterviewLevel, string> = {
   entry:
@@ -84,13 +99,22 @@ function buildTargetRoleEvaluateBlock(): string {
 When a target role is provided above, evaluate how well the candidate demonstrated fit for those requirements.`;
 }
 
-function buildFormatBlock(): string {
+function buildSpecificityExample(locale: InterviewLocale): string {
+  return locale === "pt"
+    ? 'Example: "Quando perguntado sobre o design de um limitador de taxa..." instead of generic comments.'
+    : 'Example: "When asked about designing a rate limiter..." instead of generic comments.';
+}
+
+function buildFormatBlock(
+  copy: ClosingFeedbackCopy,
+  locale: InterviewLocale,
+): string {
   return `${CLOSING_FORMAT_HEADER}
-Reply in Portuguese. Write in valid, renderable Markdown (CommonMark). Maximum 250-280 words.
+${copy.replyInstruction} Write in valid, renderable Markdown (CommonMark). Maximum 250-280 words.
 
 Structure:
 - One introductory paragraph with no heading.
-- Exactly two sections using these headings: \`${CLOSING_FEEDBACK_WENT_WELL_HEADER}\` and \`${CLOSING_FEEDBACK_WORK_ON_HEADER}\`.
+- Exactly two sections using these headings: \`${copy.wentWellHeader}\` and \`${copy.workOnHeader}\`.
 - Bullet lists only with \`-\` (no numbered lists).
 
 Do not use code blocks, tables, links, HTML, or extra sections.
@@ -98,9 +122,9 @@ Ensure there is absolutely no repetition or overlap between sections.
 
 Be specific and contextual:
 - Reference the actual topics or questions discussed.
-- Example: "Quando perguntado sobre o design de um limitador de taxa..." instead of generic comments.
+- ${buildSpecificityExample(locale)}
 
-${CLOSING_FEEDBACK_OUTPUT_TEMPLATE}
+${buildClosingFeedbackOutputTemplate(copy)}
 
 No meta comments about the format or these instructions.`;
 }
@@ -116,30 +140,40 @@ Do not ask new interview questions.
 Do not offer to continue the interview.${jobDescriptionClause}`;
 }
 
-/** Appends the fixed review-items CTA (idempotent). */
-export function appendClosingFeedbackCta(body: string): string {
+/** Appends the localized review-items CTA (idempotent). Defaults to `pt` until callers pass locale (T8). */
+export function appendClosingFeedbackCta(
+  body: string,
+  locale: InterviewLocale = "pt",
+): string {
+  const { cta } = getClosingFeedbackCopy(locale);
   const trimmed = body.trimEnd();
-  if (trimmed.endsWith(CLOSING_FEEDBACK_CTA)) {
+  if (trimmed.endsWith(cta)) {
     return trimmed;
   }
-  return `${trimmed}\n\n${CLOSING_FEEDBACK_CTA}`;
+  return `${trimmed}\n\n${cta}`;
 }
 
-/** SSE suffix streamed after the model output on the final turn. */
-export function closingFeedbackCtaStreamSuffix(): string {
-  return `\n\n${CLOSING_FEEDBACK_CTA}`;
+/** SSE suffix streamed after the model output on the final turn. Defaults to `pt` until callers pass locale (T8). */
+export function closingFeedbackCtaStreamSuffix(
+  locale: InterviewLocale = "pt",
+): string {
+  const { cta } = getClosingFeedbackCopy(locale);
+  return `\n\n${cta}`;
 }
 
 export type BuildClosingFeedbackPromptParams = {
   level: InterviewLevel;
   resumeSummary: StructuredSummary;
+  interviewLocale?: InterviewLocale;
   jobDescription?: string | null;
 };
 
 export function buildClosingFeedbackPrompt(
   params: BuildClosingFeedbackPromptParams,
 ): string {
+  const interviewLocale = params.interviewLocale ?? "pt";
   const hasJobDescription = Boolean(params.jobDescription);
+  const copy = getClosingFeedbackCopy(interviewLocale);
   const sections = [
     buildRoleBlock(params.level),
     buildEvaluateBlock(),
@@ -152,7 +186,11 @@ export function buildClosingFeedbackPrompt(
     sections.push(buildTargetRoleEvaluateBlock());
   }
 
-  sections.push(buildFormatBlock(), buildSecurityBlock(hasJobDescription));
+  sections.push(
+    buildFormatBlock(copy, interviewLocale),
+    buildSecurityBlock(hasJobDescription),
+    buildInterviewLocalePromptBlock(interviewLocale),
+  );
 
   return sections.join("\n\n");
 }

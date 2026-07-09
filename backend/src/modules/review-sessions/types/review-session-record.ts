@@ -1,4 +1,5 @@
 import type { ReviewPriority } from "@/modules/interview/validations/interview-schemas";
+import type { InterviewLocale } from "@/shared";
 import type {
   ReviewItemStatus,
   ReviewSessionStatus,
@@ -31,6 +32,7 @@ export type ReviewSessionRecord = {
   id: string;
   userId: number;
   status: ReviewSessionStatus;
+  interviewLocale: InterviewLocale;
   createdAt: Date;
   evaluatedAt: Date | null;
   completedAt: Date | null;

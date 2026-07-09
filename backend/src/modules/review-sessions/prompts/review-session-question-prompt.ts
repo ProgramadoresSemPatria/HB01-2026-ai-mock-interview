@@ -1,4 +1,8 @@
 import type { ReviewSessionTurn } from "@/modules/review-sessions/protocols/review-session-question-generator";
+import {
+  buildInterviewLocalePromptBlock,
+  type InterviewLocale,
+} from "@/shared/interview-locale/interview-locale";
 
 export const PERSONA_SECTION_HEADER = "## Role";
 export const TOPIC_SECTION_HEADER = "## Topic";
@@ -10,6 +14,7 @@ export type BuildReviewSessionQuestionPromptParams = {
   topic: string;
   description: string;
   turns: ReviewSessionTurn[];
+  interviewLocale: InterviewLocale;
 };
 
 function buildPersonaBlock(): string {
@@ -53,6 +58,7 @@ ${params.description}`,
   }
 
   sections.push(buildInstructionsBlock());
+  sections.push(buildInterviewLocalePromptBlock(params.interviewLocale));
 
   return sections.join("\n\n");
 }
