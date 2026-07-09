@@ -135,7 +135,10 @@ describe("ReviewSessionsService", () => {
         }),
       );
 
-      const result = await service.create(1, ["review-item-1", "review-item-2"]);
+      const result = await service.create(1, {
+        reviewItemIds: ["review-item-1", "review-item-2"],
+        interviewLocale: "pt",
+      });
 
       expect(reviewRepository.findActiveByIdsAndUserId).toHaveBeenCalledWith(1, [
         "review-item-1",
@@ -157,7 +160,7 @@ describe("ReviewSessionsService", () => {
             currentPriority: "medium",
           },
         ],
-        "en",
+        "pt",
       );
       expect(result).toEqual({
         id: "review-session-id",
@@ -185,7 +188,10 @@ describe("ReviewSessionsService", () => {
       ]);
 
       await expect(
-        service.create(1, ["review-item-1", "review-item-missing"]),
+        service.create(1, {
+          reviewItemIds: ["review-item-1", "review-item-missing"],
+          interviewLocale: "en",
+        }),
       ).rejects.toBeInstanceOf(NotFoundError);
 
       expect(reviewSessionRepository.create).not.toHaveBeenCalled();

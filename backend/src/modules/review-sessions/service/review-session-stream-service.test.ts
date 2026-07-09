@@ -166,7 +166,7 @@ describe("ReviewSessionStreamService", () => {
     const res = createMockResponse();
 
     await expect(
-      service.streamTurn(1, "missing-session", undefined, res),
+      service.streamTurn(1, "missing-session", { interviewLocale: "en" }, res),
     ).rejects.toBeInstanceOf(NotFoundError);
 
     expect(res.writeHead).not.toHaveBeenCalled();
@@ -180,7 +180,7 @@ describe("ReviewSessionStreamService", () => {
     const res = createMockResponse();
 
     await expect(
-      service.streamTurn(1, "review-session-id", "answer", res),
+      service.streamTurn(1, "review-session-id", { answer: "answer", interviewLocale: "en" }, res),
     ).rejects.toBeInstanceOf(ConflictError);
 
     expect(res.writeHead).not.toHaveBeenCalled();
@@ -194,7 +194,7 @@ describe("ReviewSessionStreamService", () => {
     const res = createMockResponse();
 
     await expect(
-      service.streamTurn(1, "review-session-id", "answer", res),
+      service.streamTurn(1, "review-session-id", { answer: "answer", interviewLocale: "en" }, res),
     ).rejects.toBeInstanceOf(ConflictError);
 
     expect(res.writeHead).not.toHaveBeenCalled();
@@ -215,7 +215,7 @@ describe("ReviewSessionStreamService", () => {
     const res = createMockResponse();
 
     await expect(
-      service.streamTurn(1, "review-session-id", undefined, res),
+      service.streamTurn(1, "review-session-id", { interviewLocale: "en" }, res),
     ).rejects.toBeInstanceOf(BadRequestError);
 
     expect(res.writeHead).not.toHaveBeenCalled();
@@ -231,13 +231,14 @@ describe("ReviewSessionStreamService", () => {
 
     const res = createMockResponse();
 
-    await service.streamTurn(1, "review-session-id", undefined, res);
+    await service.streamTurn(1, "review-session-id", { interviewLocale: "en" }, res);
 
     expect(questionGenerator.streamQuestion).toHaveBeenCalledWith(
       {
         topic: "system design",
         description: "Need to study sharding",
         turns: [],
+        interviewLocale: "en",
       },
       expect.objectContaining({ callbacks: expect.any(Array) }),
     );
@@ -278,7 +279,7 @@ describe("ReviewSessionStreamService", () => {
 
     const res = createMockResponse();
 
-    await service.streamTurn(1, "review-session-id", "It splits data", res);
+    await service.streamTurn(1, "review-session-id", { answer: "It splits data", interviewLocale: "en" }, res);
 
     expect(reviewSessionRepository.appendTurn).toHaveBeenCalledWith(
       "session-item-1",
@@ -287,6 +288,7 @@ describe("ReviewSessionStreamService", () => {
     expect(questionGenerator.streamQuestion).toHaveBeenCalledWith(
       expect.objectContaining({
         turns: [{ question: "What is sharding?", answer: "It splits data" }],
+        interviewLocale: "en",
       }),
       expect.any(Object),
     );
@@ -327,7 +329,7 @@ describe("ReviewSessionStreamService", () => {
 
     const res = createMockResponse();
 
-    await service.streamTurn(1, "review-session-id", "answer for item 2", res);
+    await service.streamTurn(1, "review-session-id", { answer: "answer for item 2", interviewLocale: "en" }, res);
 
     expect(questionGenerator.streamQuestion).toHaveBeenCalledWith(
       {
@@ -337,6 +339,7 @@ describe("ReviewSessionStreamService", () => {
           ...itemTwoTurns,
           { question: "Pending on item 2", answer: "answer for item 2" },
         ],
+        interviewLocale: "en",
       },
       expect.any(Object),
     );
@@ -374,13 +377,14 @@ describe("ReviewSessionStreamService", () => {
 
     const res = createMockResponse();
 
-    await service.streamTurn(1, "review-session-id", "final answer", res);
+    await service.streamTurn(1, "review-session-id", { answer: "final answer", interviewLocale: "en" }, res);
 
     expect(questionGenerator.streamQuestion).toHaveBeenCalledWith(
       {
         topic: "rest apis",
         description: "Need REST practice",
         turns: [],
+        interviewLocale: "en",
       },
       expect.any(Object),
     );
@@ -452,7 +456,7 @@ describe("ReviewSessionStreamService", () => {
 
     const res = createMockResponse();
 
-    await service.streamTurn(1, "review-session-id", "final answer", res);
+    await service.streamTurn(1, "review-session-id", { answer: "final answer", interviewLocale: "pt" }, res);
 
     expect(questionGenerator.streamQuestion).not.toHaveBeenCalled();
     expect(evaluator.evaluate).toHaveBeenCalledTimes(2);
@@ -460,6 +464,7 @@ describe("ReviewSessionStreamService", () => {
       expect.objectContaining({
         topic: "system design",
         turns: itemOneTurns,
+        interviewLocale: "pt",
       }),
       expect.any(Object),
     );
@@ -469,12 +474,13 @@ describe("ReviewSessionStreamService", () => {
         turns: expect.arrayContaining([
           { question: "Last question for item 2", answer: "final answer" },
         ]),
+        interviewLocale: "pt",
       }),
       expect.any(Object),
     );
     expect(reviewSessionRepository.markPendingReview).toHaveBeenCalledWith(
       "review-session-id",
-      "en",
+      "pt",
     );
 
     const output = res.chunks.join("");
@@ -525,7 +531,7 @@ describe("ReviewSessionStreamService", () => {
 
     const res = createMockResponse();
 
-    await service.streamTurn(1, "review-session-id", "final answer", res);
+    await service.streamTurn(1, "review-session-id", { answer: "final answer", interviewLocale: "en" }, res);
 
     expect(reviewSessionRepository.saveSuggestions).toHaveBeenCalledWith(
       "session-item-1",
@@ -541,6 +547,29 @@ describe("ReviewSessionStreamService", () => {
     expect(output).toContain('"reviewSessionItemId":"session-item-1"');
     expect(output).toContain("OpenAI rate limit");
     expect(output).toContain('"status":"pending_review"');
+  });
+
+  it("passes stream-body interviewLocale into question generation", async () => {
+    vi.mocked(reviewSessionRepository.findByIdAndUserId).mockResolvedValue(
+      createSession({ interviewLocale: "en" }),
+    );
+    vi.mocked(questionGenerator.streamQuestion).mockReturnValue(
+      createQuestionStream(["Pergunta em português"])(),
+    );
+
+    const res = createMockResponse();
+
+    await service.streamTurn(
+      1,
+      "review-session-id",
+      { interviewLocale: "pt" },
+      res,
+    );
+
+    expect(questionGenerator.streamQuestion).toHaveBeenCalledWith(
+      expect.objectContaining({ interviewLocale: "pt" }),
+      expect.any(Object),
+    );
   });
 
   it("does not persist pendingQuestion when the client disconnects mid-stream", async () => {
@@ -564,7 +593,7 @@ describe("ReviewSessionStreamService", () => {
     const streamPromise = service.streamTurn(
       1,
       "review-session-id",
-      undefined,
+      { interviewLocale: "en" },
       res,
     );
 

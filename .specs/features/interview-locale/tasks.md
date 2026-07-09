@@ -438,11 +438,11 @@ T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Create/stream require locale from body; no User read for prompt language
-- [ ] Question/eval generators receive locale; pending_review persists stream locale
-- [ ] Unit tests updated for new signatures
-- [ ] Gate check passes: `bun run lint && bun run check-types && bun run test -- src/modules/review-sessions/service`
-- [ ] Test count: existing service tests pass with updates
+- [x] Create/stream require locale from body; no User read for prompt language
+- [x] Question/eval generators receive locale; pending_review persists stream locale
+- [x] Unit tests updated for new signatures
+- [x] Gate check passes: `bun run lint && bun run check-types && bun run test -- src/modules/review-sessions/service`
+- [x] Test count: existing service tests pass with updates
 
 **Tests**: unit  
 **Gate**: quick

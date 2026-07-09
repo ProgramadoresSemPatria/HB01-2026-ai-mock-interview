@@ -58,12 +58,11 @@ export function createReviewSessionQuestionNode(
       ReviewSessionQuestionStreamToken,
       ReviewSessionQuestionStreamResult
     > {
-      // Temporary stub until T13 wires stream-body interviewLocale
       const promptText = buildReviewSessionQuestionPrompt({
         topic: input.topic,
         description: input.description,
         turns: input.turns,
-        interviewLocale: "en",
+        interviewLocale: input.interviewLocale,
       });
 
       const stream = await model.stream([new HumanMessage(promptText)], {

@@ -14,22 +14,19 @@ export class ReviewSessionsController {
   ) {}
 
   create = async (req: Request, res: Response): Promise<void> => {
-    const { reviewItemIds } = req.body as CreateReviewSessionInput;
-    const result = await this.reviewSessionsService.create(
-      req.userId!,
-      reviewItemIds,
-    );
+    const body = req.body as CreateReviewSessionInput;
+    const result = await this.reviewSessionsService.create(req.userId!, body);
     res.status(201).json(result);
   };
 
   stream = async (req: Request, res: Response): Promise<void> => {
     const sessionId = String(req.params.id);
-    const { answer } = req.body as ReviewSessionStreamBodyInput;
+    const { answer, interviewLocale } = req.body as ReviewSessionStreamBodyInput;
 
     await this.reviewSessionStreamService.streamTurn(
       req.userId!,
       sessionId,
-      answer,
+      { answer, interviewLocale },
       res,
     );
   };

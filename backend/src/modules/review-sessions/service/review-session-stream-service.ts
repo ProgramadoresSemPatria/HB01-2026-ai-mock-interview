@@ -18,6 +18,7 @@ import {
   logStreamError,
   logger,
   NotFoundError,
+  type InterviewLocale,
 } from "@/shared";
 import { writeDone, writeEvent } from "@/shared/utils/sse";
 
@@ -71,9 +72,10 @@ export class ReviewSessionStreamService {
   async streamTurn(
     userId: number,
     sessionId: string,
-    answer: string | undefined,
+    body: { answer?: string; interviewLocale: InterviewLocale },
     res: Response,
   ): Promise<void> {
+    const { answer, interviewLocale } = body;
     const questionCount = env.REVIEW_SESSION_QUESTION_COUNT;
 
     let session = await this.reviewSessionRepository.findByIdAndUserId(
@@ -169,7 +171,14 @@ export class ReviewSessionStreamService {
 
     try {
       if (allItemsComplete) {
-        await this.runEvaluation(userId, sessionId, session, res, () => aborted);
+        await this.runEvaluation(
+          userId,
+          sessionId,
+          session,
+          interviewLocale,
+          res,
+          () => aborted,
+        );
         if (aborted) {
           logAborted();
           return;
@@ -186,6 +195,7 @@ export class ReviewSessionStreamService {
       const streamed = await this.streamQuestion(
         userId,
         currentItem,
+        interviewLocale,
         res,
         () => aborted,
       );
@@ -232,6 +242,7 @@ export class ReviewSessionStreamService {
   private async streamQuestion(
     userId: number,
     item: ReviewSessionItemRecord,
+    interviewLocale: InterviewLocale,
     res: Response,
     isAborted: () => boolean,
   ): Promise<{ content: string; usage?: LlmUsage } | undefined> {
@@ -241,6 +252,7 @@ export class ReviewSessionStreamService {
         topic: item.topic,
         description: item.description,
         turns: item.turns,
+        interviewLocale,
       },
       { callbacks: [usageCapture.callback] },
     );
@@ -291,6 +303,7 @@ export class ReviewSessionStreamService {
     userId: number,
     sessionId: string,
     session: ReviewSessionRecord,
+    interviewLocale: InterviewLocale,
     res: Response,
     isAborted: () => boolean,
   ): Promise<void> {
@@ -307,6 +320,7 @@ export class ReviewSessionStreamService {
             description: item.description,
             currentPriority: item.currentPriority,
             turns: item.turns,
+            interviewLocale,
           },
           { callbacks: [usageCapture.callback] },
         );
@@ -380,8 +394,10 @@ export class ReviewSessionStreamService {
       return;
     }
 
-    // Temporary stub until T13 wires markPendingReview(sessionId, interviewLocale)
-    await this.reviewSessionRepository.markPendingReview(sessionId, "en");
+    await this.reviewSessionRepository.markPendingReview(
+      sessionId,
+      interviewLocale,
+    );
 
     const updatedSession =
       await this.reviewSessionRepository.findByIdAndUserId(sessionId, userId);

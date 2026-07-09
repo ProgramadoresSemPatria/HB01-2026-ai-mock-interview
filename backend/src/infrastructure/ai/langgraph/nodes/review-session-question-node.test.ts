@@ -42,6 +42,7 @@ describe("createReviewSessionQuestionNode", () => {
       topic: "Distributed systems",
       description: "Explain consistency trade-offs.",
       turns: [],
+      interviewLocale: "en",
     });
 
     const tokens: string[] = [];
@@ -77,6 +78,7 @@ describe("createReviewSessionQuestionNode", () => {
       topic: "System design trade-offs",
       description: "Practice articulating CAP theorem implications.",
       turns,
+      interviewLocale: "en",
     });
 
     let result = await iterator.next();
@@ -108,6 +110,7 @@ describe("createReviewSessionQuestionNode", () => {
       topic: "API design",
       description: "Validate REST resource modeling.",
       turns: [],
+      interviewLocale: "en",
     });
 
     let result = await iterator.next();
@@ -134,6 +137,7 @@ describe("createReviewSessionQuestionNode", () => {
         topic: "Testing",
         description: "Mock dependencies.",
         turns: [],
+        interviewLocale: "pt",
       },
       { callbacks },
     );

@@ -19,6 +19,7 @@ describe("IReviewSessionQuestionGenerator", () => {
       topic: "Distributed systems",
       description: "Explain consistency trade-offs.",
       turns: [],
+      interviewLocale: "en",
     });
 
     const tokens: string[] = [];

@@ -28,6 +28,7 @@ const baseInput: ReviewSessionEvaluationInput = {
       answer: "Race conditions and data corruption.",
     },
   ],
+  interviewLocale: "en",
 };
 
 function humanMessageContentFromInvokeArg(input: unknown): string {
