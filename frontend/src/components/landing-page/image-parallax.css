@@ -1,0 +1,43 @@
+/* image-parallax.css */
+
+.image-parallax {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate; /* keeps blend modes scoped to this box, not the whole page */
+}
+
+/* Clipping window: hides the image's extra height (overscan) as it
+   translates during scroll, so it never exposes an edge. */
+.image-parallax__frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* The image itself is rendered taller than its frame (via inline
+   `height`/`top` set by the component, based on the `overscan` prop) so
+   it has room to travel without ever revealing the frame's edge. */
+.image-parallax__img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform;
+}
+
+/* Grain layer: a real element (not a ::before) so it can receive a
+   motion `y` value directly, same as the image. Sized larger than the
+   frame (via inline styles set by the component, based on the
+   `noiseOverscan` prop) so it also has travel room without exposing an
+   edge — and because it's oversized, moving it reveals different,
+   non-repeating parts of the texture instead of a repeating tile. */
+.image-parallax__grain {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  mix-blend-mode: overlay;
+}
