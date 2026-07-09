@@ -252,15 +252,9 @@
 
 .landing-canvas {
   min-height: 100dvh;
-  padding: 1rem;
   background-color: var(--landing-canvas);
 }
 
-@media (min-width: 768px) {
-  .landing-canvas {
-    padding: 1rem;
-  }
-}
 
 .landing-container {
   position: relative;
@@ -331,4 +325,8 @@
   100% {
     transform: translate3d(0, 0, 0);
   }
+}
+
+.instrument-serif {
+  font-family: var(--font-instrument-serif), Georgia, serif;
 }
