@@ -33,6 +33,7 @@ type AuthContextValue = {
     confirmPassword: string,
   ) => Promise<void>;
   logout: () => void;
+  updateUser: (partial: Partial<UserWithoutPassword>) => void;
   getAccessToken: () => Promise<string | null>;
   fetchWithAuth: <T>(request: (token: string) => Promise<T>) => Promise<T>;
 };
@@ -47,7 +48,7 @@ let cachedSession: AuthSession | null = null;
 
 function sessionFingerprint(session: AuthSession | null): string {
   if (!session) return "";
-  return `${session.accessToken}|${session.refreshToken}|${session.user.id}|${session.user.email}`;
+  return `${session.accessToken}|${session.refreshToken}|${session.user.id}|${session.user.email}|${session.user.interviewLocale ?? ""}`;
 }
 
 function invalidateSessionCache() {
@@ -147,6 +148,18 @@ export function AuthSessionProvider({
     router.push("/login");
   }, [router]);
 
+  const updateUser = useCallback(
+    (partial: Partial<UserWithoutPassword>) => {
+      const current = getSessionSnapshot();
+      if (!current) return;
+      persistSession({
+        ...current,
+        user: { ...current.user, ...partial },
+      });
+    },
+    [persistSession],
+  );
+
   const refreshTokens = useCallback(async (): Promise<string | null> => {
     const current = getSessionSnapshot();
     if (!current?.refreshToken) return null;
@@ -197,10 +210,20 @@ export function AuthSessionProvider({
       login,
       signup,
       logout,
+      updateUser,
       getAccessToken,
       fetchWithAuth,
     }),
-    [session, isReady, login, signup, logout, getAccessToken, fetchWithAuth],
+    [
+      session,
+      isReady,
+      login,
+      signup,
+      logout,
+      updateUser,
+      getAccessToken,
+      fetchWithAuth,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
