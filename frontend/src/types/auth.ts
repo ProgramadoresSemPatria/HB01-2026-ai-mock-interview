@@ -2,6 +2,7 @@ export type UserWithoutPassword = {
   id: number;
   name: string;
   email: string;
+  interviewLocale: "en" | "pt" | null;
 };
 
 export type LoginResponse = {
