@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, forwardRef, useCallback, type Ref } from "react";
 import {
   motion,
   useScroll,
@@ -32,78 +32,97 @@ function resolveSrc(src: ImageSource): string {
   return typeof src === "string" ? src : src.src;
 }
 
-export default function ImageParallax({
-  src,
-  alt = "",
-  width = "100%",
-  height = 480,
-  intensity = 100,
-  overscan = 30,
-  noiseOpacity = 0.6,
-  objectPosition = "center",
-  className = "",
-  style,
-  startOffset = 0,
-  noiseIntensity = 24,
-  noiseOverscan = 60,
-}: ImageParallaxProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const prefersReducedMotion = useReducedMotion();
+function mergeRefs<T>(...refs: (Ref<T> | undefined)[]) {
+  return (node: T | null) => {
+    for (const ref of refs) {
+      if (typeof ref === "function") ref(node);
+      else if (ref) ref.current = node;
+    }
+  };
+}
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"],
-  });
+const ImageParallax = forwardRef<HTMLDivElement, ImageParallaxProps>(
+  function ImageParallax(
+    {
+      src,
+      alt = "",
+      width = "100%",
+      height = 480,
+      intensity = 100,
+      overscan = 30,
+      noiseOpacity = 0.6,
+      objectPosition = "center",
+      className = "",
+      style,
+      startOffset = 0,
+      noiseIntensity = 24,
+      noiseOverscan = 60,
+    },
+    forwardedRef
+  ) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const setRef = useCallback(
+      mergeRefs(containerRef, forwardedRef),
+      [forwardedRef]
+    );
+    const prefersReducedMotion = useReducedMotion();
 
-  // Direct 1:1 mapping to scroll — no spring, no lag, no overshoot.
-  const y = useTransform(
-    scrollYProgress,
-    [0, 1],
-    prefersReducedMotion
-      ? [0, 0]
-      : [-intensity + startOffset, intensity + startOffset]
-  );
+    const { scrollYProgress } = useScroll({
+      target: containerRef,
+      offset: ["start end", "end start"],
+    });
 
-  const noiseY = useTransform(
-    scrollYProgress,
-    [0, 1],
-    prefersReducedMotion ? [0, 0] : [noiseIntensity, -noiseIntensity]
-  );
+    const y = useTransform(
+      scrollYProgress,
+      [0, 1],
+      prefersReducedMotion
+        ? [0, 0]
+        : [-intensity + startOffset, intensity + startOffset]
+    );
 
-  return (
-    <div
-      ref={containerRef}
-      className={`image-parallax ${className}`.trim()}
-      style={{ width, height, ...style }}
-    >
-      <div className="image-parallax__frame">
-        <motion.img
-          src={resolveSrc(src)}
-          alt={alt}
-          className="image-parallax__img"
+    const noiseY = useTransform(
+      scrollYProgress,
+      [0, 1],
+      prefersReducedMotion ? [0, 0] : [noiseIntensity, -noiseIntensity]
+    );
+
+    return (
+      <div
+        ref={setRef}
+        className={`image-parallax ${className}`.trim()}
+        style={{ width, height, ...style }}
+      >
+        <div className="image-parallax__frame">
+          <motion.img
+            src={resolveSrc(src)}
+            alt={alt}
+            className="image-parallax__img"
+            style={{
+              y,
+              objectPosition,
+              top: `-${overscan / 2}%`,
+              height: `${100 + overscan}%`,
+            }}
+          />
+        </div>
+
+        <motion.div
+          className="image-parallax__grain"
+          aria-hidden
           style={{
-            y,
-            objectPosition,
-            top: `-${overscan / 2}%`,
-            height: `${100 + overscan}%`,
+            y: noiseY,
+            opacity: noiseOpacity,
+            backgroundImage: `url(${resolveSrc(grainTexture)})`,
+            backgroundSize: "cover",
+            top: `-${noiseOverscan / 2}%`,
+            left: `-${noiseOverscan / 2}%`,
+            width: `${100 + noiseOverscan}%`,
+            height: `${100 + noiseOverscan}%`,
           }}
         />
       </div>
+    );
+  }
+);
 
-      <motion.div
-        className="image-parallax__grain"
-        aria-hidden
-        style={{
-          y: noiseY,
-          opacity: noiseOpacity,
-          backgroundImage: `url(${resolveSrc(grainTexture)})`,
-          backgroundSize: "cover",
-          top: `-${noiseOverscan / 2}%`,
-          left: `-${noiseOverscan / 2}%`,
-          width: `${100 + noiseOverscan}%`,
-          height: `${100 + noiseOverscan}%`,
-        }}
-      />
-    </div>
-  );
-}
+export default ImageParallax;
