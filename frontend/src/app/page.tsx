@@ -1,12 +1,10 @@
-import HeroSection from "@/components/sections/hero-section";
-import TesteSection from "@/components/sections/teste-section";
+import LandingSections from "@/components/sections/landing-sections";
 
 export default function Home() {
   return (
-    <div className="landing-canvas min-h-screen">
+    <div className="landing-canvas">
       <div>
-        <HeroSection />
-        <TesteSection />
+        <LandingSections />
       </div>
     </div>
   );
