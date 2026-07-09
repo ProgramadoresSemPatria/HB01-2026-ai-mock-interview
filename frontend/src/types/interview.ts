@@ -1,10 +1,13 @@
 export type InterviewLevel = "entry" | "mid" | "senior";
 
+export type InterviewLocale = "en" | "pt";
+
 export const MAX_JOB_DESCRIPTION_LENGTH = 5_000;
 
 export type CreateSessionInput = {
   resumeId: string;
   level: InterviewLevel;
+  interviewLocale: InterviewLocale;
   jobDescription?: string;
 };
 

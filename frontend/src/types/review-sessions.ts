@@ -1,6 +1,12 @@
+import type { InterviewLocale } from "./interview";
 import type { ReviewItemStatus, ReviewPriority } from "./review-items";
 
 export type ReviewSessionStatus = "in_progress" | "pending_review" | "completed";
+
+export type CreateReviewSessionInput = {
+  reviewItemIds: string[];
+  interviewLocale: InterviewLocale;
+};
 
 export type ReviewSessionItemReport = {
   id: string;

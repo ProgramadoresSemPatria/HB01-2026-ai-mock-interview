@@ -9,6 +9,7 @@ import { AlertCircle, BookOpen, Loader2 } from "lucide-react";
 
 import { useAuth } from "@/features/auth/session-provider";
 import { InterviewLocaleSelector } from "@/features/interview-locale/interview-locale-selector";
+import { useInterviewLocale } from "@/features/interview-locale/use-interview-locale";
 import { StudyItemCard } from "@/features/study/study-item-card";
 import { StudyResumeBanner } from "@/features/study/study-resume-banner";
 import { StudySelectionBar } from "@/features/study/study-selection-bar";
@@ -27,6 +28,7 @@ export function StudyHubContent() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { getAccessToken, fetchWithAuth } = useAuth();
+  const { locale } = useInterviewLocale();
 
   const [activeTab, setActiveTab] = useState<StudyTab>("active");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
@@ -151,9 +153,10 @@ export function StudyHubContent() {
 
     setIsStarting(true);
     try {
-      const response = await reviewSessionsApi.create(token, [
-        ...effectiveSelectedIds,
-      ]);
+      const response = await reviewSessionsApi.create(token, {
+        reviewItemIds: [...effectiveSelectedIds],
+        interviewLocale: locale,
+      });
       setLastReviewSessionId(response.id);
       router.push(`/review-session/${response.id}`);
     } catch (err) {
