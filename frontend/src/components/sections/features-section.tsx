@@ -10,7 +10,7 @@ import {
 
 const REVEAL_OFFSET: [string, string] = ["start start", "end start"];
 const REVEAL_TRANSLATE_Y = -250;
-const OPACITY_FADE_END = 1;
+const OPACITY_FADE_END = 1 ;
 
 interface FeaturesSectionProps {
   parallaxRef: RefObject<HTMLDivElement | null>;
@@ -41,7 +41,7 @@ const FeaturesSection = ({ parallaxRef }: FeaturesSectionProps) => {
   return (
     <section className="flex justify-center items-start h-screen">
       <motion.div
-        className="text-center text-9xl mt-30 font-normal text-white instrument-serif sticky top-2"
+        className="text-center text-9xl mt-50 font-normal text-white instrument-serif sticky top-2"
         style={{ y, opacity }}
       >
         Sharpen Engineering Thinking
