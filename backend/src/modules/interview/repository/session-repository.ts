@@ -1,4 +1,5 @@
 import prisma from "@/infrastructure/database";
+import type { InterviewLocale } from "@/shared";
 import type {
   InterviewLevel,
   InterviewSession,
@@ -14,20 +15,20 @@ export type CreateSessionParams = {
   userId: number;
   resumeId: string;
   level: InterviewLevel;
+  interviewLocale: InterviewLocale;
   jobDescription?: string | null;
 };
 
 export class SessionRepository {
   async create(params: CreateSessionParams): Promise<InterviewSession> {
-    const { userId, resumeId, level, jobDescription } = params;
+    const { userId, resumeId, level, interviewLocale, jobDescription } = params;
     return prisma.interviewSession.create({
       data: {
         userId,
         resumeId,
         level,
         jobDescription: jobDescription ?? null,
-        // Temporary stub until T6 wires CreateSessionParams.interviewLocale
-        interviewLocale: "en",
+        interviewLocale,
         maxTurns: MAX_TURNS_BY_LEVEL[level],
       },
     });
@@ -56,10 +57,13 @@ export class SessionRepository {
     });
   }
 
-  async markFinished(id: string): Promise<InterviewSession> {
+  async markFinished(
+    id: string,
+    interviewLocale: InterviewLocale,
+  ): Promise<InterviewSession> {
     return prisma.interviewSession.update({
       where: { id },
-      data: { isFinished: true },
+      data: { isFinished: true, interviewLocale },
     });
   }
 

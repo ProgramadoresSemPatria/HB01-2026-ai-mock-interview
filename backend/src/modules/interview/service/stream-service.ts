@@ -210,7 +210,11 @@ export class InterviewStreamService {
           sessionId,
           review.items,
         );
-        await this.sessionRepository.markFinished(sessionId);
+        // T8 will pass stream-body locale; keep session locale until then
+        await this.sessionRepository.markFinished(
+          sessionId,
+          session.interviewLocale,
+        );
         isFinished = true;
       }
 

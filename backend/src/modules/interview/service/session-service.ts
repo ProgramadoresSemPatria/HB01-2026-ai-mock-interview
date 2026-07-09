@@ -60,6 +60,7 @@ export class SessionService {
       userId,
       resumeId: input.resumeId,
       level: input.level,
+      interviewLocale: input.interviewLocale,
       jobDescription: input.jobDescription
         ? sanitizeJobDescription(input.jobDescription)
         : null,

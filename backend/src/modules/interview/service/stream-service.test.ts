@@ -340,7 +340,10 @@ describe("InterviewStreamService", () => {
         },
       ],
     );
-    expect(sessionRepository.markFinished).toHaveBeenCalledWith(baseSession.id);
+    expect(sessionRepository.markFinished).toHaveBeenCalledWith(
+      baseSession.id,
+      baseSession.interviewLocale,
+    );
 
     const output = res.chunks.join("");
     expect(output).toContain('"isFinished":true');
@@ -432,7 +435,10 @@ describe("InterviewStreamService", () => {
     await service.streamTurn(1, baseSession.id, "Hello", res);
 
     expect(reviewRepository.upsert).not.toHaveBeenCalled();
-    expect(sessionRepository.markFinished).toHaveBeenCalledWith(baseSession.id);
+    expect(sessionRepository.markFinished).toHaveBeenCalledWith(
+      baseSession.id,
+      baseSession.interviewLocale,
+    );
   });
 
   it("does not persist partial AI message when client disconnects", async () => {
