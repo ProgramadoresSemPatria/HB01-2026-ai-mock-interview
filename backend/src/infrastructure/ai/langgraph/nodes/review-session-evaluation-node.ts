@@ -32,7 +32,11 @@ export function createReviewSessionEvaluationNode(
     input: ReviewSessionEvaluationInput,
     config?: RunnableConfig,
   ): Promise<ReviewSessionEvaluationOutput> {
-    const promptText = buildReviewSessionEvaluationPrompt(input);
+    // Temporary stub until T13 wires stream-body interviewLocale
+    const promptText = buildReviewSessionEvaluationPrompt({
+      ...input,
+      interviewLocale: "en",
+    });
 
     // Pass prompt as a template variable so JSON braces in turns are not
     // parsed as LangChain input placeholders (INVALID_PROMPT_INPUT).

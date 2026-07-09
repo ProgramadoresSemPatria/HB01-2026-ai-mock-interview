@@ -20,6 +20,7 @@ const baseParams: ReviewItemsGeneratorParams = {
   sessionId: "550e8400-e29b-41d4-a716-446655440000",
   transcript: "Q: Tell me about yourself.\nA: I build APIs.",
   structuredSummary,
+  interviewLocale: "en",
 };
 
 describe("ReviewItemsGeneratorAdapter", () => {
@@ -71,6 +72,7 @@ describe("ReviewItemsGeneratorAdapter", () => {
       {
         transcript: baseParams.transcript,
         structuredSummary: baseParams.structuredSummary,
+        interviewLocale: "en",
         existingItems: [
           {
             topic: "Communication",
@@ -97,6 +99,7 @@ describe("ReviewItemsGeneratorAdapter", () => {
       {
         transcript: baseParams.transcript,
         structuredSummary: baseParams.structuredSummary,
+        interviewLocale: "en",
         existingItems: [],
       },
       undefined,

@@ -2,6 +2,7 @@ import type { BaseCallbackHandler } from "@langchain/core/callbacks/base";
 import type { InterviewLevel } from "@/modules/interview/validations/interview-schemas";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
 import type { LlmUsage } from "@/modules/token-usage/types/llm-usage";
+import type { InterviewLocale } from "@/shared/interview-locale/interview-locale";
 
 export type InterviewGraphStreamToken = {
   content: string;
@@ -22,6 +23,7 @@ export type InterviewGraphInput = {
   userId: number;
   resumeSummary: StructuredSummary;
   jobDescription?: string | null;
+  interviewLocale: InterviewLocale;
   isFinished: boolean;
   runReview: boolean;
 };

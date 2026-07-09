@@ -3,6 +3,7 @@ import { Annotation, messagesStateReducer } from "@langchain/langgraph";
 
 import type { InterviewLevel } from "@/modules/interview/validations/interview-schemas";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
+import type { InterviewLocale } from "@/shared/interview-locale/interview-locale";
 
 export const InterviewGraphStateAnnotation = Annotation.Root({
   messages: Annotation<BaseMessage[]>({
@@ -15,6 +16,7 @@ export const InterviewGraphStateAnnotation = Annotation.Root({
   userId: Annotation<number>,
   resumeSummary: Annotation<StructuredSummary>,
   jobDescription: Annotation<string | null>(),
+  interviewLocale: Annotation<InterviewLocale>,
   isFinished: Annotation<boolean>,
   runReview: Annotation<boolean>,
 });
@@ -28,6 +30,7 @@ export type CreateInitialInterviewStateParams = {
   level: InterviewLevel;
   userId: number;
   resumeSummary: StructuredSummary;
+  interviewLocale: InterviewLocale;
   jobDescription?: string | null;
   isFinished?: boolean;
   runReview?: boolean;
@@ -44,6 +47,7 @@ export function createInitialInterviewState(
     userId: params.userId,
     resumeSummary: params.resumeSummary,
     jobDescription: params.jobDescription ?? null,
+    interviewLocale: params.interviewLocale,
     isFinished: params.isFinished ?? false,
     runReview: params.runReview ?? false,
   };

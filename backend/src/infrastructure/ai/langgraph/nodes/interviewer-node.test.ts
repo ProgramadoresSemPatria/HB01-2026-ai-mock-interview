@@ -61,6 +61,7 @@ describe("createInterviewerNode", () => {
     level: "mid",
     userId: 1,
     resumeSummary: sampleResumeSummary,
+    interviewLocale: "en",
   });
 
   it("invokes with interviewer system prompt when runReview is false", async () => {
@@ -75,6 +76,7 @@ describe("createInterviewerNode", () => {
       resumeSummary: state.resumeSummary,
       turnCount: state.turnCount,
       maxTurns: state.maxTurns,
+      interviewLocale: state.interviewLocale,
     });
     const systemContent = getRenderedSystemContent(
       getChainInputMessages(invoke.mock.calls[0]?.[0]),
@@ -98,6 +100,7 @@ describe("createInterviewerNode", () => {
     const expectedSystemPrompt = buildClosingFeedbackPrompt({
       level: state.level,
       resumeSummary: state.resumeSummary,
+      interviewLocale: state.interviewLocale,
     });
     const systemContent = getRenderedSystemContent(
       getChainInputMessages(invoke.mock.calls[0]?.[0]),
@@ -113,7 +116,11 @@ describe("createInterviewerNode", () => {
     const { model } = createMockModel("Session feedback body");
     const node = createInterviewerNode({ model });
 
-    const result = await node({ ...baseState, runReview: true });
+    const result = await node({
+      ...baseState,
+      runReview: true,
+      interviewLocale: "pt",
+    });
 
     expect(result.messages[0]?.content).toContain("Session feedback body");
     expect(result.messages[0]?.content).toContain(CLOSING_FEEDBACK_CTA);

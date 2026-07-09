@@ -78,6 +78,8 @@ export function buildInterviewGraph(
 
           jobDescription: input.jobDescription ?? undefined,
 
+          interviewLocale: input.interviewLocale,
+
           isFinished: input.isFinished,
 
           runReview: input.runReview,
@@ -108,11 +110,14 @@ export function buildInterviewGraph(
         return completedAiMessage;
       }
 
-      yield { content: closingFeedbackCtaStreamSuffix() };
+      yield { content: closingFeedbackCtaStreamSuffix(input.interviewLocale) };
 
       return {
         ...completedAiMessage,
-        content: appendClosingFeedbackCta(completedAiMessage.content),
+        content: appendClosingFeedbackCta(
+          completedAiMessage.content,
+          input.interviewLocale,
+        ),
       };
     },
   };
