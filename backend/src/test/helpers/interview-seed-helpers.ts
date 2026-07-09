@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import prisma from "@/infrastructure/database";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
+import type { InterviewLocale } from "@/shared";
 import { ResumeStatus } from "../../../prisma/generated/client";
 
 export const sampleStructuredSummary: StructuredSummary = {
@@ -28,6 +29,34 @@ export const sampleStructuredSummary: StructuredSummary = {
   ],
   certifications: [],
 };
+
+export const defaultInterviewLocale: InterviewLocale = "en";
+
+export function buildCreateSessionPayload(params: {
+  resumeId: string;
+  level?: "entry" | "mid" | "senior";
+  interviewLocale?: InterviewLocale;
+  jobDescription?: string;
+}) {
+  return {
+    resumeId: params.resumeId,
+    level: params.level ?? "entry",
+    interviewLocale: params.interviewLocale ?? defaultInterviewLocale,
+    ...(params.jobDescription !== undefined
+      ? { jobDescription: params.jobDescription }
+      : {}),
+  };
+}
+
+export function buildStreamMessagePayload(params?: {
+  content?: string;
+  interviewLocale?: InterviewLocale;
+}) {
+  return {
+    content: params?.content ?? "Hello interviewer",
+    interviewLocale: params?.interviewLocale ?? defaultInterviewLocale,
+  };
+}
 
 function resumeSeedBase(userId: number, resumeId: string) {
   return {
