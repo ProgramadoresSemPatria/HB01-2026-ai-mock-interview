@@ -2,7 +2,7 @@
 
 **Design**: `.specs/features/interview-locale/design.md`  
 **Spec**: `.specs/features/interview-locale/spec.md`  
-**Status**: Draft
+**Status**: Complete
 
 **Test refs**: `backend/docs/TESTING.md`, `frontend/.specs/codebase/TESTING.md`
 
@@ -69,10 +69,10 @@ T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Enum and three fields exist with `@map("interview_locale")` as in design
-- [ ] Migration applies; existing sessions (if any) backfilled to `en`; users remain `null`
-- [ ] `bun run db:generate` succeeds
-- [ ] Gate check passes: `bun run check-types` (from `Backend/`)
+- [x] Enum and three fields exist with `@map("interview_locale")` as in design
+- [x] Migration applies; existing sessions (if any) backfilled to `en`; users remain `null`
+- [x] `bun run db:generate` succeeds
+- [x] Gate check passes: `bun run check-types` (from `Backend/`)
 
 **Tests**: none  
 **Gate**: build
@@ -99,12 +99,12 @@ T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] `z.enum(["en","pt"])` rejects aliases (`EN`, `pt-BR`) and free text
-- [ ] `buildInterviewLocalePromptBlock` returns a `## Language` (or equivalent) block forcing EN or PT only
-- [ ] `getClosingFeedbackCopy("pt")` / `("en")` return distinct headings + CTA + reply instruction
-- [ ] Unit tests cover accept/reject + both locale copies
-- [ ] Gate check passes: `bun run lint && bun run check-types && bun run test -- src/shared/interview-locale/interview-locale.test.ts`
-- [ ] Test count: ≥4 new tests pass
+- [x] `z.enum(["en","pt"])` rejects aliases (`EN`, `pt-BR`) and free text
+- [x] `buildInterviewLocalePromptBlock` returns a `## Language` (or equivalent) block forcing EN or PT only
+- [x] `getClosingFeedbackCopy("pt")` / `("en")` return distinct headings + CTA + reply instruction
+- [x] Unit tests cover accept/reject + both locale copies
+- [x] Gate check passes: `bun run lint && bun run check-types && bun run test -- src/shared/interview-locale/interview-locale.test.ts`
+- [x] Test count: ≥4 new tests pass
 
 **Tests**: unit  
 **Gate**: quick
@@ -131,11 +131,11 @@ T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] `UserWithoutPassword` includes `interviewLocale: InterviewLocale | null`
-- [ ] `updateInterviewLocale` persists and returns updated user/locale
-- [ ] Integration test: create user → update locale → `getById`/`getByEmail` reflects value
-- [ ] Gate check passes: `bun run test:integration -- src/modules/auth/repository/user-repository.integration.test.ts`
-- [ ] Test count: existing repo tests + ≥1 new case (no silent deletions)
+- [x] `UserWithoutPassword` includes `interviewLocale: InterviewLocale | null`
+- [x] `updateInterviewLocale` persists and returns updated user/locale
+- [x] Integration test: create user → update locale → `getById`/`getByEmail` reflects value
+- [x] Gate check passes: `bun run test:integration -- src/modules/auth/repository/user-repository.integration.test.ts`
+- [x] Test count: existing repo tests + ≥1 new case (no silent deletions)
 
 **Tests**: integration  
 **Gate**: full
@@ -193,10 +193,10 @@ T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Valid bodies with `en`/`pt` parse; missing/invalid fail
-- [ ] Exported `CreateSessionInput` / `StreamMessageInput` include `interviewLocale`
-- [ ] Gate check passes: `bun run test -- src/modules/interview/validations/interview-schemas.test.ts`
-- [ ] Test count: ≥4 cases covering create + stream accept/reject
+- [x] Valid bodies with `en`/`pt` parse; missing/invalid fail
+- [x] Exported `CreateSessionInput` / `StreamMessageInput` include `interviewLocale`
+- [x] Gate check passes: `bun run test -- src/modules/interview/validations/interview-schemas.test.ts`
+- [x] Test count: ≥4 cases covering create + stream accept/reject
 
 **Tests**: unit  
 **Gate**: quick
@@ -223,11 +223,11 @@ T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Create persists locale from params
-- [ ] `markFinished` updates locale to the argument (can differ from create)
-- [ ] Integration tests cover both
-- [ ] Gate check passes: `bun run test:integration -- src/modules/interview/repository/session-repository.integration.test.ts`
-- [ ] Test count: existing + ≥2 new assertions/cases
+- [x] Create persists locale from params
+- [x] `markFinished` updates locale to the argument (can differ from create)
+- [x] Integration tests cover both
+- [x] Gate check passes: `bun run test:integration -- src/modules/interview/repository/session-repository.integration.test.ts`
+- [x] Test count: existing + ≥2 new assertions/cases
 
 **Tests**: integration  
 **Gate**: full
@@ -254,12 +254,12 @@ T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Built system strings end with the locale language block
-- [ ] No hardcoded “English only” mid-block; no PT-only closing when locale is `en`
-- [ ] Resume extraction prompt untouched
-- [ ] Unit tests assert last section + EN/PT closing copy
-- [ ] Gate check passes: `bun run test -- src/modules/interview/prompts`
-- [ ] Test count: existing prompt tests updated/passing + new locale cases
+- [x] Built system strings end with the locale language block
+- [x] No hardcoded “English only” mid-block; no PT-only closing when locale is `en`
+- [x] Resume extraction prompt untouched
+- [x] Unit tests assert last section + EN/PT closing copy
+- [x] Gate check passes: `bun run test -- src/modules/interview/prompts`
+- [x] Test count: existing prompt tests updated/passing + new locale cases
 
 **Tests**: unit  
 **Gate**: quick
@@ -286,13 +286,13 @@ T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] `streamTurn` accepts `{ content, interviewLocale }` and does not read `User.interviewLocale`
-- [ ] Graph invoke includes `interviewLocale`; prompts receive it
-- [ ] Final turn calls `markFinished(sessionId, interviewLocale)` with stream body locale
-- [ ] Review-items `generate` receives same final-turn locale
-- [ ] Unit tests updated for new signatures and final-turn locale update
-- [ ] Gate check passes: `bun run lint && bun run check-types && bun run test -- src/modules/interview/service`
-- [ ] Test count: existing service tests pass with updates (no silent deletions)
+- [x] `streamTurn` accepts `{ content, interviewLocale }` and does not read `User.interviewLocale`
+- [x] Graph invoke includes `interviewLocale`; prompts receive it
+- [x] Final turn calls `markFinished(sessionId, interviewLocale)` with stream body locale
+- [x] Review-items `generate` receives same final-turn locale
+- [x] Unit tests updated for new signatures and final-turn locale update
+- [x] Gate check passes: `bun run lint && bun run check-types && bun run test -- src/modules/interview/service`
+- [x] Test count: existing service tests pass with updates (no silent deletions)
 
 **Tests**: unit  
 **Gate**: quick
@@ -319,10 +319,10 @@ T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Happy-path create/stream include `interviewLocale`
-- [ ] Omit locale → 422 on create and stream
-- [ ] Gate check passes: `bun run test:e2e -- src/test/e2e/interview.e2e.test.ts`
-- [ ] Test count: existing suite green + ≥2 new 422 cases
+- [x] Happy-path create/stream include `interviewLocale`
+- [x] Omit locale → 422 on create and stream
+- [x] Gate check passes: `bun run test:e2e -- src/test/e2e/interview.e2e.test.ts`
+- [x] Test count: existing suite green + ≥2 new 422 cases
 
 **Tests**: e2e  
 **Gate**: full
@@ -349,9 +349,9 @@ T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Accept `en`/`pt`; reject missing/invalid
-- [ ] Gate check passes: `bun run test -- src/modules/review-sessions/validations`
-- [ ] Test count: ≥4 accept/reject cases
+- [x] Accept `en`/`pt`; reject missing/invalid
+- [x] Gate check passes: `bun run test -- src/modules/review-sessions/validations`
+- [x] Test count: ≥4 accept/reject cases
 
 **Tests**: unit  
 **Gate**: quick
@@ -498,10 +498,10 @@ T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Types include `interviewLocale: "en" | "pt" | null`
-- [ ] `mapBrowserLocale`: `en*`→`en`, `pt*`→`pt`, else `en`
-- [ ] PATCH client posts `{ interviewLocale }` to `/api/users/me/interview-locale`
-- [ ] Gate check passes: `cd frontend && bun run lint && bun run check-types`
+- [x] Types include `interviewLocale: "en" | "pt" | null`
+- [x] `mapBrowserLocale`: `en*`→`en`, `pt*`→`pt`, else `en`
+- [x] PATCH client posts `{ interviewLocale }` to `/api/users/me/interview-locale`
+- [x] Gate check passes: `cd frontend && bun run lint && bun run check-types`
 
 **Tests**: none (FE matrix)  
 **Gate**: quick
@@ -528,10 +528,10 @@ T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] `updateUser` (or equivalent) persists merged user to localStorage
-- [ ] Hook bootstraps only when `interviewLocale === null` on practice/study usage
-- [ ] `setLocale` PATCHes and updates stored user; mid-session change allowed
-- [ ] Gate check passes: `cd frontend && bun run lint && bun run check-types`
+- [x] `updateUser` (or equivalent) persists merged user to localStorage
+- [x] Hook bootstraps only when `interviewLocale === null` on practice/study usage
+- [x] `setLocale` PATCHes and updates stored user; mid-session change allowed
+- [x] Gate check passes: `cd frontend && bun run lint && bun run check-types`
 
 **Tests**: none  
 **Gate**: quick
@@ -558,9 +558,9 @@ T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Selector visible on practice and study
-- [ ] Changing selection calls `setLocale`
-- [ ] Gate check passes: `cd frontend && bun run lint && bun run check-types`
+- [x] Selector visible on practice and study
+- [x] Changing selection calls `setLocale`
+- [x] Gate check passes: `cd frontend && bun run lint && bun run check-types`
 
 **Tests**: none  
 **Gate**: quick
@@ -587,9 +587,9 @@ T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] All create/stream request bodies include `interviewLocale`
-- [ ] Call sites use current selector/hook value (never omit)
-- [ ] Gate check passes: `cd frontend && bun run lint && bun run check-types && bun run build`
+- [x] All create/stream request bodies include `interviewLocale`
+- [x] Call sites use current selector/hook value (never omit)
+- [x] Gate check passes: `cd frontend && bun run lint && bun run check-types && bun run build`
 
 **Tests**: none  
 **Gate**: build
