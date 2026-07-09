@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
+import { Instrument_Serif } from "next/font/google";
 
 import "../index.css";
 import Providers from "@/components/providers";
+
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-instrument-serif",
+});
 
 export const metadata: Metadata = {
   title: "Hone ",
@@ -15,7 +23,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning data-scroll-behavior="smooth">
+    <html
+      lang="pt-BR"
+      suppressHydrationWarning
+      data-scroll-behavior="smooth"
+      className={instrumentSerif.variable}
+    >
       <body className="min-h-dvh antialiased">
         <Providers>{children}</Providers>
       </body>
