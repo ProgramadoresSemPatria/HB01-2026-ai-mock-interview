@@ -112,6 +112,7 @@ const sampleUser = {
   name: "Jane Doe",
   email: "jane@example.com",
   password: "hashed-password",
+  interviewLocale: null,
   createdAt: new Date("2026-01-01T00:00:00.000Z"),
   updatedAt: new Date("2026-01-02T00:00:00.000Z"),
 };
@@ -166,6 +167,7 @@ describe("AuthService", () => {
         id: sampleUser.id,
         name: sampleUser.name,
         email: sampleUser.email,
+        interviewLocale: null,
         createdAt: sampleUser.createdAt,
         updatedAt: sampleUser.updatedAt,
       });
@@ -221,6 +223,7 @@ describe("AuthService", () => {
           id: sampleUser.id,
           name: sampleUser.name,
           email: sampleUser.email,
+          interviewLocale: null,
           createdAt: sampleUser.createdAt,
           updatedAt: sampleUser.updatedAt,
         },
