@@ -469,9 +469,9 @@ T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Happy paths include locale; omit → 422
-- [ ] Gate check passes: `bun run test:e2e -- src/test/e2e/review-sessions.e2e.test.ts`
-- [ ] Test count: suite green + ≥2 new 422 cases
+- [x] Happy paths include locale; omit → 422
+- [x] Gate check passes: `bun run test:e2e -- src/test/e2e/review-sessions.e2e.test.ts`
+- [x] Test count: suite green + ≥2 new 422 cases
 
 **Tests**: e2e  
 **Gate**: full

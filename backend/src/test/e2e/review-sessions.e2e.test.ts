@@ -158,12 +158,12 @@ async function streamReviewSessionTurn(
   app: Express,
   token: string,
   sessionId: string,
-  body: { answer?: string } = {},
+  body: { answer?: string; interviewLocale?: "en" | "pt" } = {},
 ) {
   return request(app)
     .post(`/api/review-sessions/${sessionId}/stream`)
     .set(authHeader(token))
-    .send(body);
+    .send({ interviewLocale: "en", ...body });
 }
 
 async function runStreamThroughEvaluation(
@@ -171,8 +171,11 @@ async function runStreamThroughEvaluation(
   token: string,
   sessionId: string,
   itemCount: number,
+  interviewLocale: "en" | "pt" = "en",
 ) {
-  const firstQuestion = await streamReviewSessionTurn(app, token, sessionId);
+  const firstQuestion = await streamReviewSessionTurn(app, token, sessionId, {
+    interviewLocale,
+  });
   expect(firstQuestion.status).toBe(200);
   expect(firstQuestion.headers["content-type"]).toContain("text/event-stream");
   expect(firstQuestion.text).toContain("event: token");
@@ -182,6 +185,7 @@ async function runStreamThroughEvaluation(
   for (let index = 0; index < itemCount; index += 1) {
     const response = await streamReviewSessionTurn(app, token, sessionId, {
       answer: `Answer ${index + 1} for review session item.`,
+      interviewLocale,
     });
     expect(response.status).toBe(200);
 
@@ -225,6 +229,24 @@ describe("Review Sessions API E2E", () => {
       });
     });
 
+    it("returns 422 when interviewLocale is omitted", async () => {
+      const { token, userId } = await authenticate(app);
+      const item = await seedReviewItem(userId, {
+        topic: "System Design",
+        description: "Practice scalability trade-offs.",
+        priority: ReviewPriority.high,
+      });
+
+      const response = await request(app)
+        .post("/api/review-sessions/")
+        .set(authHeader(token))
+        .send({ reviewItemIds: [item.id] });
+
+      expect(response.status).toBe(422);
+      expect(response.body.message).toBe("Validation failed");
+      expect(response.body.errors).toBeDefined();
+    });
+
     it("returns 201 when creating a session with active owned review items", async () => {
       const { token, userId } = await authenticate(app);
       const itemOne = await seedReviewItem(userId, {
@@ -241,7 +263,10 @@ describe("Review Sessions API E2E", () => {
       const response = await request(app)
         .post("/api/review-sessions/")
         .set(authHeader(token))
-        .send({ reviewItemIds: [itemOne.id, itemTwo.id] });
+        .send({
+          reviewItemIds: [itemOne.id, itemTwo.id],
+          interviewLocale: "en",
+        });
 
       expect(response.status).toBe(201);
       expect(response.body).toMatchObject({
@@ -260,6 +285,11 @@ describe("Review Sessions API E2E", () => {
         ]),
       });
       expect(response.body.items).toHaveLength(2);
+
+      const session = await prisma.reviewSession.findUnique({
+        where: { id: response.body.id as string },
+      });
+      expect(session?.interviewLocale).toBe("en");
     });
 
     it("returns 404 when any review item is missing, not owned, or not active", async () => {
@@ -280,7 +310,10 @@ describe("Review Sessions API E2E", () => {
       const missingResponse = await request(app)
         .post("/api/review-sessions/")
         .set(authHeader(token))
-        .send({ reviewItemIds: [activeItem.id, randomUUID()] });
+        .send({
+          reviewItemIds: [activeItem.id, randomUUID()],
+          interviewLocale: "en",
+        });
 
       expect(missingResponse.status).toBe(404);
       expect(missingResponse.body).toEqual({ message: "Review item not found" });
@@ -288,7 +321,10 @@ describe("Review Sessions API E2E", () => {
       const learnedResponse = await request(app)
         .post("/api/review-sessions/")
         .set(authHeader(token))
-        .send({ reviewItemIds: [learnedItem.id] });
+        .send({
+          reviewItemIds: [learnedItem.id],
+          interviewLocale: "en",
+        });
 
       expect(learnedResponse.status).toBe(404);
       expect(learnedResponse.body).toEqual({ message: "Review item not found" });
@@ -297,7 +333,10 @@ describe("Review Sessions API E2E", () => {
       const crossUserResponse = await request(app)
         .post("/api/review-sessions/")
         .set(authHeader(otherToken))
-        .send({ reviewItemIds: [activeItem.id] });
+        .send({
+          reviewItemIds: [activeItem.id],
+          interviewLocale: "en",
+        });
 
       expect(crossUserResponse.status).toBe(404);
       expect(crossUserResponse.body).toEqual({ message: "Review item not found" });
@@ -327,7 +366,7 @@ describe("Review Sessions API E2E", () => {
       const createResponse = await request(app)
         .post("/api/review-sessions/")
         .set(authHeader(token))
-        .send({ reviewItemIds: [item.id] });
+        .send({ reviewItemIds: [item.id], interviewLocale: "en" });
 
       const sessionId = createResponse.body.id as string;
       const otherToken = await createOtherUserToken(app);
@@ -364,6 +403,32 @@ describe("Review Sessions API E2E", () => {
       });
     });
 
+    it("returns 422 when interviewLocale is omitted", async () => {
+      const { token, userId } = await authenticate(app);
+      const item = await seedReviewItem(userId, {
+        topic: "System Design",
+        description: "Practice scalability trade-offs.",
+        priority: ReviewPriority.high,
+      });
+
+      const createResponse = await request(app)
+        .post("/api/review-sessions/")
+        .set(authHeader(token))
+        .send({ reviewItemIds: [item.id], interviewLocale: "en" });
+
+      const sessionId = createResponse.body.id as string;
+
+      const response = await request(app)
+        .post(`/api/review-sessions/${sessionId}/stream`)
+        .set(authHeader(token))
+        .send({});
+
+      expect(response.status).toBe(422);
+      expect(response.body.message).toBe("Validation failed");
+      expect(response.body.errors).toBeDefined();
+      expect(reviewSessionAiMock.streamQuestion).not.toHaveBeenCalled();
+    });
+
     it("returns 404 when session does not exist or belongs to another user", async () => {
       const { token, userId } = await authenticate(app);
       const item = await seedReviewItem(userId, {
@@ -375,7 +440,7 @@ describe("Review Sessions API E2E", () => {
       const createResponse = await request(app)
         .post("/api/review-sessions/")
         .set(authHeader(token))
-        .send({ reviewItemIds: [item.id] });
+        .send({ reviewItemIds: [item.id], interviewLocale: "en" });
 
       const sessionId = createResponse.body.id as string;
       const otherToken = await createOtherUserToken(app);
@@ -415,7 +480,7 @@ describe("Review Sessions API E2E", () => {
       const createResponse = await request(app)
         .post("/api/review-sessions/")
         .set(authHeader(token))
-        .send({ reviewItemIds: [item.id] });
+        .send({ reviewItemIds: [item.id], interviewLocale: "en" });
 
       const sessionId = createResponse.body.id as string;
 
@@ -444,7 +509,10 @@ describe("Review Sessions API E2E", () => {
       const createResponse = await request(app)
         .post("/api/review-sessions/")
         .set(authHeader(token))
-        .send({ reviewItemIds: [itemOne.id, itemTwo.id] });
+        .send({
+          reviewItemIds: [itemOne.id, itemTwo.id],
+          interviewLocale: "en",
+        });
 
       const sessionId = createResponse.body.id as string;
       await runStreamThroughEvaluation(app, token, sessionId, 2);
@@ -501,6 +569,35 @@ describe("Review Sessions API E2E", () => {
         message: "Review session is not accepting answers",
       });
     });
+
+    it("persists stream interviewLocale when session reaches pending_review", async () => {
+      const { token, userId } = await authenticate(app);
+      const item = await seedReviewItem(userId, {
+        topic: "System Design",
+        description: "Practice scalability trade-offs.",
+        priority: ReviewPriority.high,
+      });
+
+      const createResponse = await request(app)
+        .post("/api/review-sessions/")
+        .set(authHeader(token))
+        .send({ reviewItemIds: [item.id], interviewLocale: "en" });
+
+      const sessionId = createResponse.body.id as string;
+
+      const created = await prisma.reviewSession.findUnique({
+        where: { id: sessionId },
+      });
+      expect(created?.interviewLocale).toBe("en");
+
+      await runStreamThroughEvaluation(app, token, sessionId, 1, "pt");
+
+      const pending = await prisma.reviewSession.findUnique({
+        where: { id: sessionId },
+      });
+      expect(pending?.status).toBe("pending_review");
+      expect(pending?.interviewLocale).toBe("pt");
+    });
   });
 
   describe("POST /api/review-sessions/:id/apply", () => {
@@ -534,7 +631,7 @@ describe("Review Sessions API E2E", () => {
       const createResponse = await request(app)
         .post("/api/review-sessions/")
         .set(authHeader(token))
-        .send({ reviewItemIds: [item.id] });
+        .send({ reviewItemIds: [item.id], interviewLocale: "en" });
 
       const sessionId = createResponse.body.id as string;
       await runStreamThroughEvaluation(app, token, sessionId, 1);
@@ -594,7 +691,7 @@ describe("Review Sessions API E2E", () => {
       const createResponse = await request(app)
         .post("/api/review-sessions/")
         .set(authHeader(token))
-        .send({ reviewItemIds: [item.id] });
+        .send({ reviewItemIds: [item.id], interviewLocale: "en" });
 
       const sessionId = createResponse.body.id as string;
       const beforeEvaluation = await request(app)
@@ -673,7 +770,10 @@ describe("Review Sessions API E2E", () => {
       const createResponse = await request(app)
         .post("/api/review-sessions/")
         .set(authHeader(token))
-        .send({ reviewItemIds: [itemOne.id, itemTwo.id, itemThree.id] });
+        .send({
+          reviewItemIds: [itemOne.id, itemTwo.id, itemThree.id],
+          interviewLocale: "en",
+        });
 
       const sessionId = createResponse.body.id as string;
 
