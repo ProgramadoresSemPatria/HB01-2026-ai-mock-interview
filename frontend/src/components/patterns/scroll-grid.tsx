@@ -5,14 +5,14 @@ function Wordmark() {
   return (
     <div className="relative select-none">
       <span
-        className="absolute -top-2 left-6 text-[64px] italic text-neutral-800" 
+        className="absolute -top-2 left-6 text-[24px] italic text-neutral-800" 
       >
-        Studio
+        AI MOCK INTERVIEW
       </span>
       <span
         className="relative text-[56px] font-bold text-white"
       >
-        Ad
+        HONE
       </span>
     </div>
   );
