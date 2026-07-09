@@ -1,8 +1,14 @@
 "use client";
+
+import { type RefObject } from "react";
 import ImageParallax from "../landing-page/image-parallax";
 import heroImage from "../../assets/logo.png";
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  parallaxRef: RefObject<HTMLDivElement | null>;
+}
+
+const HeroSection = ({ parallaxRef }: HeroSectionProps) => {
   return (
     <section
       style={{
@@ -13,6 +19,7 @@ const HeroSection = () => {
       }}
     >
       <ImageParallax
+        ref={parallaxRef}
         src={heroImage}
         alt="Hone"
         width="min(75vw, 800px)"
@@ -22,8 +29,7 @@ const HeroSection = () => {
         noiseOpacity={0.35}
         objectPosition="center"
         noiseIntensity={30}
-        startOffset={-30}          // começa ~30px mais pra cima
-        springConfig={{ stiffness: 100, damping: 50, mass: 0.6 }}
+        startOffset={-30}
       />
     </section>
   );
