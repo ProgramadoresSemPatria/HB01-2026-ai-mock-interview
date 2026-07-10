@@ -1,4 +1,5 @@
 import type { FC } from "react";
+import type { StaticImageData } from "next/image";
 
 export interface StaggeredMenuItem {
   label: string;
@@ -19,7 +20,7 @@ export interface StaggeredMenuProps {
   displaySocials?: boolean;
   displayItemNumbering?: boolean;
   className?: string;
-  logoUrl?: string;
+  logoUrl?: string | StaticImageData;
   menuButtonColor?: string;
   openMenuButtonColor?: string;
   accentColor?: string;

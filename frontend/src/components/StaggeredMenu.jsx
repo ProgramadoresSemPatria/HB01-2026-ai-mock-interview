@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { gsap } from 'gsap';
+import defaultLogo from '@/assets/logo.png';
 import './StaggeredMenu.css';
 
 export const StaggeredMenu = ({
@@ -12,7 +14,7 @@ export const StaggeredMenu = ({
   displaySocials = true,
   displayItemNumbering = true,
   className,
-  logoUrl = '/src/assets/logos/reactbits-gh-white.svg',
+  logoUrl = defaultLogo,
   menuButtonColor = '#fff',
   openMenuButtonColor = '#fff',
   accentColor = '#5227FF',
@@ -372,13 +374,14 @@ export const StaggeredMenu = ({
       </div>
       <header className="staggered-menu-header" aria-label="Main navigation header">
         <div className="sm-logo" aria-label="Logo">
-          <img
-            src={logoUrl || '/src/assets/logos/reactbits-gh-white.svg'}
+          <Image
+            src={logoUrl || defaultLogo}
             alt="Logo"
             className="sm-logo-img"
             draggable={false}
             width={440}
             height={96}
+            priority
           />
         </div>
         <button
