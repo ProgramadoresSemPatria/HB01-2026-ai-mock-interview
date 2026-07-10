@@ -278,12 +278,14 @@ function Checkpoint({
   position: number;
   animationProgress: MotionValue<number>;
 }) {
-  const opacity = useOneWayThreshold(animationProgress, position);
+  // First checkpoint sits at progress 0 — reveal only once the bar starts growing.
+  const revealThreshold = index === 0 ? 0.001 : position;
+  const opacity = useOneWayThreshold(animationProgress, revealThreshold);
 
   return (
     <motion.div
       style={{ left: `${position * 100}%`, opacity }}
-      className="absolute top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-[4px] bg-neutral-800 text-xs font-bold text-white"
+      className="manrope absolute top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center bg-neutral-800 text-xs font-bold text-white"
     >
       {index + 1}
     </motion.div>
