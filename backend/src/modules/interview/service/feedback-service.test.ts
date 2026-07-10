@@ -89,6 +89,8 @@ describe("FeedbackService", () => {
       turnCount: 3,
       maxTurns: 5,
       isFinished: true,
+      reviewGenerationStatus: "ready" as const,
+      reviewGenerationError: null,
       createdAt: new Date("2026-01-01T00:00:00.000Z"),
     };
 

@@ -11,6 +11,8 @@ export type CreateSessionInput = {
   jobDescription?: string;
 };
 
+export type ReviewGenerationStatus = "idle" | "pending" | "ready" | "failed";
+
 export type SessionSummary = {
   id: string;
   resumeId: string;
@@ -20,6 +22,8 @@ export type SessionSummary = {
   isFinished: boolean;
   hasJobDescription: boolean;
   createdAt: string;
+  reviewGenerationStatus: ReviewGenerationStatus;
+  reviewGenerationError: string | null;
 };
 
 export type SessionMessage = {
@@ -45,6 +49,8 @@ export type StreamMeta = {
   turnCount: number;
   maxTurns: number;
   isFinished: boolean;
+  /** Present on final turn only */
+  reviewGenerationStatus?: "pending" | "failed";
 };
 
 export type FeedbackRating = "up" | "down";

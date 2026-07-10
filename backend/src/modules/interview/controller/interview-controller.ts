@@ -1,5 +1,6 @@
 import type { SessionService } from "@/modules/interview/service/session-service";
 import type { FeedbackService } from "@/modules/interview/service/feedback-service";
+import type { ReviewGenerationService } from "@/modules/interview/service/review-generation-service";
 import type { InterviewStreamService } from "@/modules/interview/service/stream-service";
 import type {
   CreateSessionInput,
@@ -13,6 +14,7 @@ export class InterviewController {
     private readonly sessionService: SessionService,
     private readonly streamService: InterviewStreamService,
     private readonly feedbackService: FeedbackService,
+    private readonly reviewGenerationService: ReviewGenerationService,
   ) {}
 
   createSession = async (req: Request, res: Response): Promise<void> => {
@@ -26,6 +28,14 @@ export class InterviewController {
   listSessions = async (req: Request, res: Response): Promise<void> => {
     const sessions = await this.sessionService.listSessions(req.userId!);
     res.status(200).json({ sessions });
+  };
+
+  getSession = async (req: Request, res: Response): Promise<void> => {
+    const session = await this.sessionService.getSession(
+      req.userId!,
+      String(req.params.sessionId),
+    );
+    res.status(200).json(session);
   };
 
   stream = async (req: Request, res: Response): Promise<void> => {
@@ -63,5 +73,16 @@ export class InterviewController {
       req.body as SubmitFeedbackInput,
     );
     res.status(201).json(feedback);
+  };
+
+  retryReviewGeneration = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    const session = await this.reviewGenerationService.retry(
+      req.userId!,
+      String(req.params.sessionId),
+    );
+    res.status(200).json(session);
   };
 }

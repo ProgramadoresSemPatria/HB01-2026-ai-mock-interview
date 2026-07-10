@@ -23,7 +23,15 @@ const interviewGraphMock = vi.hoisted(() => {
 });
 
 const reviewItemsGeneratorMock = vi.hoisted(() => ({
-  generate: vi.fn(async () => ({ items: [] })),
+  generate: vi.fn(
+    async (): Promise<{
+      items: Array<{
+        topic: string;
+        description: string;
+        priority: "high" | "medium" | "low";
+      }>;
+    }> => ({ items: [] }),
+  ),
 }));
 
 vi.mock("@/factories/interview/interview-graph-factory", () => ({
@@ -42,6 +50,7 @@ import request from "supertest";
 import type { Express } from "express";
 
 import { createApp } from "@/config/app";
+import { makeReviewGenerationService } from "@/factories/interview/review-generation-service-factory";
 import prisma from "@/infrastructure/database";
 import { MessageRole, ResumeStatus } from "../../../prisma/generated/client";
 import {
@@ -341,8 +350,84 @@ describe("Interview API E2E", () => {
         maxTurns: 7,
         isFinished: false,
         hasJobDescription: false,
+        reviewGenerationStatus: "idle",
+        reviewGenerationError: null,
       });
       expect(response.body.sessions[0].createdAt).toEqual(expect.any(String));
+    });
+  });
+
+  describe("GET /api/interview/sessions/:sessionId", () => {
+    it("returns 200 with session summary including review generation status", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
+
+      const sessionId = createResponse.body.id as string;
+
+      const response = await request(app)
+        .get(`/api/interview/sessions/${sessionId}`)
+        .set(authHeader(token));
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        id: sessionId,
+        resumeId: resume.id,
+        level: "entry",
+        turnCount: 0,
+        maxTurns: 5,
+        isFinished: false,
+        hasJobDescription: false,
+        reviewGenerationStatus: "idle",
+        reviewGenerationError: null,
+      });
+      expect(response.body.createdAt).toEqual(expect.any(String));
+    });
+
+    it("returns 404 for a session that does not belong to the user", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
+
+      const sessionId = createResponse.body.id as string;
+
+      await request(app)
+        .post("/api/auth/signup")
+        .send(
+          createSignupPayload({
+            email: "get-session-other@example.com",
+            name: "Get Session Other",
+          }),
+        );
+      const otherLogin = await loginUser(app, {
+        email: "get-session-other@example.com",
+      });
+      const otherToken = otherLogin.body.accessToken as string;
+
+      const response = await request(app)
+        .get(`/api/interview/sessions/${sessionId}`)
+        .set(authHeader(otherToken));
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({ message: "Not Found" });
     });
   });
 
@@ -643,7 +728,7 @@ describe("Interview API E2E", () => {
       expect(interviewGraphMock.streamMessages).not.toHaveBeenCalled();
     });
 
-    it("persists final stream interviewLocale when session finishes", async () => {
+    it("marks session finished with pending review generation without invoking generator", async () => {
       const { token, userId } = await authenticate(app);
       const resume = await seedReadyResume(userId);
 
@@ -677,13 +762,215 @@ describe("Interview API E2E", () => {
 
       expect(response.status).toBe(200);
       expect(response.text).toContain('"isFinished":true');
-      expect(reviewItemsGeneratorMock.generate).toHaveBeenCalled();
+      expect(response.text).toContain('"reviewGenerationStatus":"pending"');
+      expect(reviewItemsGeneratorMock.generate).not.toHaveBeenCalled();
 
       const session = await prisma.interviewSession.findUnique({
         where: { id: sessionId },
       });
       expect(session?.isFinished).toBe(true);
       expect(session?.interviewLocale).toBe("pt");
+      expect(session?.reviewGenerationStatus).toBe("pending");
+      expect(session?.reviewGenerationError).toBeNull();
+    });
+
+    it("marks review generation ready after process runs", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+            interviewLocale: "en",
+          }),
+        );
+
+      const sessionId = createResponse.body.id as string;
+
+      await prisma.interviewSession.update({
+        where: { id: sessionId },
+        data: { turnCount: 4 },
+      });
+
+      const streamResponse = await request(app)
+        .post(`/api/interview/sessions/${sessionId}/stream`)
+        .set(authHeader(token))
+        .send(
+          buildStreamMessagePayload({
+            content: "Final answer",
+            interviewLocale: "en",
+          }),
+        );
+
+      expect(streamResponse.status).toBe(200);
+      expect(reviewItemsGeneratorMock.generate).not.toHaveBeenCalled();
+
+      reviewItemsGeneratorMock.generate.mockResolvedValueOnce({
+        items: [
+          {
+            topic: "Communication",
+            description: "Be more concise",
+            priority: "medium",
+          },
+        ],
+      });
+
+      const result = await makeReviewGenerationService().process(sessionId);
+
+      expect(result).toEqual({ status: "ready", sessionId });
+      expect(reviewItemsGeneratorMock.generate).toHaveBeenCalled();
+
+      const session = await prisma.interviewSession.findUnique({
+        where: { id: sessionId },
+      });
+      expect(session?.reviewGenerationStatus).toBe("ready");
+      expect(session?.reviewGenerationError).toBeNull();
+
+      const reviewItems = await prisma.reviewItem.findMany({
+        where: { userId },
+      });
+      expect(reviewItems.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe("POST /api/interview/sessions/:sessionId/review-generation/retry", () => {
+    it("returns 401 without authentication", async () => {
+      const response = await request(app).post(
+        `/api/interview/sessions/${randomUUID()}/review-generation/retry`,
+      );
+
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({
+        message: "Authentication required",
+      });
+    });
+
+    it("retries from failed and returns pending status", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
+
+      const sessionId = createResponse.body.id as string;
+
+      await prisma.interviewSession.update({
+        where: { id: sessionId },
+        data: {
+          isFinished: true,
+          reviewGenerationStatus: "failed",
+          reviewGenerationError: "previous failure",
+        },
+      });
+
+      const response = await request(app)
+        .post(`/api/interview/sessions/${sessionId}/review-generation/retry`)
+        .set(authHeader(token));
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        id: sessionId,
+        isFinished: true,
+        reviewGenerationStatus: "pending",
+        reviewGenerationError: null,
+      });
+
+      const session = await prisma.interviewSession.findUnique({
+        where: { id: sessionId },
+      });
+      expect(session?.reviewGenerationStatus).toBe("pending");
+      expect(session?.reviewGenerationError).toBeNull();
+    });
+
+    it("returns 409 when review generation is ready", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
+
+      const sessionId = createResponse.body.id as string;
+
+      await prisma.interviewSession.update({
+        where: { id: sessionId },
+        data: {
+          isFinished: true,
+          reviewGenerationStatus: "ready",
+        },
+      });
+
+      const response = await request(app)
+        .post(`/api/interview/sessions/${sessionId}/review-generation/retry`)
+        .set(authHeader(token));
+
+      expect(response.status).toBe(409);
+      expect(response.body).toEqual({
+        message:
+          "Review generation can only be retried when the session is finished and generation failed",
+      });
+    });
+
+    it("returns 409 when review generation is pending or idle", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
+
+      const sessionId = createResponse.body.id as string;
+
+      await prisma.interviewSession.update({
+        where: { id: sessionId },
+        data: {
+          isFinished: true,
+          reviewGenerationStatus: "pending",
+        },
+      });
+
+      const pendingResponse = await request(app)
+        .post(`/api/interview/sessions/${sessionId}/review-generation/retry`)
+        .set(authHeader(token));
+
+      expect(pendingResponse.status).toBe(409);
+
+      await prisma.interviewSession.update({
+        where: { id: sessionId },
+        data: {
+          isFinished: false,
+          reviewGenerationStatus: "idle",
+        },
+      });
+
+      const idleResponse = await request(app)
+        .post(`/api/interview/sessions/${sessionId}/review-generation/retry`)
+        .set(authHeader(token));
+
+      expect(idleResponse.status).toBe(409);
     });
   });
 

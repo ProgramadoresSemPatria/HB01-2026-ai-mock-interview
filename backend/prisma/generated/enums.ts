@@ -75,3 +75,13 @@ export const InterviewLocale = {
 } as const
 
 export type InterviewLocale = (typeof InterviewLocale)[keyof typeof InterviewLocale]
+
+
+export const ReviewGenerationStatus = {
+  idle: 'idle',
+  pending: 'pending',
+  ready: 'ready',
+  failed: 'failed'
+} as const
+
+export type ReviewGenerationStatus = (typeof ReviewGenerationStatus)[keyof typeof ReviewGenerationStatus]

@@ -19,6 +19,7 @@ export default function interviewRoutes(router: Router): void {
     asyncHandler(controller.createSession),
   );
   router.get("/sessions", asyncHandler(controller.listSessions));
+  router.get("/sessions/:sessionId", asyncHandler(controller.getSession));
   router.post(
     "/sessions/:sessionId/stream",
     aiRateLimiter,
@@ -34,5 +35,9 @@ export default function interviewRoutes(router: Router): void {
     "/sessions/:sessionId/feedback",
     validate(submitFeedbackSchema),
     asyncHandler(controller.submitFeedback),
+  );
+  router.post(
+    "/sessions/:sessionId/review-generation/retry",
+    asyncHandler(controller.retryReviewGeneration),
   );
 }

@@ -224,6 +224,13 @@ export type BoolFilter<$PrismaModel = never> = {
   not?: Prisma.NestedBoolFilter<$PrismaModel> | boolean
 }
 
+export type EnumReviewGenerationStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReviewGenerationStatus | Prisma.EnumReviewGenerationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ReviewGenerationStatus[] | Prisma.ListEnumReviewGenerationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReviewGenerationStatus[] | Prisma.ListEnumReviewGenerationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReviewGenerationStatusFilter<$PrismaModel> | $Enums.ReviewGenerationStatus
+}
+
 export type EnumInterviewLevelWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.InterviewLevel | Prisma.EnumInterviewLevelFieldRefInput<$PrismaModel>
   in?: $Enums.InterviewLevel[] | Prisma.ListEnumInterviewLevelFieldRefInput<$PrismaModel>
@@ -250,6 +257,16 @@ export type BoolWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedBoolFilter<$PrismaModel>
   _max?: Prisma.NestedBoolFilter<$PrismaModel>
+}
+
+export type EnumReviewGenerationStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReviewGenerationStatus | Prisma.EnumReviewGenerationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ReviewGenerationStatus[] | Prisma.ListEnumReviewGenerationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReviewGenerationStatus[] | Prisma.ListEnumReviewGenerationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReviewGenerationStatusWithAggregatesFilter<$PrismaModel> | $Enums.ReviewGenerationStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumReviewGenerationStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumReviewGenerationStatusFilter<$PrismaModel>
 }
 
 export type EnumMessageRoleFilter<$PrismaModel = never> = {
@@ -660,6 +677,13 @@ export type NestedBoolFilter<$PrismaModel = never> = {
   not?: Prisma.NestedBoolFilter<$PrismaModel> | boolean
 }
 
+export type NestedEnumReviewGenerationStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReviewGenerationStatus | Prisma.EnumReviewGenerationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ReviewGenerationStatus[] | Prisma.ListEnumReviewGenerationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReviewGenerationStatus[] | Prisma.ListEnumReviewGenerationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReviewGenerationStatusFilter<$PrismaModel> | $Enums.ReviewGenerationStatus
+}
+
 export type NestedEnumInterviewLevelWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.InterviewLevel | Prisma.EnumInterviewLevelFieldRefInput<$PrismaModel>
   in?: $Enums.InterviewLevel[] | Prisma.ListEnumInterviewLevelFieldRefInput<$PrismaModel>
@@ -686,6 +710,16 @@ export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedBoolFilter<$PrismaModel>
   _max?: Prisma.NestedBoolFilter<$PrismaModel>
+}
+
+export type NestedEnumReviewGenerationStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReviewGenerationStatus | Prisma.EnumReviewGenerationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ReviewGenerationStatus[] | Prisma.ListEnumReviewGenerationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReviewGenerationStatus[] | Prisma.ListEnumReviewGenerationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReviewGenerationStatusWithAggregatesFilter<$PrismaModel> | $Enums.ReviewGenerationStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumReviewGenerationStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumReviewGenerationStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumMessageRoleFilter<$PrismaModel = never> = {

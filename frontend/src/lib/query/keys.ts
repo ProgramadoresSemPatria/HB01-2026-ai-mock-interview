@@ -2,6 +2,8 @@ import type { ReviewItemsStatusFilter } from "@/types/review-items";
 
 export const queryKeys = {
   sessions: ["interview", "sessions"] as const,
+  session: (sessionId: string) =>
+    ["interview", "sessions", sessionId] as const,
   sessionMessages: (sessionId: string) =>
     ["interview", "sessions", sessionId, "messages"] as const,
   reviewItems: (status: ReviewItemsStatusFilter = "active") =>
