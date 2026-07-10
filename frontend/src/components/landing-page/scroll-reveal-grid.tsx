@@ -101,7 +101,7 @@ export function ScrollRevealGrid({
           {/* row 1: graphics */}
           <div className="grid" style={{ gridTemplateColumns }}>
             {items.map((item, i) => (
-              <div key={item.id} className={i < n - 1 ? "pr-6 md:pr-10" : ""}>
+              <div key={item.id} className={i < n - 1 ? "pr-6 mb-6 md:pr-10" : ""}>
                 <RevealGraphic
                   item={item}
                   animationProgress={animationProgress}
