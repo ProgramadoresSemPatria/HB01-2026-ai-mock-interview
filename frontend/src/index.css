@@ -330,3 +330,7 @@
 .instrument-serif {
   font-family: var(--font-instrument-serif), Georgia, serif;
 }
+
+.manrope {
+  font-family: var(--font-manrope), system-ui, sans-serif;
+}

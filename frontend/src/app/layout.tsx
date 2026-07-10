@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Instrument_Serif } from "next/font/google";
+import { Instrument_Serif, Manrope } from "next/font/google";
 
 import "../index.css";
 import Providers from "@/components/providers";
@@ -9,6 +9,11 @@ const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
   style: ["normal", "italic"],
   variable: "--font-instrument-serif",
+});
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-manrope",
 });
 
 export const metadata: Metadata = {
@@ -27,7 +32,7 @@ export default function RootLayout({
       lang="pt-BR"
       suppressHydrationWarning
       data-scroll-behavior="smooth"
-      className={instrumentSerif.variable}
+      className={`${instrumentSerif.variable} ${manrope.variable}`}
     >
       <body className="min-h-dvh antialiased">
         <Providers>{children}</Providers>

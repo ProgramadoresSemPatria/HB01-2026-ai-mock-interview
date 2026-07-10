@@ -234,10 +234,10 @@ function RevealText({
 
   return (
     <motion.div style={{ opacity, y }}>
-      <h3 className="mb-3 text-xl font-semibold text-white md:text-2xl">
+      <h3 className="manrope mb-3 text-xl font-semibold text-white md:text-2xl">
         {item.title}
       </h3>
-      <p className="text-sm leading-relaxed text-neutral-400 md:text-base">
+      <p className="manrope text-sm leading-relaxed text-neutral-400 md:text-base">
         {item.description}
       </p>
     </motion.div>
