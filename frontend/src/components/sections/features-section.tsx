@@ -47,6 +47,10 @@ const FeaturesSection = ({ parallaxRef }: FeaturesSectionProps) => {
         style={{ y, opacity }}
       >
         Sharpen Engineering Thinking
+        <h1 className="text-center mt-20 text-2xl font-normal text-white instrument-serif">
+        through AI mock interviews built
+        for modern software engineers.
+        </h1>
       </motion.div>
       <ScrollGrid />
     </section>
