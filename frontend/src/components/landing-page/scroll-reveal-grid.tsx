@@ -285,7 +285,7 @@ function Checkpoint({
   return (
     <motion.div
       style={{ left: `${position * 100}%`, opacity }}
-      className="manrope absolute top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center bg-neutral-800 text-xs font-bold text-white"
+      className="manrope absolute top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center bg-slate-200 text-md font-bold text-black"
     >
       {index + 1}
     </motion.div>
