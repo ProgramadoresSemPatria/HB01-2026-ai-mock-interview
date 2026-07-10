@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef } from "react";
-import HeroSection from "@/components/sections/hero-section";
-import FeaturesSection from "@/components/sections/features-section";
-import LandingCtaSection from "@/components/sections/landing-cta-section";
+
+import HeroSection from "@/components/landing/sections/hero-section";
+import FeaturesSection from "@/components/landing/sections/features-section";
+import LandingCtaSection from "@/components/landing/sections/landing-cta-section";
 
 export default function LandingSections() {
   const parallaxRef = useRef<HTMLDivElement>(null);

@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 
-import BorderGlow from "@/components/BorderGlow";
+import BorderGlow from "@/components/landing/border-glow/border-glow";
+import "@/components/landing/image-parallax/image-parallax.css";
 import grainTexture from "@/assets/grain-texture.png";
-
-import "./image-parallax.css";
 
 const HERO_NOISE_OPACITY = 0.35;
 const HERO_NOISE_OVERSCAN = 60;

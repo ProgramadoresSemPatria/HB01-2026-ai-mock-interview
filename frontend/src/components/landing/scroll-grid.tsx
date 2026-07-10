@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
-import { ScrollRevealGrid } from "../landing-page/scroll-reveal-grid";
-import LandingWordmark from "../landing-page/landing-wordmark";
+
+import { ScrollRevealGrid } from "@/components/landing/scroll-reveal-grid";
+import LandingWordmark from "@/components/landing/landing-wordmark";
 
 const ScrollGrid = ({ header }: { header?: ReactNode }) => {
   return (
@@ -33,6 +34,6 @@ const ScrollGrid = ({ header }: { header?: ReactNode }) => {
       />
     </main>
   );
-}
+};
 
 export default ScrollGrid;

@@ -7,7 +7,7 @@ import {
   useReducedMotion,
 } from "motion/react";
 
-import GetStartedButton from "@/components/landing-page/get-started-button";
+import GetStartedButton from "@/components/landing/get-started-button";
 
 const LandingCtaSection = () => {
   const sectionRef = useRef<HTMLElement>(null);

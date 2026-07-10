@@ -1,6 +1,6 @@
 "use client";
 
-import StaggeredMenu from "@/components/StaggeredMenu";
+import StaggeredMenu from "@/components/landing/staggered-menu/staggered-menu";
 import logo from "@/assets/logo.png";
 
 const menuItems = [

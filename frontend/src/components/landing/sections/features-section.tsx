@@ -8,11 +8,10 @@ import {
   useReducedMotion,
 } from "motion/react";
 
-import ScrollGrid from "../patterns/scroll-grid";
+import ScrollGrid from "@/components/landing/scroll-grid";
 
-const REVEAL_OFFSET: [string, string] = ["start start", "end start"];
 const REVEAL_TRANSLATE_Y = -250;
-const OPACITY_FADE_END = 1 ;
+const OPACITY_FADE_END = 1;
 
 interface FeaturesSectionProps {
   parallaxRef: RefObject<HTMLDivElement | null>;
@@ -23,21 +22,21 @@ const FeaturesSection = ({ parallaxRef }: FeaturesSectionProps) => {
 
   const { scrollYProgress } = useScroll({
     target: parallaxRef,
-    offset: REVEAL_OFFSET,
+    offset: ["start start", "end start"],
   });
 
   const y = useTransform(
     scrollYProgress,
     [0, 1],
     prefersReducedMotion ? [0, 0] : [REVEAL_TRANSLATE_Y, 0],
-    { clamp: true }
+    { clamp: true },
   );
 
   const opacity = useTransform(
     scrollYProgress,
     [0, OPACITY_FADE_END],
     prefersReducedMotion ? [1, 1] : [0, 1],
-    { clamp: true }
+    { clamp: true },
   );
 
   return (

@@ -7,8 +7,10 @@ import {
   useTransform,
   useReducedMotion,
 } from "motion/react";
+
+import grainTexture from "@/assets/grain-texture.png";
+
 import "./image-parallax.css";
-import grainTexture from "../../assets/grain-texture.png";
 
 type ImageSource = string | { src: string; width?: number; height?: number };
 
@@ -58,13 +60,10 @@ const ImageParallax = forwardRef<HTMLDivElement, ImageParallaxProps>(
       noiseIntensity = 24,
       noiseOverscan = 60,
     },
-    forwardedRef
+    forwardedRef,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const setRef = useCallback(
-      mergeRefs(containerRef, forwardedRef),
-      [forwardedRef]
-    );
+    const setRef = useCallback(mergeRefs(containerRef, forwardedRef), [forwardedRef]);
     const prefersReducedMotion = useReducedMotion();
 
     const { scrollYProgress } = useScroll({
@@ -77,13 +76,13 @@ const ImageParallax = forwardRef<HTMLDivElement, ImageParallaxProps>(
       [0, 1],
       prefersReducedMotion
         ? [0, 0]
-        : [-intensity + startOffset, intensity + startOffset]
+        : [-intensity + startOffset, intensity + startOffset],
     );
 
     const noiseY = useTransform(
       scrollYProgress,
       [0, 1],
-      prefersReducedMotion ? [0, 0] : [noiseIntensity, -noiseIntensity]
+      prefersReducedMotion ? [0, 0] : [noiseIntensity, -noiseIntensity],
     );
 
     return (
@@ -122,7 +121,7 @@ const ImageParallax = forwardRef<HTMLDivElement, ImageParallaxProps>(
         />
       </div>
     );
-  }
+  },
 );
 
 export default ImageParallax;

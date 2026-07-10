@@ -1,5 +1,6 @@
-import "../landing-page/image-parallax.css";
-import grainTexture from "../../assets/grain-texture.png";
+import "@/components/landing/image-parallax/image-parallax.css";
+
+import grainTexture from "@/assets/grain-texture.png";
 
 type ImageSource = string | { src: string; width?: number; height?: number };
 

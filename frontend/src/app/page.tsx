@@ -1,5 +1,5 @@
-import Navbar from "@/components/navbar";
-import LandingSections from "@/components/sections/landing-sections";
+import Navbar from "@/components/landing/navbar";
+import LandingSections from "@/components/landing/sections/landing-sections";
 
 export default function Home() {
   return (

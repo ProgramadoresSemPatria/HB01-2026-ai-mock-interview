@@ -1,7 +1,7 @@
 import Link from "next/link";
 import * as React from "react";
 
-import { BrandMark } from "@/components/patterns/brand-mark";
+import { BrandMark } from "@/components/auth/brand-mark";
 import { Badge } from "@/components/ui/badge";
 import { Surface } from "@/components/ui/surface";
 import { buttonVariants } from "@/components/ui/button";

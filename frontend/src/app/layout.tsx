@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Instrument_Serif, Manrope } from "next/font/google";
 
 import "../index.css";
-import Providers from "@/components/providers";
+import Providers from "@/components/providers/providers";
 
 const instrumentSerif = Instrument_Serif({
   weight: "400",

@@ -1,9 +1,10 @@
 "use client";
 
 import { type RefObject } from "react";
-import ImageParallax from "../landing-page/image-parallax";
 import { motion } from "framer-motion";
-import heroImage from "../../assets/logo.png";
+
+import ImageParallax from "@/components/landing/image-parallax/image-parallax";
+import heroImage from "@/assets/logo.png";
 
 interface HeroSectionProps {
   parallaxRef: RefObject<HTMLDivElement | null>;
@@ -21,17 +22,18 @@ const HeroSection = ({ parallaxRef }: HeroSectionProps) => {
         height: "100vh",
       }}
     >
-      <motion.div className="text-center text-9xl font-normal text-white instrument-serif"
-      style={{ y: -300, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 2, ease: "easeInOut" }}
+      <motion.div
+        className="text-center text-9xl font-normal text-white instrument-serif"
+        style={{ y: -300, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 2, ease: "easeInOut" }}
       >
         AI MOCK INTERVIEW
       </motion.div>
       <motion.div
-      style={{opacity: 0 }}
-      animate={{opacity: 1 }}
-      transition={{ duration: 2, ease: "easeInOut" }}
+        style={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 2, ease: "easeInOut" }}
       >
         <ImageParallax
           ref={parallaxRef}
@@ -47,7 +49,6 @@ const HeroSection = ({ parallaxRef }: HeroSectionProps) => {
           startOffset={-30}
         />
       </motion.div>
-
     </section>
   );
 };
