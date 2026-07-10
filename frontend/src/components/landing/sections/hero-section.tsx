@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 
 import ImageParallax from "@/components/landing/image-parallax/image-parallax";
 import heroImage from "@/assets/logo.png";
+import GetStartedButton from "@/components/landing/get-started-button";
 
 interface HeroSectionProps {
   parallaxRef: RefObject<HTMLDivElement | null>;
@@ -16,7 +17,7 @@ const HeroSection = ({ parallaxRef }: HeroSectionProps) => {
       style={{
         display: "flex",
         flexDirection: "column",
-        justifyContent: "flex-end",
+        justifyContent: "center",
         alignItems: "center",
         gap: "20px",
         height: "100vh",
@@ -40,8 +41,8 @@ const HeroSection = ({ parallaxRef }: HeroSectionProps) => {
           ref={parallaxRef}
           src={heroImage}
           alt="Hone"
-          width="min(75vw, 800px)"
-          height="min(75vw, 800px)"
+          width="min(75vw, 700px)"
+          height="min(75vw, 700px)"
           intensity={120}
           overscan={35}
           noiseOpacity={0.35}
@@ -50,6 +51,7 @@ const HeroSection = ({ parallaxRef }: HeroSectionProps) => {
           startOffset={-30}
         />
       </motion.div>
+      <GetStartedButton />
     </section>
   );
 };
