@@ -28,21 +28,21 @@ const ScrollGrid = ({ header }: { header?: ReactNode }) => {
           {
             id: 1,
             graphic: <Wordmark />,
-            title: "AI Resumes",
+            title: "AI RESUMES",
             description:
               "Instant analysis of your experience against role requirements.",
           },
           {
             id: 2,
             graphic: <Wordmark />,
-            title: "Topic Tracking",
+            title: "TOPIC TRACKING",
             description:
               "Hone monitors 40+ engineering domains to ensure you're covered across the entire full-stack spectrum.",
           },
           {
             id: 3,
             graphic: <Wordmark />,
-            title: "Tech Review",
+            title: "TECH REVIEW",
             description:
               "Engineering reviews that provide a detailed breakdown of your technical strengths.",
           },
