@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import HeroSection from "@/components/sections/hero-section";
 import FeaturesSection from "@/components/sections/features-section";
-import TesteSection from "@/components/sections/teste-section";
+import LandingCtaSection from "@/components/sections/landing-cta-section";
 
 export default function LandingSections() {
   const parallaxRef = useRef<HTMLDivElement>(null);
@@ -12,7 +12,7 @@ export default function LandingSections() {
     <>
       <HeroSection parallaxRef={parallaxRef} />
       <FeaturesSection parallaxRef={parallaxRef} />
-      <TesteSection />
+      <LandingCtaSection />
     </>
   );
 }

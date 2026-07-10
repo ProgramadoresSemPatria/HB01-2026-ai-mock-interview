@@ -41,7 +41,7 @@ const FeaturesSection = ({ parallaxRef }: FeaturesSectionProps) => {
   );
 
   return (
-    <section className="flex flex-col items-center">
+    <section id="features" className="scroll-mt-24 flex flex-col items-center">
       <ScrollGrid
         header={
           <motion.div
