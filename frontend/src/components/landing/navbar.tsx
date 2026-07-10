@@ -6,6 +6,7 @@ import logo from "@/assets/logo.png";
 const menuItems = [
   { label: "Home", ariaLabel: "Go to home page", link: "/" },
   { label: "Features", ariaLabel: "View product features", link: "/#features" },
+  { label: "Demo", ariaLabel: "View interview demo", link: "/#demo" },
   { label: "Login", ariaLabel: "Sign in to your account", link: "/login" },
 ];
 
