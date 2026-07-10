@@ -28,6 +28,7 @@ export function createInterviewerNode(deps: InterviewerNodeDeps = {}) {
       ? buildClosingFeedbackChatPromptTemplate({
           level: state.level,
           resumeSummary: state.resumeSummary,
+          interviewLocale: state.interviewLocale,
           jobDescription: state.jobDescription,
         })
       : buildInterviewerChatPromptTemplate({
@@ -35,6 +36,7 @@ export function createInterviewerNode(deps: InterviewerNodeDeps = {}) {
           resumeSummary: state.resumeSummary,
           turnCount: state.turnCount,
           maxTurns: state.maxTurns,
+          interviewLocale: state.interviewLocale,
           jobDescription: state.jobDescription,
         });
 
@@ -42,7 +44,7 @@ export function createInterviewerNode(deps: InterviewerNodeDeps = {}) {
     const rawContent = await chain.invoke({ history: state.messages }, config);
 
     const content = state.runReview
-      ? appendClosingFeedbackCta(rawContent)
+      ? appendClosingFeedbackCta(rawContent, state.interviewLocale)
       : rawContent;
 
     return { messages: [new AIMessage({ content })] };

@@ -91,7 +91,7 @@ describe("Token usage limits E2E", () => {
     const sessionResponse = await request(app)
       .post("/api/interview/sessions")
       .set(authHeader(token))
-      .send({ resumeId: resume.id, level: "entry" })
+      .send({ resumeId: resume.id, level: "entry", interviewLocale: "en" })
       .expect(201);
 
     const sessionId = sessionResponse.body.id as string;
@@ -99,7 +99,7 @@ describe("Token usage limits E2E", () => {
     const response = await request(app)
       .post(`/api/interview/sessions/${sessionId}/stream`)
       .set(authHeader(token))
-      .send({ content: "Hello interviewer" });
+      .send({ content: "Hello interviewer", interviewLocale: "en" });
 
     expect(response.status).toBe(429);
     expect(response.body).toEqual({

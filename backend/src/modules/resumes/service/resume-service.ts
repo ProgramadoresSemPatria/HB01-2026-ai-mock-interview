@@ -22,6 +22,7 @@ import {
 import {
   BadGatewayError,
   BadRequestError,
+  logger,
   NotFoundError,
   ServiceUnavailableError,
   TokenLimitExceededError,
@@ -126,10 +127,15 @@ export class ResumeService {
     try {
       await this.objectStorage.delete(resume.storageKey);
     } catch (error) {
-      console.error(
-        `Failed to delete resume file ${resume.storageKey} from storage:`,
-        error,
-      );
+      const message =
+        error instanceof Error ? error.message : "Unknown storage error";
+      const stack = error instanceof Error ? error.stack : undefined;
+
+      logger.warn(`Failed to delete resume file ${resume.storageKey} from storage`, {
+        storageKey: resume.storageKey,
+        message,
+        stack,
+      });
     }
   }
 

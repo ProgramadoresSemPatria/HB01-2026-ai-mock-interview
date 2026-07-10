@@ -1,7 +1,16 @@
 import prisma from "@/infrastructure/database";
 import type { ReviewItemRecord } from "@/modules/interview/types/review-item-record";
 import type { ReviewPriority } from "@/modules/interview/validations/interview-schemas";
-import type { ReviewItem as PrismaReviewItem } from "../../../../prisma/generated/client";
+import type {
+  ReviewItem as PrismaReviewItem,
+  ReviewItemStatus,
+} from "../../../../prisma/generated/client";
+
+export type UpdateReviewItemByIdParams = {
+  status: ReviewItemStatus;
+  priority?: ReviewPriority;
+  learnedAt: Date | null;
+};
 
 export type UpsertReviewItemParams = {
   userId: number;
@@ -23,6 +32,8 @@ function toReviewItemRecord(row: PrismaReviewItem): ReviewItemRecord {
     topic: row.topic,
     description: row.description,
     priority: row.priority as ReviewPriority,
+    status: row.status,
+    learnedAt: row.learnedAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -44,6 +55,24 @@ export class ReviewRepository {
       where: { id, userId },
     });
     return result.count > 0;
+  }
+
+  async findActiveByIdsAndUserId(
+    userId: number,
+    ids: string[],
+  ): Promise<ReviewItemRecord[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const rows = await prisma.reviewItem.findMany({
+      where: {
+        userId,
+        id: { in: ids },
+        status: "active",
+      },
+    });
+    return rows.map(toReviewItemRecord);
   }
 
   async findByUserIdAndTopicCaseInsensitive(
@@ -75,6 +104,31 @@ export class ReviewRepository {
     `;
 
     const row = matches[0];
+    return row ? toReviewItemRecord(row) : null;
+  }
+
+  async updateByIdAndUserId(
+    id: string,
+    userId: number,
+    params: UpdateReviewItemByIdParams,
+  ): Promise<ReviewItemRecord | null> {
+    const result = await prisma.reviewItem.updateMany({
+      where: { id, userId },
+      data: {
+        status: params.status,
+        ...(params.priority !== undefined && { priority: params.priority }),
+        learnedAt: params.learnedAt,
+        updatedAt: new Date(),
+      },
+    });
+
+    if (result.count === 0) {
+      return null;
+    }
+
+    const row = await prisma.reviewItem.findFirst({
+      where: { id, userId },
+    });
     return row ? toReviewItemRecord(row) : null;
   }
 

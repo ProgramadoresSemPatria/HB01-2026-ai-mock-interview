@@ -55,6 +55,8 @@ export const ModelName = {
   InterviewSession: 'InterviewSession',
   InterviewMessage: 'InterviewMessage',
   ReviewItem: 'ReviewItem',
+  ReviewSession: 'ReviewSession',
+  ReviewSessionItem: 'ReviewSessionItem',
   InterviewFeedback: 'InterviewFeedback',
   User: 'User',
   UserTokenUsage: 'UserTokenUsage',
@@ -99,9 +101,12 @@ export const InterviewSessionScalarFieldEnum = {
   resumeId: 'resumeId',
   level: 'level',
   jobDescription: 'jobDescription',
+  interviewLocale: 'interviewLocale',
   turnCount: 'turnCount',
   maxTurns: 'maxTurns',
   isFinished: 'isFinished',
+  reviewGenerationStatus: 'reviewGenerationStatus',
+  reviewGenerationError: 'reviewGenerationError',
   createdAt: 'createdAt'
 } as const
 
@@ -127,11 +132,47 @@ export const ReviewItemScalarFieldEnum = {
   topic: 'topic',
   description: 'description',
   priority: 'priority',
+  status: 'status',
+  learnedAt: 'learnedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type ReviewItemScalarFieldEnum = (typeof ReviewItemScalarFieldEnum)[keyof typeof ReviewItemScalarFieldEnum]
+
+
+export const ReviewSessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  status: 'status',
+  interviewLocale: 'interviewLocale',
+  createdAt: 'createdAt',
+  evaluatedAt: 'evaluatedAt',
+  completedAt: 'completedAt'
+} as const
+
+export type ReviewSessionScalarFieldEnum = (typeof ReviewSessionScalarFieldEnum)[keyof typeof ReviewSessionScalarFieldEnum]
+
+
+export const ReviewSessionItemScalarFieldEnum = {
+  id: 'id',
+  reviewSessionId: 'reviewSessionId',
+  reviewItemId: 'reviewItemId',
+  order: 'order',
+  topic: 'topic',
+  description: 'description',
+  turns: 'turns',
+  currentPriority: 'currentPriority',
+  pendingQuestion: 'pendingQuestion',
+  suggestedStatus: 'suggestedStatus',
+  suggestedPriority: 'suggestedPriority',
+  confirmedStatus: 'confirmedStatus',
+  confirmedPriority: 'confirmedPriority',
+  confirmedAt: 'confirmedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ReviewSessionItemScalarFieldEnum = (typeof ReviewSessionItemScalarFieldEnum)[keyof typeof ReviewSessionItemScalarFieldEnum]
 
 
 export const InterviewFeedbackScalarFieldEnum = {
@@ -152,6 +193,7 @@ export const UserScalarFieldEnum = {
   name: 'name',
   email: 'email',
   password: 'password',
+  interviewLocale: 'interviewLocale',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -195,6 +237,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {

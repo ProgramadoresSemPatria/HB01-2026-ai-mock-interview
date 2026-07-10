@@ -1,9 +1,12 @@
+import type { InterviewLocale } from "@/shared";
+
 /** Domain user entity (mirrors Prisma `User` model). */
 export type User = {
   id: number;
   name: string;
   email: string;
   password: string;
+  interviewLocale: InterviewLocale | null;
   createdAt: Date;
   updatedAt: Date;
 };

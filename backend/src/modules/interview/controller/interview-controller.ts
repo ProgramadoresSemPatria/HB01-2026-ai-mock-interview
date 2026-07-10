@@ -1,5 +1,6 @@
 import type { SessionService } from "@/modules/interview/service/session-service";
 import type { FeedbackService } from "@/modules/interview/service/feedback-service";
+import type { ReviewGenerationService } from "@/modules/interview/service/review-generation-service";
 import type { InterviewStreamService } from "@/modules/interview/service/stream-service";
 import type {
   CreateSessionInput,
@@ -13,6 +14,7 @@ export class InterviewController {
     private readonly sessionService: SessionService,
     private readonly streamService: InterviewStreamService,
     private readonly feedbackService: FeedbackService,
+    private readonly reviewGenerationService: ReviewGenerationService,
   ) {}
 
   createSession = async (req: Request, res: Response): Promise<void> => {
@@ -28,11 +30,24 @@ export class InterviewController {
     res.status(200).json({ sessions });
   };
 
+  getSession = async (req: Request, res: Response): Promise<void> => {
+    const session = await this.sessionService.getSession(
+      req.userId!,
+      String(req.params.sessionId),
+    );
+    res.status(200).json(session);
+  };
+
   stream = async (req: Request, res: Response): Promise<void> => {
     const sessionId = String(req.params.sessionId);
-    const { content } = req.body as StreamMessageInput;
+    const { content, interviewLocale } = req.body as StreamMessageInput;
 
-    await this.streamService.streamTurn(req.userId!, sessionId, content, res);
+    await this.streamService.streamTurn(
+      req.userId!,
+      sessionId,
+      { content, interviewLocale },
+      res,
+    );
   };
 
   getMessages = async (req: Request, res: Response): Promise<void> => {
@@ -58,5 +73,16 @@ export class InterviewController {
       req.body as SubmitFeedbackInput,
     );
     res.status(201).json(feedback);
+  };
+
+  retryReviewGeneration = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    const session = await this.reviewGenerationService.retry(
+      req.userId!,
+      String(req.params.sessionId),
+    );
+    res.status(200).json(session);
   };
 }

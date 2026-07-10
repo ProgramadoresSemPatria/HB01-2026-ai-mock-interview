@@ -6,7 +6,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { useAuth } from "@/features/auth/session-provider";
+import { useInterviewLocale } from "@/features/interview-locale/use-interview-locale";
+import { interviewApi } from "@/lib/api/interview";
 import { streamInterviewTurn } from "@/lib/api/interview-stream";
+import { useInterviewSession } from "@/lib/query/hooks/use-interview-session";
 import { useSessionMessages } from "@/lib/query/hooks/use-session-messages";
 import { useSessions } from "@/lib/query/hooks/use-sessions";
 import { queryKeys } from "@/lib/query/keys";
@@ -16,6 +19,7 @@ import type {
   ListMessagesResponse,
   ListSessionsResponse,
   SessionMessage,
+  SessionSummary,
   StreamMeta,
 } from "@/types/interview";
 
@@ -28,10 +32,12 @@ import {
 import { InterviewReviewPanel } from "./interview-review-panel";
 
 export function InterviewChat({ sessionId }: { sessionId: string }) {
-  const { getAccessToken } = useAuth();
+  const { getAccessToken, fetchWithAuth } = useAuth();
+  const { locale } = useInterviewLocale();
   const queryClient = useQueryClient();
   const messagesQuery = useSessionMessages(sessionId);
   const sessionsQuery = useSessions();
+  const sessionDetailQuery = useInterviewSession(sessionId);
   const [draft, setDraft] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
@@ -41,16 +47,21 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
   const abortRef = useRef<AbortController | null>(null);
   const streamingContentRef = useRef("");
   const [viewMode, setViewMode] = useState<"chat" | "review">("chat");
-
-  useEffect(() => {
-    setViewMode("chat");
-  }, [sessionId]);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   const session = sessionsQuery.data?.sessions.find((s) => s.id === sessionId);
   const isFinished = session?.isFinished ?? false;
   const atTurnLimit = session != null && session.turnCount >= session.maxTurns;
   const isCompleted = isFinished || atTurnLimit;
   const canSend = !isCompleted && !isStreaming;
+
+  const reviewGenerationStatus =
+    sessionDetailQuery.data?.reviewGenerationStatus ??
+    session?.reviewGenerationStatus;
+  const reviewGenerationError =
+    sessionDetailQuery.data?.reviewGenerationError ??
+    session?.reviewGenerationError ??
+    null;
 
   const serverMessages = messagesQuery.data?.messages ?? [];
   const showWelcome =
@@ -99,9 +110,34 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
                     turnCount: meta.turnCount,
                     maxTurns: meta.maxTurns,
                     isFinished: meta.isFinished,
+                    ...(meta.reviewGenerationStatus != null
+                      ? {
+                          reviewGenerationStatus: meta.reviewGenerationStatus,
+                          reviewGenerationError: null,
+                        }
+                      : {}),
                   }
                 : s,
             ),
+          };
+        },
+      );
+
+      queryClient.setQueryData<SessionSummary>(
+        queryKeys.session(sessionId),
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            turnCount: meta.turnCount,
+            maxTurns: meta.maxTurns,
+            isFinished: meta.isFinished,
+            ...(meta.reviewGenerationStatus != null
+              ? {
+                  reviewGenerationStatus: meta.reviewGenerationStatus,
+                  reviewGenerationError: null,
+                }
+              : {}),
           };
         },
       );
@@ -147,18 +183,38 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
 
   const invalidateAfterTurn = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.reviewItems });
-  }, [queryClient, sessionId]);
+  }, [queryClient]);
+
+  async function handleRetryReviewGeneration() {
+    try {
+      setIsRetrying(true);
+      const updated = await fetchWithAuth((token) =>
+        interviewApi.retryReviewGeneration(sessionId, token),
+      );
+      queryClient.setQueryData(queryKeys.session(sessionId), updated);
+      queryClient.setQueryData<ListSessionsResponse>(
+        queryKeys.sessions,
+        (old) => {
+          if (!old) return old;
+          return {
+            sessions: old.sessions.map((s) =>
+              s.id === sessionId ? { ...s, ...updated } : s,
+            ),
+          };
+        },
+      );
+    } catch (err) {
+      toast.error(
+        err instanceof ApiError ? err.message : "Failed to retry",
+      );
+    } finally {
+      setIsRetrying(false);
+    }
+  }
 
   useEffect(() => {
     return () => abortRef.current?.abort();
   }, []);
-
-  function scrollToReview() {
-    document
-      .getElementById("interview-review")
-      ?.scrollIntoView({ behavior: "smooth" });
-  }
 
   async function sendMessage(content: string) {
     if (!content || !canSend) return;
@@ -182,7 +238,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
     abortRef.current = new AbortController();
 
     try {
-      await streamInterviewTurn(sessionId, content, token, {
+      await streamInterviewTurn(sessionId, content, locale, token, {
         signal: abortRef.current.signal,
         onToken: (chunk) => {
           streamingContentRef.current += chunk;
@@ -334,7 +390,14 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto min-h-0">
-          <InterviewReviewPanel sessionId={sessionId} messages={serverMessages} />
+          <InterviewReviewPanel
+            sessionId={sessionId}
+            messages={serverMessages}
+            reviewGenerationStatus={reviewGenerationStatus}
+            reviewGenerationError={reviewGenerationError}
+            onRetryReviewGeneration={handleRetryReviewGeneration}
+            isRetrying={isRetrying}
+          />
         </div>
       )}
     </div>

@@ -4,6 +4,8 @@ Documento de integração para consumir o backend de **entrevista simulada com I
 
 1. **AI Mock Interview** — upload de currículo, sessão, chat via SSE e histórico.
 2. **Interview Closing Feedback** — comportamento do **último turno** (feedback de encerramento em vez de nova pergunta do entrevistador).
+3. **Review Items** — listagem com filtro por status, marcação manual e exclusão.
+4. **Review Sessions** — sessão adaptativa de revisão por tópico (Q&A via SSE, avaliação e confirmação).
 
 > **Base URL:** `{API_ORIGIN}/api` (ex.: `http://localhost:3000/api` se o backend roda na porta 3000).
 
@@ -19,9 +21,10 @@ Documento de integração para consumir o backend de **entrevista simulada com I
 6. [Streaming SSE (`POST .../stream`)](#streaming-sse-post-sessionidstream)
 7. [Como a entrevista funciona (turnos e nós)](#como-a-entrevista-funciona-turnos-e-nós)
 8. [Itens de revisão (review items)](#itens-de-revisão-review-items)
-9. [Erros HTTP](#erros-http)
-10. [CORS e limitações](#cors-e-limitações)
-11. [Sugestão de estados na UI](#sugestão-de-estados-na-ui)
+9. [Sessões de revisão (review sessions)](#sessões-de-revisão-review-sessions)
+10. [Erros HTTP](#erros-http)
+11. [CORS e limitações](#cors-e-limitações)
+12. [Sugestão de estados na UI](#sugestão-de-estados-na-ui)
 
 ---
 
@@ -62,7 +65,8 @@ sequenceDiagram
 2. Upload do PDF → guardar `resumeId` → polling em `GET /resumes/:id` até `ready` ou `failed`.
 3. Escolher nível (`entry` | `mid` | `senior`) → `POST /interview/sessions`.
 4. Tela de chat: cada resposta do candidato → `POST .../stream` e consumir SSE.
-5. No último turno, exibir a mensagem de **feedback final** (não é pergunta) e direcionar para a aba de itens de revisão (quando existir endpoint ou mock).
+5. No último turno, exibir a mensagem de **feedback final** (não é pergunta) e direcionar para a aba de itens de revisão.
+6. (Opcional) Iniciar uma **Review Session** a partir de itens `active` selecionados → Q&A via SSE → relatório → confirmar sugestões.
 
 ---
 
@@ -462,7 +466,7 @@ Quando `turnCount + 1 >= maxTurns` (critério interno: `runReview: true`):
 3. A IA envia **feedback geral** da entrevista (sem nova pergunta).
 4. O backend acrescenta um **CTA fixo em inglês** sobre a aba de review items após o texto gerado pela IA (não é gerado pelo modelo).
 5. Mensagem `ai` salva; `turnCount` incrementa.
-6. Backend gera **itens de revisão estruturados** (LLM separado), faz merge no banco e marca `isFinished: true`.
+6. Backend gera **itens de revisão estruturados** (LLM separado), insere apenas tópicos novos no banco e marca `isFinished: true`.
 7. SSE `meta` com `isFinished: true` + `[DONE]`.
 
 ```mermaid
@@ -507,13 +511,23 @@ O backend **não** envia mensagem inicial da IA automaticamente. Fluxos possíve
 Após o **último turno** com sucesso, o backend:
 
 - Gera tópicos `{ topic, description, priority }` com `priority`: `low` | `medium` | `high`.
-- Faz **merge** por usuário + `topic` (sem duplicar; prioridade só sobe).
+- Insere apenas tópicos **novos** (sem match por `topic` existente); itens já cadastrados (ativos ou aprendidos) **não são alterados** pela entrevista normal.
+
+Cada item possui `status`: `active` | `learned`. Itens aprendidos têm `learnedAt` preenchido; ao voltar para `active`, `learnedAt` é limpo (`null`).
 
 ### Listar itens (`GET /api/review-items`)
 
 | Método | Path | Auth |
 |--------|------|------|
 | `GET` | `/api/review-items` | Bearer |
+
+**Query (opcional):**
+
+| Parâmetro | Valores | Padrão | Descrição |
+|-----------|---------|--------|-----------|
+| `status` | `active` \| `learned` \| `all` | `active` | Filtra itens por status |
+
+Exemplos: `GET /api/review-items`, `GET /api/review-items?status=learned`, `GET /api/review-items?status=all`
 
 **Resposta `200`:**
 
@@ -526,6 +540,8 @@ Após o **último turno** com sucesso, o backend:
       "topic": "system design",
       "description": "Practice scalability patterns and trade-offs.",
       "priority": "high",
+      "status": "active",
+      "learnedAt": null,
       "createdAt": "2026-05-28T12:00:00.000Z",
       "updatedAt": "2026-05-29T10:30:00.000Z"
     }
@@ -533,12 +549,359 @@ Após o **último turno** com sucesso, o backend:
 }
 ```
 
-- `priority`: `low` | `medium` | `high` (badge / cor na UI).
-- Ordenação: **prioridade** (`high` → `medium` → `low`), depois `updatedAt` mais recente.
-- Lista **agregada por usuário** (um tópico por `topic`, merge no backend).
-- Sem itens: `{ "reviewItems": [] }` (não usar `404`).
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `priority` | `low` \| `medium` \| `high` | Badge / cor na UI |
+| `status` | `active` \| `learned` | Estado de aprendizado |
+| `learnedAt` | ISO 8601 ou `null` | Preenchido quando `status === "learned"` |
+
+**Ordenação:**
+
+- `status=active` ou `all`: prioridade (`high` → `medium` → `low`), depois `updatedAt` mais recente.
+- `status=learned`: `learnedAt` desc (fallback `updatedAt` desc).
+
+Lista **agregada por usuário** (um tópico por `topic`). Sem itens: `{ "reviewItems": [] }` (não usar `404`).
+
+**Erros:** `422` se `status` inválido.
 
 **Sugestão de UI:** após `meta.isFinished === true` no último stream, chamar este endpoint (ou refetch ao abrir a aba). O CTA no closing feedback já aponta para essa aba.
+
+### Atualizar status manualmente (`PATCH /api/review-items/:id`)
+
+Marca ou desmarca um item como aprendido **fora** de uma Review Session.
+
+| Método | Path | Auth |
+|--------|------|------|
+| `PATCH` | `/api/review-items/:id` | Bearer |
+
+**Body:**
+
+```json
+{ "status": "learned" }
+```
+
+ou
+
+```json
+{ "status": "active" }
+```
+
+**Resposta `200`:** mesmo shape de um elemento da listagem (objeto único, não envelopado):
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "sessionId": "660e8400-e29b-41d4-a716-446655440001",
+  "topic": "system design",
+  "description": "Practice scalability patterns and trade-offs.",
+  "priority": "high",
+  "status": "learned",
+  "learnedAt": "2026-07-07T15:00:00.000Z",
+  "createdAt": "2026-05-28T12:00:00.000Z",
+  "updatedAt": "2026-07-07T15:00:00.000Z"
+}
+```
+
+**Comportamento:**
+
+- `status: "learned"` → define `learnedAt` para o momento atual.
+- `status: "active"` → limpa `learnedAt` (`null`). `priority` **não** é alterada.
+
+**Erros:**
+
+| Status | Quando |
+|--------|--------|
+| `404` | Item inexistente ou de outro usuário |
+| `422` | Body inválido |
+
+---
+
+## Sessões de revisão (review sessions)
+
+Prefixo das rotas: `/api/review-sessions`.
+
+Fluxo completo: selecionar itens `active` → criar sessão → Q&A adaptativo por item via SSE → relatório com sugestões → aplicar todas as decisões em uma única chamada bulk.
+
+Cada item da sessão recebe **N perguntas** (padrão **3**, configurável no servidor via `REVIEW_SESSION_QUESTION_COUNT`). O backend faz snapshot de `topic`, `description` e `currentPriority` no momento da criação.
+
+```mermaid
+sequenceDiagram
+  participant UI as Frontend
+  participant API as Backend
+
+  UI->>API: POST /api/review-sessions { reviewItemIds }
+  API-->>UI: 201 { id, status: in_progress, items[] }
+
+  loop por pergunta de cada item
+    UI->>API: POST /api/review-sessions/:id/stream { answer? }
+    API-->>UI: SSE tokens + meta (progresso)
+  end
+
+  Note over UI,API: Último stream: meta com status pending_review + report
+  UI->>API: GET /api/review-sessions/:id
+  API-->>UI: relatório com suggested* e confirmed*
+
+  UI->>API: POST .../apply { items[] }
+  API-->>UI: 200 relatório completed + review_items atualizados
+```
+
+### `POST /api/review-sessions` — Criar sessão
+
+**Body:**
+
+```json
+{
+  "reviewItemIds": [
+    "550e8400-e29b-41d4-a716-446655440000",
+    "660e8400-e29b-41d4-a716-446655440001"
+  ]
+}
+```
+
+| Regra | Detalhe |
+|-------|---------|
+| Mínimo | 1 item |
+| Máximo | 10 itens |
+| Duplicatas | Não permitidas |
+| Seleção | Todos devem ser `active` e pertencer ao usuário |
+
+**Resposta (201):**
+
+```json
+{
+  "id": "770e8400-e29b-41d4-a716-446655440002",
+  "status": "in_progress",
+  "items": [
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440003",
+      "reviewItemId": "550e8400-e29b-41d4-a716-446655440000",
+      "topic": "system design",
+      "currentPriority": "high"
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440004",
+      "reviewItemId": "660e8400-e29b-41d4-a716-446655440001",
+      "topic": "rest apis",
+      "currentPriority": "medium"
+    }
+  ]
+}
+```
+
+> O `id` em cada elemento de `items` é o **ReviewSessionItem** (use-o em `apply` como `reviewSessionItemId`). `reviewItemId` referencia o `review_items` original.
+
+**Erros:**
+
+| Status | Quando |
+|--------|--------|
+| `404` | Qualquer ID inexistente, de outro usuário ou com `status !== "active"` |
+| `422` | Body inválido (vazio, duplicado, >10) |
+
+---
+
+### `POST /api/review-sessions/:id/stream` — Q&A via SSE
+
+Mesmo padrão de consumo da entrevista (`fetch` + `ReadableStream`), mas com body `{ answer? }` em vez de `{ content }`.
+
+**Primeira chamada** (início da sessão): body vazio `{}` ou sem campo `answer`.
+
+**Chamadas seguintes:** body obrigatório com resposta à pergunta pendente:
+
+```json
+{
+  "answer": "Texto da resposta do candidato (1–4000 caracteres após trim)"
+}
+```
+
+**Headers:**
+
+```http
+Authorization: Bearer <token>
+Content-Type: application/json
+Accept: text/event-stream
+```
+
+**Resposta:** `200` com `text/event-stream`.
+
+#### Eventos SSE — turno intermediário
+
+```
+event: token
+data: {"content":"Can you walk me through"}
+
+event: token
+data: {"content":" how you'd shard this table?"}
+
+event: meta
+data: {"reviewSessionItemId":"880e8400-e29b-41d4-a716-446655440003","itemIndex":0,"totalItems":2,"turnsCompleted":1,"questionsPerItem":3,"status":"in_progress"}
+
+data: [DONE]
+```
+
+| Evento | Payload `data` | Quando |
+|--------|----------------|--------|
+| `token` | `{ "content": "string" }` | Fragmento da pergunta (concatene na UI) |
+| `meta` | Ver tabela abaixo | Após a pergunta ser gerada e persistida como pendente |
+| `error` | `{ "message": "string" }` ou `{ "message": "string", "reviewSessionItemId": "uuid" }` | Falha na geração ou na avaliação de um item |
+| *(sem event name)* | `[DONE]` | Fim do stream |
+
+**`meta` intermediário:**
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `reviewSessionItemId` | UUID | Item da sessão em foco |
+| `itemIndex` | number | Índice 0-based na ordem da sessão |
+| `totalItems` | number | Total de itens selecionados |
+| `turnsCompleted` | number | Respostas já dadas **neste** item (antes da pergunta emitida) |
+| `questionsPerItem` | number | N (padrão 3) |
+| `status` | `"in_progress"` | Status da sessão |
+
+#### Eventos SSE — último turno (avaliação concluída)
+
+Após o candidato responder a última pergunta do último item, o backend avalia todos os itens em paralelo e emite:
+
+```
+event: meta
+data: {
+  "status": "pending_review",
+  "report": [
+    {
+      "reviewSessionItemId": "880e8400-e29b-41d4-a716-446655440003",
+      "reviewItemId": "550e8400-e29b-41d4-a716-446655440000",
+      "topic": "system design",
+      "currentPriority": "high",
+      "suggestedStatus": "active",
+      "suggestedPriority": "medium"
+    },
+    {
+      "reviewSessionItemId": "990e8400-e29b-41d4-a716-446655440004",
+      "reviewItemId": "660e8400-e29b-41d4-a716-446655440001",
+      "topic": "rest apis",
+      "currentPriority": "medium",
+      "suggestedStatus": "learned",
+      "suggestedPriority": null
+    }
+  ]
+}
+
+data: [DONE]
+```
+
+| Campo do `report[]` | Tipo | Descrição |
+|---------------------|------|-----------|
+| `reviewSessionItemId` | UUID | ID para `apply` |
+| `reviewItemId` | UUID | ID do `review_items` original |
+| `topic` | string | Snapshot do tópico |
+| `currentPriority` | `low` \| `medium` \| `high` | Prioridade no momento da criação |
+| `suggestedStatus` | `active` \| `learned` \| `null` | Sugestão da IA (`null` se avaliação falhou) |
+| `suggestedPriority` | `low` \| `medium` \| `high` \| `null` | Nova prioridade sugerida (só quando `suggestedStatus === "active"`) |
+
+> Itens com avaliação falha mantêm `suggestedStatus: null`; a UI deve permitir edição livre e enviar o estado editado no bulk `apply`.
+
+#### Guardas antes de abrir o stream
+
+| Condição | Status |
+|----------|--------|
+| Sessão inexistente / outro usuário | `404` |
+| `status === "pending_review"` ou `"completed"` | `409` — `"Review session is not accepting answers"` |
+| Não é a primeira chamada e `answer` ausente/vazio | `400` — `"Answer is required"` |
+| `answer` enviado sem pergunta pendente | `400` — `"No pending question to answer"` |
+
+#### Comportamento em desconexão
+
+Se o cliente abortar no meio do stream:
+
+- A geração para; `pendingQuestion` **não** é persistida.
+- Turnos já confirmados permanecem; a sessão fica `in_progress` para retomada.
+
+---
+
+### `GET /api/review-sessions/:id` — Relatório
+
+Retorna o estado atual da sessão e de cada item (sugestões e confirmações).
+
+**Resposta (200):**
+
+```json
+{
+  "id": "770e8400-e29b-41d4-a716-446655440002",
+  "status": "pending_review",
+  "items": [
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440003",
+      "reviewItemId": "550e8400-e29b-41d4-a716-446655440000",
+      "topic": "system design",
+      "currentPriority": "high",
+      "suggestedStatus": "active",
+      "suggestedPriority": "medium",
+      "confirmedStatus": null,
+      "confirmedPriority": null
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440004",
+      "reviewItemId": "660e8400-e29b-41d4-a716-446655440001",
+      "topic": "rest apis",
+      "currentPriority": "medium",
+      "suggestedStatus": "learned",
+      "suggestedPriority": null,
+      "confirmedStatus": "learned",
+      "confirmedPriority": null
+    }
+  ]
+}
+```
+
+**`status` da sessão:** `in_progress` | `pending_review` | `completed`
+
+**Erros:** `404` se a sessão não existir ou não pertencer ao usuário.
+
+---
+
+### `POST /api/review-sessions/:id/apply` — Aplicar decisões (bulk)
+
+Aplica as decisões do usuário sobre **todos** os itens do relatório em uma única chamada.
+
+**Body:**
+
+```json
+{
+  "items": [
+    {
+      "reviewSessionItemId": "880e8400-e29b-41d4-a716-446655440003",
+      "status": "active",
+      "priority": "medium"
+    },
+    {
+      "reviewSessionItemId": "990e8400-e29b-41d4-a716-446655440004",
+      "status": "learned"
+    }
+  ]
+}
+```
+
+| Campo | Regra |
+|-------|-------|
+| `items` | Array não vazio; deve incluir **todos** os `ReviewSessionItem` da sessão |
+| `reviewSessionItemId` | `ReviewSessionItem.id` (não o `reviewItemId`) |
+| `status` | `active` \| `learned` |
+| `priority` | Obrigatório quando `status === "active"`; omitido/ignorado quando `learned` |
+
+**Resposta (200):** mesmo shape de `GET /api/review-sessions/:id`, com `status: "completed"` e `confirmedStatus` / `confirmedPriority` preenchidos em cada item.
+
+**Comportamento:**
+
+- Persiste cada decisão em `review_items` via merge e marca `confirmedStatus` / `confirmedPriority` / `confirmedAt` em cada `ReviewSessionItem`.
+- Ao aplicar todos os itens, a sessão passa para `status: "completed"`.
+- Alterações em `review_items` só ocorrem após `apply` (sugestões do SSE/GET não alteram a listagem).
+
+**Erros:**
+
+| Status | Quando |
+|--------|--------|
+| `400` | Body inválido, sessão não está em `pending_review`, ou nem todos os itens foram enviados |
+| `404` | Sessão ou item inexistente / outro usuário |
+| `409` | Sessão já `completed`, ou algum item já confirmado |
+| `422` | Validação Zod (ex.: `active` sem `priority`) |
 
 ---
 
@@ -546,10 +909,11 @@ Após o **último turno** com sucesso, o backend:
 
 | Status | Uso |
 |--------|-----|
-| `400` | Validação (body, PDF, currículo não pronto) |
+| `400` | Validação (body, PDF, currículo não pronto, stream sem resposta quando obrigatória) |
 | `401` | Token ausente/inválido |
 | `404` | Recurso não encontrado ou não pertence ao usuário |
-| `409` | Sessão já finalizada (novo stream bloqueado) |
+| `409` | Sessão já finalizada (stream de entrevista ou review session em `pending_review`/`completed`); review session já `completed` no bulk apply |
+| `422` | Validação Zod (body/query inválidos em review-items e review-sessions) |
 | `502` | Falha de storage no upload |
 | `503` | Fila de processamento indisponível |
 | `500` | Erro interno (`{ "message": "Internal Server Error" }`) |
@@ -567,11 +931,11 @@ Após o **último turno** com sucesso, o backend:
 Configuração atual do backend:
 
 - **Origins:** valor de `CORS_ORIGIN` no `.env` do servidor.
-- **Métodos permitidos:** `GET`, `POST`, `OPTIONS`.
+- **Métodos permitidos:** `GET`, `POST`, `PATCH`, `DELETE`, `OPTIONS` (confira `src/config/app.ts` — `PATCH` deve estar listado para `PATCH /review-items/:id` a partir do browser).
 - **Headers:** `Content-Type`, `Authorization`.
 - **Credentials:** `true` (cookies só se o frontend enviar `credentials: "include"`).
 
-Não há WebSocket; toda interação em tempo real da entrevista é **SSE sobre POST**.
+Não há WebSocket; interação em tempo real usa **SSE sobre POST** (entrevista e review sessions).
 
 ---
 
@@ -608,6 +972,20 @@ finished (isFinished)
 - `turnCount >= maxTurns`, ou
 - stream em andamento (evitar double submit → `409`).
 
+### Review Session
+
+```
+selecting_items → creating → in_progress (Q&A SSE)
+  → pending_review (relatório)
+  → applying (bulk apply)
+  → completed
+```
+
+- Durante `in_progress`: habilitar input apenas quando não há stream ativo.
+- Em `pending_review`: desabilitar stream; exibir relatório e botão **Apply** único.
+- Após `apply`, refetch `GET /review-sessions/:id` e/ou `GET /review-items`.
+- Itens com `suggestedStatus: null` no relatório: card totalmente editável; valores editados vão no bulk `apply`.
+
 ---
 
 ## Referência rápida de rotas
@@ -620,7 +998,13 @@ finished (isFinished)
 | `GET` | `/api/interview/sessions` | Listar sessões |
 | `GET` | `/api/interview/sessions/:sessionId/messages` | Histórico |
 | `POST` | `/api/interview/sessions/:sessionId/stream` | Turno (SSE) |
-| `GET` | `/api/review-items` | Tópicos de estudo do usuário |
+| `GET` | `/api/review-items` | Tópicos de estudo (`?status=` active, learned ou all) |
+| `PATCH` | `/api/review-items/:id` | Marcar/desmarcar como aprendido |
+| `DELETE` | `/api/review-items/:id` | Remover item |
+| `POST` | `/api/review-sessions` | Criar Review Session |
+| `POST` | `/api/review-sessions/:id/stream` | Q&A adaptativo (SSE) |
+| `GET` | `/api/review-sessions/:id` | Relatório da sessão |
+| `POST` | `/api/review-sessions/:id/apply` | Aplicar decisões do relatório (bulk) |
 
 ---
 
@@ -628,7 +1012,9 @@ finished (isFinished)
 
 - [AI Mock Interview spec](../../.specs/features/ai-mock-interview/spec.md)
 - [AI Mock Interview design](../../.specs/features/ai-mock-interview/design.md)
+- [Review Items Learned Status spec](../../.specs/features/review-items-learned-status/spec.md)
+- [Review Items Learned Status design](../../.specs/features/review-items-learned-status/design.md)
 
 ---
 
-*Última atualização: alinhado à implementação em `src/modules/resumes` e `src/modules/interview`.*
+*Última atualização: alinhado à implementação em `src/modules/resumes`, `src/modules/interview`, `src/modules/review-items` e `src/modules/review-sessions`.*

@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest";
 import {
   buildInterviewerSystemPrompt,
   JOB_DESCRIPTION_SECTION_HEADER,
+  LANGUAGE_SECTION_HEADER,
   SECURITY_SECTION_HEADER,
 } from "@/modules/interview/prompts/interviewer-system-prompt";
+import { buildInterviewLocalePromptBlock } from "@/shared/interview-locale/interview-locale";
 
 const sampleResumeSummary = {
   personal_info: { name: "Jane", title: "Engineer", about: "" },
@@ -20,6 +22,7 @@ describe("buildInterviewerSystemPrompt job description", () => {
     resumeSummary: sampleResumeSummary,
     turnCount: 1,
     maxTurns: 7,
+    interviewLocale: "en" as const,
   };
 
   it("omits target role section when job description is absent", () => {
@@ -49,5 +52,44 @@ describe("buildInterviewerSystemPrompt job description", () => {
     expect(prompt.indexOf(SECURITY_SECTION_HEADER)).toBeGreaterThan(
       prompt.indexOf(jobDescription),
     );
+  });
+});
+
+describe("buildInterviewerSystemPrompt interviewLocale", () => {
+  const baseParams = {
+    level: "mid" as const,
+    resumeSummary: sampleResumeSummary,
+    turnCount: 1,
+    maxTurns: 7,
+  };
+
+  it.each(["en", "pt"] as const)(
+    "ends with the %s locale language block and has no mid-prompt English-only block",
+    (interviewLocale) => {
+      const prompt = buildInterviewerSystemPrompt({
+        ...baseParams,
+        interviewLocale,
+      });
+      const localeBlock = buildInterviewLocalePromptBlock(interviewLocale);
+
+      expect(prompt.endsWith(localeBlock)).toBe(true);
+      expect(prompt).not.toContain("English only throughout the session.");
+      expect(prompt.lastIndexOf(LANGUAGE_SECTION_HEADER)).toBeGreaterThan(
+        prompt.indexOf(SECURITY_SECTION_HEADER),
+      );
+    },
+  );
+
+  it("places language after security when job description is present", () => {
+    const prompt = buildInterviewerSystemPrompt({
+      ...baseParams,
+      interviewLocale: "pt",
+      jobDescription: "Backend engineer",
+    });
+
+    expect(prompt.indexOf(SECURITY_SECTION_HEADER)).toBeLessThan(
+      prompt.lastIndexOf(LANGUAGE_SECTION_HEADER),
+    );
+    expect(prompt.endsWith(buildInterviewLocalePromptBlock("pt"))).toBe(true);
   });
 });

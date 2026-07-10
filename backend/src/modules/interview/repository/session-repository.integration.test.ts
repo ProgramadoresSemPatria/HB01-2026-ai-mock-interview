@@ -42,6 +42,7 @@ describe("SessionRepository (integration)", () => {
         userId: user.id,
         resumeId,
         level,
+        interviewLocale: "en",
       });
 
       expect(session).toMatchObject({
@@ -56,6 +57,22 @@ describe("SessionRepository (integration)", () => {
     },
   );
 
+  it("create persists interviewLocale from params", async () => {
+    const { user, resumeId } = await seedUserAndResume();
+
+    const session = await repository.create({
+      userId: user.id,
+      resumeId,
+      level: "mid",
+      interviewLocale: "pt",
+    });
+
+    expect(session.interviewLocale).toBe("pt");
+
+    const found = await repository.findByIdAndUserId(session.id, user.id);
+    expect(found?.interviewLocale).toBe("pt");
+  });
+
   it("listByUserId returns sessions for the user ordered by createdAt desc", async () => {
     const { user, resumeId } = await seedUserAndResume();
 
@@ -63,12 +80,14 @@ describe("SessionRepository (integration)", () => {
       userId: user.id,
       resumeId,
       level: "entry",
+      interviewLocale: "en",
     });
     await new Promise((resolve) => setTimeout(resolve, 15));
     const newer = await repository.create({
       userId: user.id,
       resumeId,
       level: "mid",
+      interviewLocale: "pt",
     });
 
     const sessions = await repository.listByUserId(user.id);
@@ -85,6 +104,7 @@ describe("SessionRepository (integration)", () => {
       userId: user.id,
       resumeId,
       level: "entry",
+      interviewLocale: "en",
     });
 
     const found = await repository.findByIdAndUserId(created.id, user.id);
@@ -109,6 +129,7 @@ describe("SessionRepository (integration)", () => {
       userId: user.id,
       resumeId,
       level: "entry",
+      interviewLocale: "en",
     });
 
     const found = await repository.findByIdAndUserId(created.id, other.id);
@@ -123,6 +144,7 @@ describe("SessionRepository (integration)", () => {
       userId: user.id,
       resumeId,
       level: "entry",
+      interviewLocale: "en",
     });
     expect(created.turnCount).toBe(0);
 
@@ -131,18 +153,104 @@ describe("SessionRepository (integration)", () => {
     expect(updated.turnCount).toBe(1);
   });
 
-  it("markFinished", async () => {
+  it("markFinished sets isFinished and overwrites interviewLocale", async () => {
     const { user, resumeId } = await seedUserAndResume();
 
     const created = await repository.create({
       userId: user.id,
       resumeId,
       level: "entry",
+      interviewLocale: "en",
     });
     expect(created.isFinished).toBe(false);
+    expect(created.interviewLocale).toBe("en");
+    expect(created.reviewGenerationStatus).toBe("idle");
 
-    const updated = await repository.markFinished(created.id);
+    const updated = await repository.markFinished(created.id, "pt");
 
     expect(updated.isFinished).toBe(true);
+    expect(updated.interviewLocale).toBe("pt");
+    expect(updated.reviewGenerationStatus).toBe("pending");
+    expect(updated.reviewGenerationError).toBeNull();
+
+    const found = await repository.findByIdAndUserId(created.id, user.id);
+    expect(found?.isFinished).toBe(true);
+    expect(found?.interviewLocale).toBe("pt");
+    expect(found?.reviewGenerationStatus).toBe("pending");
+    expect(found?.reviewGenerationError).toBeNull();
+  });
+
+  it("markReviewGenerationFailed sets failed status and error without reopening chat", async () => {
+    const { user, resumeId } = await seedUserAndResume();
+
+    const created = await repository.create({
+      userId: user.id,
+      resumeId,
+      level: "entry",
+      interviewLocale: "en",
+    });
+    await repository.markFinished(created.id, "en");
+
+    const failed = await repository.markReviewGenerationFailed(
+      created.id,
+      "quota exceeded",
+    );
+
+    expect(failed.isFinished).toBe(true);
+    expect(failed.reviewGenerationStatus).toBe("failed");
+    expect(failed.reviewGenerationError).toBe("quota exceeded");
+
+    const found = await repository.findByIdAndUserId(created.id, user.id);
+    expect(found?.isFinished).toBe(true);
+    expect(found?.reviewGenerationStatus).toBe("failed");
+    expect(found?.reviewGenerationError).toBe("quota exceeded");
+  });
+
+  it("markReviewGenerationReady sets ready and clears error without changing isFinished", async () => {
+    const { user, resumeId } = await seedUserAndResume();
+
+    const created = await repository.create({
+      userId: user.id,
+      resumeId,
+      level: "entry",
+      interviewLocale: "en",
+    });
+    await repository.markFinished(created.id, "en");
+    await repository.markReviewGenerationFailed(created.id, "transient error");
+
+    const ready = await repository.markReviewGenerationReady(created.id);
+
+    expect(ready.isFinished).toBe(true);
+    expect(ready.reviewGenerationStatus).toBe("ready");
+    expect(ready.reviewGenerationError).toBeNull();
+
+    const found = await repository.findByIdAndUserId(created.id, user.id);
+    expect(found?.isFinished).toBe(true);
+    expect(found?.reviewGenerationStatus).toBe("ready");
+    expect(found?.reviewGenerationError).toBeNull();
+  });
+
+  it("markReviewGenerationPending resets to pending for retry without toggling isFinished", async () => {
+    const { user, resumeId } = await seedUserAndResume();
+
+    const created = await repository.create({
+      userId: user.id,
+      resumeId,
+      level: "entry",
+      interviewLocale: "en",
+    });
+    await repository.markFinished(created.id, "en");
+    await repository.markReviewGenerationFailed(created.id, "worker crashed");
+
+    const pending = await repository.markReviewGenerationPending(created.id);
+
+    expect(pending.isFinished).toBe(true);
+    expect(pending.reviewGenerationStatus).toBe("pending");
+    expect(pending.reviewGenerationError).toBeNull();
+
+    const found = await repository.findByIdAndUserId(created.id, user.id);
+    expect(found?.isFinished).toBe(true);
+    expect(found?.reviewGenerationStatus).toBe("pending");
+    expect(found?.reviewGenerationError).toBeNull();
   });
 });

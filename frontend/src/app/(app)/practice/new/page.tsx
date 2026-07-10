@@ -7,11 +7,12 @@ import { toast } from "sonner";
 import { AppShell } from "@/features/dashboard/app-shell";
 import { useAuth } from "@/features/auth/session-provider";
 import { getStoredResumeId } from "@/features/auth/session-storage";
+import { useInterviewLocale } from "@/features/interview-locale/use-interview-locale";
 import { interviewApi } from "@/lib/api/interview";
 import { useResume } from "@/lib/query/hooks/use-resume";
 import { ApiError } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
-import type { InterviewLevel } from "@/types/interview";
+import type { CreateSessionInput, InterviewLevel } from "@/types/interview";
 import { MAX_JOB_DESCRIPTION_LENGTH } from "@/types/interview";
 
 const LEVELS: { value: InterviewLevel; label: string; description: string }[] =
@@ -26,6 +27,7 @@ function NewSessionContent() {
   const searchParams = useSearchParams();
   const resumeId = searchParams.get("resumeId") ?? getStoredResumeId() ?? "";
   const { fetchWithAuth } = useAuth();
+  const { locale } = useInterviewLocale();
   const [level, setLevel] = useState<InterviewLevel>("mid");
   const [jobDescription, setJobDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,11 +55,11 @@ function NewSessionContent() {
 
     setIsSubmitting(true);
     try {
-      const body: {
-        resumeId: string;
-        level: InterviewLevel;
-        jobDescription?: string;
-      } = { resumeId, level };
+      const body: CreateSessionInput = {
+        resumeId,
+        level,
+        interviewLocale: locale,
+      };
       if (trimmedJobDescription) {
         body.jobDescription = trimmedJobDescription;
       }

@@ -7,6 +7,7 @@ import type {
 } from "@/modules/interview/validations/interview-schemas";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
 import { BadRequestError, NotFoundError } from "@/shared";
+import type { InterviewSession } from "../../../../prisma/generated/client";
 
 export type SessionSummary = {
   id: string;
@@ -17,6 +18,8 @@ export type SessionSummary = {
   isFinished: boolean;
   hasJobDescription: boolean;
   createdAt: Date;
+  reviewGenerationStatus: "idle" | "pending" | "ready" | "failed";
+  reviewGenerationError: string | null;
 };
 
 export type SessionMessage = {
@@ -60,6 +63,7 @@ export class SessionService {
       userId,
       resumeId: input.resumeId,
       level: input.level,
+      interviewLocale: input.interviewLocale,
       jobDescription: input.jobDescription
         ? sanitizeJobDescription(input.jobDescription)
         : null,
@@ -70,16 +74,16 @@ export class SessionService {
 
   async listSessions(userId: number): Promise<SessionSummary[]> {
     const sessions = await this.sessionRepository.listByUserId(userId);
-    return sessions.map((session) => ({
-      id: session.id,
-      resumeId: session.resumeId,
-      level: session.level,
-      turnCount: session.turnCount,
-      maxTurns: session.maxTurns,
-      isFinished: session.isFinished,
-      hasJobDescription: session.jobDescription != null,
-      createdAt: session.createdAt,
-    }));
+    return sessions.map((session) => this.toSummary(session));
+  }
+
+  async getSession(userId: number, sessionId: string): Promise<SessionSummary> {
+    const session = await this.sessionRepository.findByIdAndUserId(
+      sessionId,
+      userId,
+    );
+    if (!session) throw new NotFoundError();
+    return this.toSummary(session);
   }
 
   async getMessages(
@@ -115,5 +119,20 @@ export class SessionService {
     }
 
     await this.sessionRepository.deleteByIdAndUserId(sessionId, userId);
+  }
+
+  private toSummary(session: InterviewSession): SessionSummary {
+    return {
+      id: session.id,
+      resumeId: session.resumeId,
+      level: session.level,
+      turnCount: session.turnCount,
+      maxTurns: session.maxTurns,
+      isFinished: session.isFinished,
+      hasJobDescription: session.jobDescription != null,
+      createdAt: session.createdAt,
+      reviewGenerationStatus: session.reviewGenerationStatus,
+      reviewGenerationError: session.reviewGenerationError,
+    };
   }
 }

@@ -22,15 +22,35 @@ const interviewGraphMock = vi.hoisted(() => {
   };
 });
 
+const reviewItemsGeneratorMock = vi.hoisted(() => ({
+  generate: vi.fn(
+    async (): Promise<{
+      items: Array<{
+        topic: string;
+        description: string;
+        priority: "high" | "medium" | "low";
+      }>;
+    }> => ({ items: [] }),
+  ),
+}));
+
 vi.mock("@/factories/interview/interview-graph-factory", () => ({
   makeInterviewGraph: () => interviewGraphMock,
 }));
+
+vi.mock(
+  "@/infrastructure/ai/langgraph/nodes/review-items-generator-node",
+  () => ({
+    createReviewItemsGeneratorNode: () => reviewItemsGeneratorMock.generate,
+  }),
+);
 
 import { randomUUID } from "node:crypto";
 import request from "supertest";
 import type { Express } from "express";
 
 import { createApp } from "@/config/app";
+import { makeReviewGenerationService } from "@/factories/interview/review-generation-service-factory";
 import prisma from "@/infrastructure/database";
 import { MessageRole, ResumeStatus } from "../../../prisma/generated/client";
 import {
@@ -40,6 +60,8 @@ import {
   signUpUser,
 } from "@/test/helpers/auth-helpers";
 import {
+  buildCreateSessionPayload,
+  buildStreamMessagePayload,
   sampleStructuredSummary,
   seedFailedResume,
   seedProcessingResume,
@@ -68,6 +90,7 @@ describe("Interview API E2E", () => {
 
   beforeEach(async () => {
     interviewGraphMock.streamMessages.mockClear();
+    reviewItemsGeneratorMock.generate.mockClear();
     await truncateTables();
   });
 
@@ -79,7 +102,12 @@ describe("Interview API E2E", () => {
     it("returns 401 without authentication", async () => {
       const response = await request(app)
         .post("/api/interview/sessions")
-        .send({ resumeId: randomUUID(), level: "entry" });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: randomUUID(),
+            level: "entry",
+          }),
+        );
 
       expect(response.status).toBe(401);
       expect(response.body).toEqual({
@@ -93,7 +121,25 @@ describe("Interview API E2E", () => {
       const response = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId: "not-a-uuid", level: "junior" });
+        .send({
+          resumeId: "not-a-uuid",
+          level: "junior",
+          interviewLocale: "en",
+        });
+
+      expect(response.status).toBe(422);
+      expect(response.body.message).toBe("Validation failed");
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it("returns 422 when interviewLocale is omitted", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const response = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send({ resumeId: resume.id, level: "entry" });
 
       expect(response.status).toBe(422);
       expect(response.body.message).toBe("Validation failed");
@@ -107,10 +153,21 @@ describe("Interview API E2E", () => {
       const response = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId: resume.id, level: "entry" });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+            interviewLocale: "en",
+          }),
+        );
 
       expect(response.status).toBe(201);
       expect(response.body.id).toEqual(expect.any(String));
+
+      const session = await prisma.interviewSession.findUnique({
+        where: { id: response.body.id as string },
+      });
+      expect(session?.interviewLocale).toBe("en");
     });
 
     it("returns 400 when resume is still processing", async () => {
@@ -125,7 +182,12 @@ describe("Interview API E2E", () => {
       const response = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId: resume.id, level: "entry" });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
 
       expect(response.status).toBe(400);
       expect(response.body).toEqual({
@@ -146,7 +208,12 @@ describe("Interview API E2E", () => {
       const response = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId: resume.id, level: "entry" });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
 
       expect(response.status).toBe(400);
       expect(response.body).toEqual({ message: "Resume processing failed" });
@@ -158,7 +225,12 @@ describe("Interview API E2E", () => {
       const missingResumeResponse = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId: randomUUID(), level: "entry" });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: randomUUID(),
+            level: "entry",
+          }),
+        );
 
       expect(missingResumeResponse.status).toBe(404);
       expect(missingResumeResponse.body).toEqual({ message: "Not Found" });
@@ -181,7 +253,12 @@ describe("Interview API E2E", () => {
       const otherUserResumeResponse = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(otherToken))
-        .send({ resumeId: resume.id, level: "entry" });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
 
       expect(otherUserResumeResponse.status).toBe(404);
       expect(otherUserResumeResponse.body).toEqual({ message: "Not Found" });
@@ -194,11 +271,14 @@ describe("Interview API E2E", () => {
       const response = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({
-          resumeId: resume.id,
-          level: "mid",
-          jobDescription: "Senior Backend Engineer with Node.js experience",
-        });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "mid",
+            interviewLocale: "pt",
+            jobDescription: "Senior Backend Engineer with Node.js experience",
+          }),
+        );
 
       expect(response.status).toBe(201);
       expect(response.body.id).toEqual(expect.any(String));
@@ -209,6 +289,7 @@ describe("Interview API E2E", () => {
       expect(session?.jobDescription).toBe(
         "Senior Backend Engineer with Node.js experience",
       );
+      expect(session?.interviewLocale).toBe("pt");
     });
 
     it("returns 422 when job description exceeds max length", async () => {
@@ -218,11 +299,13 @@ describe("Interview API E2E", () => {
       const response = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({
-          resumeId: resume.id,
-          level: "entry",
-          jobDescription: "x".repeat(5_001),
-        });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+            jobDescription: "x".repeat(5_001),
+          }),
+        );
 
       expect(response.status).toBe(422);
       expect(response.body.message).toBe("Validation failed");
@@ -246,7 +329,12 @@ describe("Interview API E2E", () => {
       const createResponse = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId: resume.id, level: "mid" });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "mid",
+          }),
+        );
 
       const response = await request(app)
         .get("/api/interview/sessions")
@@ -262,8 +350,84 @@ describe("Interview API E2E", () => {
         maxTurns: 7,
         isFinished: false,
         hasJobDescription: false,
+        reviewGenerationStatus: "idle",
+        reviewGenerationError: null,
       });
       expect(response.body.sessions[0].createdAt).toEqual(expect.any(String));
+    });
+  });
+
+  describe("GET /api/interview/sessions/:sessionId", () => {
+    it("returns 200 with session summary including review generation status", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
+
+      const sessionId = createResponse.body.id as string;
+
+      const response = await request(app)
+        .get(`/api/interview/sessions/${sessionId}`)
+        .set(authHeader(token));
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        id: sessionId,
+        resumeId: resume.id,
+        level: "entry",
+        turnCount: 0,
+        maxTurns: 5,
+        isFinished: false,
+        hasJobDescription: false,
+        reviewGenerationStatus: "idle",
+        reviewGenerationError: null,
+      });
+      expect(response.body.createdAt).toEqual(expect.any(String));
+    });
+
+    it("returns 404 for a session that does not belong to the user", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
+
+      const sessionId = createResponse.body.id as string;
+
+      await request(app)
+        .post("/api/auth/signup")
+        .send(
+          createSignupPayload({
+            email: "get-session-other@example.com",
+            name: "Get Session Other",
+          }),
+        );
+      const otherLogin = await loginUser(app, {
+        email: "get-session-other@example.com",
+      });
+      const otherToken = otherLogin.body.accessToken as string;
+
+      const response = await request(app)
+        .get(`/api/interview/sessions/${sessionId}`)
+        .set(authHeader(otherToken));
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({ message: "Not Found" });
     });
   });
 
@@ -286,7 +450,12 @@ describe("Interview API E2E", () => {
       const createResponse = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId: resume.id, level: "entry" });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
 
       const sessionId = createResponse.body.id as string;
 
@@ -330,7 +499,12 @@ describe("Interview API E2E", () => {
       const createResponse = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId: resume.id, level: "entry" });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
 
       const sessionId = createResponse.body.id as string;
 
@@ -369,7 +543,7 @@ describe("Interview API E2E", () => {
     it("returns 401 without authentication", async () => {
       const response = await request(app)
         .post(`/api/interview/sessions/${randomUUID()}/stream`)
-        .send({ content: "Hello interviewer" });
+        .send(buildStreamMessagePayload());
 
       expect(response.status).toBe(401);
       expect(response.body).toEqual({
@@ -384,7 +558,12 @@ describe("Interview API E2E", () => {
       const createResponse = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId: resume.id, level: "entry" });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
 
       const sessionId = createResponse.body.id as string;
 
@@ -396,7 +575,7 @@ describe("Interview API E2E", () => {
       const response = await request(app)
         .post(`/api/interview/sessions/${sessionId}/stream`)
         .set(authHeader(token))
-        .send({ content: "Hello interviewer" });
+        .send(buildStreamMessagePayload());
 
       expect(response.status).toBe(409);
       expect(response.body).toEqual({
@@ -412,14 +591,25 @@ describe("Interview API E2E", () => {
       const createResponse = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId: resume.id, level: "entry" });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+            interviewLocale: "pt",
+          }),
+        );
 
       const sessionId = createResponse.body.id as string;
 
       const response = await request(app)
         .post(`/api/interview/sessions/${sessionId}/stream`)
         .set(authHeader(token))
-        .send({ content: "Hello interviewer" });
+        .send(
+          buildStreamMessagePayload({
+            content: "Hello interviewer",
+            interviewLocale: "pt",
+          }),
+        );
 
       expect(response.status).toBe(200);
       expect(response.headers["content-type"]).toContain("text/event-stream");
@@ -431,9 +621,37 @@ describe("Interview API E2E", () => {
         expect.objectContaining({
           resumeSummary: sampleStructuredSummary,
           runReview: false,
+          interviewLocale: "pt",
         }),
-        { threadId: sessionId },
+        expect.objectContaining({ threadId: sessionId }),
       );
+    });
+
+    it("returns 422 when interviewLocale is omitted", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
+
+      const sessionId = createResponse.body.id as string;
+
+      const response = await request(app)
+        .post(`/api/interview/sessions/${sessionId}/stream`)
+        .set(authHeader(token))
+        .send({ content: "Hello interviewer" });
+
+      expect(response.status).toBe(422);
+      expect(response.body.message).toBe("Validation failed");
+      expect(response.body.errors).toBeDefined();
+      expect(interviewGraphMock.streamMessages).not.toHaveBeenCalled();
     });
 
     it("returns 404 when session does not exist or belongs to another user", async () => {
@@ -443,14 +661,19 @@ describe("Interview API E2E", () => {
       const createResponse = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId: resume.id, level: "entry" });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
 
       const sessionId = createResponse.body.id as string;
 
       const missingSessionResponse = await request(app)
         .post(`/api/interview/sessions/${randomUUID()}/stream`)
         .set(authHeader(token))
-        .send({ content: "Hello interviewer" });
+        .send(buildStreamMessagePayload());
 
       expect(missingSessionResponse.status).toBe(404);
       expect(missingSessionResponse.body).toEqual({ message: "Not Found" });
@@ -471,7 +694,7 @@ describe("Interview API E2E", () => {
       const otherUserResponse = await request(app)
         .post(`/api/interview/sessions/${sessionId}/stream`)
         .set(authHeader(otherToken))
-        .send({ content: "Hello interviewer" });
+        .send(buildStreamMessagePayload());
 
       expect(otherUserResponse.status).toBe(404);
       expect(otherUserResponse.body).toEqual({ message: "Not Found" });
@@ -485,19 +708,269 @@ describe("Interview API E2E", () => {
       const createResponse = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId: resume.id, level: "entry" });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
 
       const sessionId = createResponse.body.id as string;
 
       const response = await request(app)
         .post(`/api/interview/sessions/${sessionId}/stream`)
         .set(authHeader(token))
-        .send({ content: "" });
+        .send(buildStreamMessagePayload({ content: "" }));
 
       expect(response.status).toBe(422);
       expect(response.body.message).toBe("Validation failed");
       expect(response.body.errors).toBeDefined();
       expect(interviewGraphMock.streamMessages).not.toHaveBeenCalled();
+    });
+
+    it("marks session finished with pending review generation without invoking generator", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+            interviewLocale: "en",
+          }),
+        );
+
+      const sessionId = createResponse.body.id as string;
+
+      await prisma.interviewSession.update({
+        where: { id: sessionId },
+        data: { turnCount: 4 },
+      });
+
+      const response = await request(app)
+        .post(`/api/interview/sessions/${sessionId}/stream`)
+        .set(authHeader(token))
+        .send(
+          buildStreamMessagePayload({
+            content: "Final answer",
+            interviewLocale: "pt",
+          }),
+        );
+
+      expect(response.status).toBe(200);
+      expect(response.text).toContain('"isFinished":true');
+      expect(response.text).toContain('"reviewGenerationStatus":"pending"');
+      expect(reviewItemsGeneratorMock.generate).not.toHaveBeenCalled();
+
+      const session = await prisma.interviewSession.findUnique({
+        where: { id: sessionId },
+      });
+      expect(session?.isFinished).toBe(true);
+      expect(session?.interviewLocale).toBe("pt");
+      expect(session?.reviewGenerationStatus).toBe("pending");
+      expect(session?.reviewGenerationError).toBeNull();
+    });
+
+    it("marks review generation ready after process runs", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+            interviewLocale: "en",
+          }),
+        );
+
+      const sessionId = createResponse.body.id as string;
+
+      await prisma.interviewSession.update({
+        where: { id: sessionId },
+        data: { turnCount: 4 },
+      });
+
+      const streamResponse = await request(app)
+        .post(`/api/interview/sessions/${sessionId}/stream`)
+        .set(authHeader(token))
+        .send(
+          buildStreamMessagePayload({
+            content: "Final answer",
+            interviewLocale: "en",
+          }),
+        );
+
+      expect(streamResponse.status).toBe(200);
+      expect(reviewItemsGeneratorMock.generate).not.toHaveBeenCalled();
+
+      reviewItemsGeneratorMock.generate.mockResolvedValueOnce({
+        items: [
+          {
+            topic: "Communication",
+            description: "Be more concise",
+            priority: "medium",
+          },
+        ],
+      });
+
+      const result = await makeReviewGenerationService().process(sessionId);
+
+      expect(result).toEqual({ status: "ready", sessionId });
+      expect(reviewItemsGeneratorMock.generate).toHaveBeenCalled();
+
+      const session = await prisma.interviewSession.findUnique({
+        where: { id: sessionId },
+      });
+      expect(session?.reviewGenerationStatus).toBe("ready");
+      expect(session?.reviewGenerationError).toBeNull();
+
+      const reviewItems = await prisma.reviewItem.findMany({
+        where: { userId },
+      });
+      expect(reviewItems.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe("POST /api/interview/sessions/:sessionId/review-generation/retry", () => {
+    it("returns 401 without authentication", async () => {
+      const response = await request(app).post(
+        `/api/interview/sessions/${randomUUID()}/review-generation/retry`,
+      );
+
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({
+        message: "Authentication required",
+      });
+    });
+
+    it("retries from failed and returns pending status", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
+
+      const sessionId = createResponse.body.id as string;
+
+      await prisma.interviewSession.update({
+        where: { id: sessionId },
+        data: {
+          isFinished: true,
+          reviewGenerationStatus: "failed",
+          reviewGenerationError: "previous failure",
+        },
+      });
+
+      const response = await request(app)
+        .post(`/api/interview/sessions/${sessionId}/review-generation/retry`)
+        .set(authHeader(token));
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        id: sessionId,
+        isFinished: true,
+        reviewGenerationStatus: "pending",
+        reviewGenerationError: null,
+      });
+
+      const session = await prisma.interviewSession.findUnique({
+        where: { id: sessionId },
+      });
+      expect(session?.reviewGenerationStatus).toBe("pending");
+      expect(session?.reviewGenerationError).toBeNull();
+    });
+
+    it("returns 409 when review generation is ready", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
+
+      const sessionId = createResponse.body.id as string;
+
+      await prisma.interviewSession.update({
+        where: { id: sessionId },
+        data: {
+          isFinished: true,
+          reviewGenerationStatus: "ready",
+        },
+      });
+
+      const response = await request(app)
+        .post(`/api/interview/sessions/${sessionId}/review-generation/retry`)
+        .set(authHeader(token));
+
+      expect(response.status).toBe(409);
+      expect(response.body).toEqual({
+        message:
+          "Review generation can only be retried when the session is finished and generation failed",
+      });
+    });
+
+    it("returns 409 when review generation is pending or idle", async () => {
+      const { token, userId } = await authenticate(app);
+      const resume = await seedReadyResume(userId);
+
+      const createResponse = await request(app)
+        .post("/api/interview/sessions")
+        .set(authHeader(token))
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
+
+      const sessionId = createResponse.body.id as string;
+
+      await prisma.interviewSession.update({
+        where: { id: sessionId },
+        data: {
+          isFinished: true,
+          reviewGenerationStatus: "pending",
+        },
+      });
+
+      const pendingResponse = await request(app)
+        .post(`/api/interview/sessions/${sessionId}/review-generation/retry`)
+        .set(authHeader(token));
+
+      expect(pendingResponse.status).toBe(409);
+
+      await prisma.interviewSession.update({
+        where: { id: sessionId },
+        data: {
+          isFinished: false,
+          reviewGenerationStatus: "idle",
+        },
+      });
+
+      const idleResponse = await request(app)
+        .post(`/api/interview/sessions/${sessionId}/review-generation/retry`)
+        .set(authHeader(token));
+
+      expect(idleResponse.status).toBe(409);
     });
   });
 
@@ -524,7 +997,12 @@ describe("Interview API E2E", () => {
       const response = await request(appInstance)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId, level: "entry" })
+        .send(
+          buildCreateSessionPayload({
+            resumeId,
+            level: "entry",
+          }),
+        )
         .expect(201);
 
       return response.body.id as string;
@@ -538,7 +1016,7 @@ describe("Interview API E2E", () => {
       return request(appInstance)
         .post(`/api/interview/sessions/${sessionId}/stream`)
         .set(authHeader(token))
-        .send({ content: "Hello interviewer" });
+        .send(buildStreamMessagePayload());
     }
 
     beforeAll(async () => {
@@ -652,7 +1130,12 @@ describe("Interview API E2E", () => {
       const createResponse = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId: resume.id, level: "entry" });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
 
       const sessionId = createResponse.body.id as string;
 
@@ -677,7 +1160,12 @@ describe("Interview API E2E", () => {
       const createResponse = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId: resume.id, level: "entry" });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
 
       const sessionId = createResponse.body.id as string;
 
@@ -710,7 +1198,12 @@ describe("Interview API E2E", () => {
       const createResponse = await request(app)
         .post("/api/interview/sessions")
         .set(authHeader(token))
-        .send({ resumeId: resume.id, level: "entry" });
+        .send(
+          buildCreateSessionPayload({
+            resumeId: resume.id,
+            level: "entry",
+          }),
+        );
 
       const sessionId = createResponse.body.id as string;
 

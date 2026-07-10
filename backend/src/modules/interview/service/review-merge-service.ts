@@ -1,5 +1,10 @@
 import type { ReviewRepository } from "@/modules/interview/repository/review-repository";
+import type { ReviewItemRecord } from "@/modules/interview/types/review-item-record";
 import type { ReviewPriority } from "@/modules/interview/validations/interview-schemas";
+
+export type ReviewSessionConfirmation =
+  | { status: "active"; priority: ReviewPriority }
+  | { status: "learned" };
 
 export type ReviewItemInput = {
   topic: string;
@@ -76,5 +81,75 @@ export class ReviewMergeService {
         priority,
       });
     }
+  }
+
+  async insertNewTopicsOnly(
+    userId: number,
+    sessionId: string,
+    items: ReviewItemInput[],
+  ): Promise<void> {
+    for (const item of items) {
+      const existing =
+        (await this.reviewRepository.findByUserIdAndTopicCaseInsensitive(
+          userId,
+          item.topic,
+        )) ??
+        (await this.reviewRepository.findSimilarByUserIdAndTopic(
+          userId,
+          item.topic,
+        ));
+
+      if (existing) {
+        continue;
+      }
+
+      await this.reviewRepository.upsert({
+        userId,
+        sessionId,
+        topic: item.topic,
+        description: item.description,
+        priority: item.priority,
+      });
+    }
+  }
+
+  async applyReviewSessionConfirmation(
+    userId: number,
+    reviewItemId: string,
+    resolved: ReviewSessionConfirmation,
+  ): Promise<ReviewItemRecord> {
+    if (resolved.status === "active") {
+      const updated = await this.reviewRepository.updateByIdAndUserId(
+        reviewItemId,
+        userId,
+        {
+          status: "active",
+          priority: resolved.priority,
+          learnedAt: null,
+        },
+      );
+
+      if (!updated) {
+        throw new Error(`Review item not found: ${reviewItemId}`);
+      }
+
+      return updated;
+    }
+
+    const now = new Date();
+    const updated = await this.reviewRepository.updateByIdAndUserId(
+      reviewItemId,
+      userId,
+      {
+        status: "learned",
+        learnedAt: now,
+      },
+    );
+
+    if (!updated) {
+      throw new Error(`Review item not found: ${reviewItemId}`);
+    }
+
+    return updated;
   }
 }

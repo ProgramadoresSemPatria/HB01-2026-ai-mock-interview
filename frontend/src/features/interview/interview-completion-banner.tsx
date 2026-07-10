@@ -19,8 +19,8 @@ export function InterviewCompletionBanner({
           Interview completed
         </p>
         <p className="mt-0.5 text-xs text-(--muted-foreground)">
-          Your closing feedback and study topics are available below. No new
-          messages can be sent.
+          Your closing feedback is available below. Study topics appear in
+          Review when ready. No new messages can be sent.
         </p>
         {onViewReview && (
           <button

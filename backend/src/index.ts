@@ -3,6 +3,9 @@ import "@/config/env";
 import { env } from "@/config/env";
 
 import { createApp } from "@/config/app";
+import { setupProcessErrorHandlers } from "@/shared";
+
+setupProcessErrorHandlers();
 
 async function main(): Promise<void> {
   const app = await createApp();

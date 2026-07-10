@@ -2,6 +2,7 @@ import { InterviewController } from "@/modules/interview/controller/interview-co
 
 import { makeFeedbackService } from "./feedback-service-factory";
 import { makeInterviewStreamService } from "./stream-service-factory";
+import { makeReviewGenerationService } from "./review-generation-service-factory";
 import { makeSessionService } from "./session-service-factory";
 
 export function makeInterviewController(): InterviewController {
@@ -9,5 +10,6 @@ export function makeInterviewController(): InterviewController {
     makeSessionService(),
     makeInterviewStreamService(),
     makeFeedbackService(),
+    makeReviewGenerationService(),
   );
 }

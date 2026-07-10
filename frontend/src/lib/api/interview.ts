@@ -4,6 +4,7 @@ import type {
   InterviewFeedback,
   ListMessagesResponse,
   ListSessionsResponse,
+  SessionSummary,
   SubmitFeedbackInput,
 } from "@/types/interview";
 
@@ -24,6 +25,13 @@ export const interviewApi = {
     });
   },
 
+  getSession(sessionId: string, token: string) {
+    return apiRequest<SessionSummary>(
+      `/api/interview/sessions/${sessionId}`,
+      { token },
+    );
+  },
+
   getMessages(sessionId: string, token: string) {
     return apiRequest<ListMessagesResponse>(
       `/api/interview/sessions/${sessionId}/messages`,
@@ -36,6 +44,13 @@ export const interviewApi = {
       method: "DELETE",
       token,
     });
+  },
+
+  retryReviewGeneration(sessionId: string, token: string) {
+    return apiRequest<SessionSummary>(
+      `/api/interview/sessions/${sessionId}/review-generation/retry`,
+      { method: "POST", token },
+    );
   },
 
   submitFeedback(

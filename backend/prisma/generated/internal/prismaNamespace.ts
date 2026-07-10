@@ -388,6 +388,8 @@ export const ModelName = {
   InterviewSession: 'InterviewSession',
   InterviewMessage: 'InterviewMessage',
   ReviewItem: 'ReviewItem',
+  ReviewSession: 'ReviewSession',
+  ReviewSessionItem: 'ReviewSessionItem',
   InterviewFeedback: 'InterviewFeedback',
   User: 'User',
   UserTokenUsage: 'UserTokenUsage',
@@ -407,7 +409,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "resume" | "interviewSession" | "interviewMessage" | "reviewItem" | "interviewFeedback" | "user" | "userTokenUsage" | "refreshToken"
+    modelProps: "resume" | "interviewSession" | "interviewMessage" | "reviewItem" | "reviewSession" | "reviewSessionItem" | "interviewFeedback" | "user" | "userTokenUsage" | "refreshToken"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -704,6 +706,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ReviewItemCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ReviewItemCountAggregateOutputType> | number
+        }
+      }
+    }
+    ReviewSession: {
+      payload: Prisma.$ReviewSessionPayload<ExtArgs>
+      fields: Prisma.ReviewSessionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReviewSessionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReviewSessionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionPayload>
+        }
+        findFirst: {
+          args: Prisma.ReviewSessionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReviewSessionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionPayload>
+        }
+        findMany: {
+          args: Prisma.ReviewSessionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionPayload>[]
+        }
+        create: {
+          args: Prisma.ReviewSessionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionPayload>
+        }
+        createMany: {
+          args: Prisma.ReviewSessionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReviewSessionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionPayload>[]
+        }
+        delete: {
+          args: Prisma.ReviewSessionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionPayload>
+        }
+        update: {
+          args: Prisma.ReviewSessionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReviewSessionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReviewSessionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReviewSessionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionPayload>[]
+        }
+        upsert: {
+          args: Prisma.ReviewSessionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionPayload>
+        }
+        aggregate: {
+          args: Prisma.ReviewSessionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReviewSession>
+        }
+        groupBy: {
+          args: Prisma.ReviewSessionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReviewSessionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReviewSessionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReviewSessionCountAggregateOutputType> | number
+        }
+      }
+    }
+    ReviewSessionItem: {
+      payload: Prisma.$ReviewSessionItemPayload<ExtArgs>
+      fields: Prisma.ReviewSessionItemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReviewSessionItemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionItemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReviewSessionItemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionItemPayload>
+        }
+        findFirst: {
+          args: Prisma.ReviewSessionItemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionItemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReviewSessionItemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionItemPayload>
+        }
+        findMany: {
+          args: Prisma.ReviewSessionItemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionItemPayload>[]
+        }
+        create: {
+          args: Prisma.ReviewSessionItemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionItemPayload>
+        }
+        createMany: {
+          args: Prisma.ReviewSessionItemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReviewSessionItemCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionItemPayload>[]
+        }
+        delete: {
+          args: Prisma.ReviewSessionItemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionItemPayload>
+        }
+        update: {
+          args: Prisma.ReviewSessionItemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionItemPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReviewSessionItemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReviewSessionItemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReviewSessionItemUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionItemPayload>[]
+        }
+        upsert: {
+          args: Prisma.ReviewSessionItemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReviewSessionItemPayload>
+        }
+        aggregate: {
+          args: Prisma.ReviewSessionItemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReviewSessionItem>
+        }
+        groupBy: {
+          args: Prisma.ReviewSessionItemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReviewSessionItemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReviewSessionItemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReviewSessionItemCountAggregateOutputType> | number
         }
       }
     }
@@ -1064,9 +1214,12 @@ export const InterviewSessionScalarFieldEnum = {
   resumeId: 'resumeId',
   level: 'level',
   jobDescription: 'jobDescription',
+  interviewLocale: 'interviewLocale',
   turnCount: 'turnCount',
   maxTurns: 'maxTurns',
   isFinished: 'isFinished',
+  reviewGenerationStatus: 'reviewGenerationStatus',
+  reviewGenerationError: 'reviewGenerationError',
   createdAt: 'createdAt'
 } as const
 
@@ -1092,11 +1245,47 @@ export const ReviewItemScalarFieldEnum = {
   topic: 'topic',
   description: 'description',
   priority: 'priority',
+  status: 'status',
+  learnedAt: 'learnedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type ReviewItemScalarFieldEnum = (typeof ReviewItemScalarFieldEnum)[keyof typeof ReviewItemScalarFieldEnum]
+
+
+export const ReviewSessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  status: 'status',
+  interviewLocale: 'interviewLocale',
+  createdAt: 'createdAt',
+  evaluatedAt: 'evaluatedAt',
+  completedAt: 'completedAt'
+} as const
+
+export type ReviewSessionScalarFieldEnum = (typeof ReviewSessionScalarFieldEnum)[keyof typeof ReviewSessionScalarFieldEnum]
+
+
+export const ReviewSessionItemScalarFieldEnum = {
+  id: 'id',
+  reviewSessionId: 'reviewSessionId',
+  reviewItemId: 'reviewItemId',
+  order: 'order',
+  topic: 'topic',
+  description: 'description',
+  turns: 'turns',
+  currentPriority: 'currentPriority',
+  pendingQuestion: 'pendingQuestion',
+  suggestedStatus: 'suggestedStatus',
+  suggestedPriority: 'suggestedPriority',
+  confirmedStatus: 'confirmedStatus',
+  confirmedPriority: 'confirmedPriority',
+  confirmedAt: 'confirmedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ReviewSessionItemScalarFieldEnum = (typeof ReviewSessionItemScalarFieldEnum)[keyof typeof ReviewSessionItemScalarFieldEnum]
 
 
 export const InterviewFeedbackScalarFieldEnum = {
@@ -1117,6 +1306,7 @@ export const UserScalarFieldEnum = {
   name: 'name',
   email: 'email',
   password: 'password',
+  interviewLocale: 'interviewLocale',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1160,6 +1350,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -1278,9 +1475,37 @@ export type ListEnumInterviewLevelFieldRefInput<$PrismaModel> = FieldRefInputTyp
 
 
 /**
+ * Reference to a field of type 'InterviewLocale'
+ */
+export type EnumInterviewLocaleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InterviewLocale'>
+    
+
+
+/**
+ * Reference to a field of type 'InterviewLocale[]'
+ */
+export type ListEnumInterviewLocaleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InterviewLocale[]'>
+    
+
+
+/**
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'ReviewGenerationStatus'
+ */
+export type EnumReviewGenerationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReviewGenerationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ReviewGenerationStatus[]'
+ */
+export type ListEnumReviewGenerationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReviewGenerationStatus[]'>
     
 
 
@@ -1309,6 +1534,34 @@ export type EnumReviewPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$P
  * Reference to a field of type 'ReviewPriority[]'
  */
 export type ListEnumReviewPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReviewPriority[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ReviewItemStatus'
+ */
+export type EnumReviewItemStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReviewItemStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ReviewItemStatus[]'
+ */
+export type ListEnumReviewItemStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReviewItemStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ReviewSessionStatus'
+ */
+export type EnumReviewSessionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReviewSessionStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ReviewSessionStatus[]'
+ */
+export type ListEnumReviewSessionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReviewSessionStatus[]'>
     
 
 
@@ -1453,6 +1706,8 @@ export type GlobalOmitConfig = {
   interviewSession?: Prisma.InterviewSessionOmit
   interviewMessage?: Prisma.InterviewMessageOmit
   reviewItem?: Prisma.ReviewItemOmit
+  reviewSession?: Prisma.ReviewSessionOmit
+  reviewSessionItem?: Prisma.ReviewSessionItemOmit
   interviewFeedback?: Prisma.InterviewFeedbackOmit
   user?: Prisma.UserOmit
   userTokenUsage?: Prisma.UserTokenUsageOmit

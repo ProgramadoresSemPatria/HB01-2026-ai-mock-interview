@@ -26,6 +26,7 @@ async function seedSession() {
       userId: user.id,
       resumeId: resume.id,
       level: "entry",
+      interviewLocale: "en",
       maxTurns: 5,
     },
   });
@@ -76,7 +77,8 @@ describe("MessageRepository (integration)", () => {
         userId: user.id,
         resumeId: resume.id,
         level: "mid",
-        maxTurns: 7,
+        interviewLocale: "en",
+      maxTurns: 7,
       },
     });
 

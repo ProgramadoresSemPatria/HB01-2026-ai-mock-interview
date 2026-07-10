@@ -46,6 +46,9 @@ export const serverEnv = {
   OPENAI_MODEL_EXTRACTION: z.string().default("gpt-5-nano"),
   OPENAI_MODEL_REVIEW: z.string().default("gpt-5-nano"),
 
+  // Review sessions
+  REVIEW_SESSION_QUESTION_COUNT: z.coerce.number().default(3),
+
   // Cloudflare R2 (object storage)
   R2_ACCOUNT_ID: z.string().min(1),
   R2_ACCESS_KEY_ID: z.string().min(1),

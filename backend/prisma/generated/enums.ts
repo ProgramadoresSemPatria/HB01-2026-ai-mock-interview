@@ -44,9 +44,44 @@ export const ReviewPriority = {
 export type ReviewPriority = (typeof ReviewPriority)[keyof typeof ReviewPriority]
 
 
+export const ReviewItemStatus = {
+  active: 'active',
+  learned: 'learned'
+} as const
+
+export type ReviewItemStatus = (typeof ReviewItemStatus)[keyof typeof ReviewItemStatus]
+
+
+export const ReviewSessionStatus = {
+  in_progress: 'in_progress',
+  pending_review: 'pending_review',
+  completed: 'completed'
+} as const
+
+export type ReviewSessionStatus = (typeof ReviewSessionStatus)[keyof typeof ReviewSessionStatus]
+
+
 export const FeedbackRating = {
   up: 'up',
   down: 'down'
 } as const
 
 export type FeedbackRating = (typeof FeedbackRating)[keyof typeof FeedbackRating]
+
+
+export const InterviewLocale = {
+  en: 'en',
+  pt: 'pt'
+} as const
+
+export type InterviewLocale = (typeof InterviewLocale)[keyof typeof InterviewLocale]
+
+
+export const ReviewGenerationStatus = {
+  idle: 'idle',
+  pending: 'pending',
+  ready: 'ready',
+  failed: 'failed'
+} as const
+
+export type ReviewGenerationStatus = (typeof ReviewGenerationStatus)[keyof typeof ReviewGenerationStatus]

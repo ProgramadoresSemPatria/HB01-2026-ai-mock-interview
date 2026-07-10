@@ -1,13 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import {
   User,
-  Mail,
-  Phone,
-  MapPin,
   Briefcase,
-  GraduationCap,
   Code,
   FolderGit2,
   Award,
@@ -32,16 +28,21 @@ export default function ProfilePage() {
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("personal");
 
-  // Sync selectedResumeId with the active stored resume, or the first ready one
-  useEffect(() => {
-    if (readyResumes.length > 0 && !selectedResumeId) {
-      const activeId = getStoredResumeId();
-      const hasActive = readyResumes.some((r) => r.id === activeId);
-      setSelectedResumeId(hasActive ? activeId : readyResumes[0].id);
+  const resolvedResumeId = useMemo(() => {
+    if (selectedResumeId) {
+      return selectedResumeId;
     }
+
+    if (readyResumes.length === 0) {
+      return null;
+    }
+
+    const activeId = getStoredResumeId();
+    const hasActive = readyResumes.some((r) => r.id === activeId);
+    return hasActive ? activeId : readyResumes[0].id;
   }, [readyResumes, selectedResumeId]);
 
-  const { data: resume, isLoading: isLoadingResume } = useResume(selectedResumeId);
+  const { data: resume, isLoading: isLoadingResume } = useResume(resolvedResumeId);
 
   const parsed = resume?.structuredSummary;
 
@@ -74,7 +75,7 @@ export default function ProfilePage() {
               </label>
               <select
                 id="resume-select"
-                value={selectedResumeId ?? ""}
+                value={resolvedResumeId ?? ""}
                 onChange={(e) => setSelectedResumeId(e.target.value)}
                 className="cursor-pointer rounded-lg border border-(--border) bg-(--background) px-3 py-1.5 text-sm font-medium text-(--foreground) focus:outline-none focus:ring-2 focus:ring-(--primary)"
               >

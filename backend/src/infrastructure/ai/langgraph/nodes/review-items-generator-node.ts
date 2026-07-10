@@ -12,11 +12,13 @@ import {
   type ReviewItemsGeneratorOutput,
 } from "@/modules/interview/validations/interview-schemas";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
+import type { InterviewLocale } from "@/shared/interview-locale/interview-locale";
 
 export type ReviewItemsGeneratorInput = {
   transcript: string;
   existingItems: ExistingReviewItemForPrompt[];
   structuredSummary: StructuredSummary;
+  interviewLocale: InterviewLocale;
   jobDescription?: string | null;
 };
 
@@ -46,6 +48,7 @@ export function createReviewItemsGeneratorNode(
       transcript: input.transcript,
       existingItems: input.existingItems,
       structuredSummary: input.structuredSummary,
+      interviewLocale: input.interviewLocale,
       jobDescription: input.jobDescription,
     });
 

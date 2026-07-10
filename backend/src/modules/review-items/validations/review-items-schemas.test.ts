@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  listReviewItemsQuerySchema,
   listReviewItemsResponseSchema,
+  patchReviewItemSchema,
   reviewItemResponseSchema,
 } from "./review-items-schemas";
 
@@ -14,6 +16,8 @@ const validReviewItem = {
   topic: "System design trade-offs",
   description: "Candidate struggled to compare caching strategies.",
   priority: "high" as const,
+  status: "active" as const,
+  learnedAt: null,
   createdAt: "2026-05-30T12:00:00.000Z",
   updatedAt: "2026-05-30T12:30:00.000Z",
 };
@@ -120,6 +124,60 @@ describe("listReviewItemsResponseSchema", () => {
 
   it("rejects missing reviewItems field", () => {
     const result = listReviewItemsResponseSchema.safeParse({});
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("patchReviewItemSchema", () => {
+  it.each(["active", "learned"] as const)("accepts status %s", (status) => {
+    const result = patchReviewItemSchema.safeParse({ status });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual({ status });
+    }
+  });
+
+  it("rejects invalid status values", () => {
+    const result = patchReviewItemSchema.safeParse({ status: "pending" });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects missing status", () => {
+    const result = patchReviewItemSchema.safeParse({});
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("listReviewItemsQuerySchema", () => {
+  it.each(["active", "learned", "all"] as const)(
+    "accepts status %s",
+    (status) => {
+      const result = listReviewItemsQuerySchema.safeParse({ status });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.status).toBe(status);
+      }
+    },
+  );
+
+  it("defaults status to active when omitted", () => {
+    const result = listReviewItemsQuerySchema.safeParse({});
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.status).toBe("active");
+    }
+  });
+
+  it("rejects invalid status values", () => {
+    const result = listReviewItemsQuerySchema.safeParse({
+      status: "pending",
+    });
 
     expect(result.success).toBe(false);
   });

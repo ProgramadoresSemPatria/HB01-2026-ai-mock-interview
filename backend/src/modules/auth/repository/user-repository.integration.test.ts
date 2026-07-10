@@ -88,6 +88,27 @@ describe("UserRepository (integration)", () => {
     expect(reloaded?.password).toBe(newPassword);
   });
 
+  it("updateInterviewLocale persists locale visible via getById and getByEmail", async () => {
+    const params = createUserParams();
+    const created = await repository.create(params);
+
+    expect(created.interviewLocale).toBeNull();
+
+    const updated = await repository.updateInterviewLocale(created.id, "pt");
+
+    expect(updated).toMatchObject({
+      id: created.id,
+      email: params.email,
+      interviewLocale: "pt",
+    });
+
+    const byId = await repository.getById(created.id);
+    expect(byId?.interviewLocale).toBe("pt");
+
+    const byEmail = await repository.getByEmail(params.email);
+    expect(byEmail?.interviewLocale).toBe("pt");
+  });
+
   it("saveRefreshToken persists expiresAt from REFRESH_EXPIRES", async () => {
     const now = new Date("2026-05-26T12:00:00.000Z");
     vi.useFakeTimers();

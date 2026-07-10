@@ -1,4 +1,5 @@
 import prisma from "@/infrastructure/database";
+import type { InterviewLocale } from "@/shared";
 import type {
   InterviewLevel,
   InterviewSession,
@@ -14,18 +15,20 @@ export type CreateSessionParams = {
   userId: number;
   resumeId: string;
   level: InterviewLevel;
+  interviewLocale: InterviewLocale;
   jobDescription?: string | null;
 };
 
 export class SessionRepository {
   async create(params: CreateSessionParams): Promise<InterviewSession> {
-    const { userId, resumeId, level, jobDescription } = params;
+    const { userId, resumeId, level, interviewLocale, jobDescription } = params;
     return prisma.interviewSession.create({
       data: {
         userId,
         resumeId,
         level,
         jobDescription: jobDescription ?? null,
+        interviewLocale,
         maxTurns: MAX_TURNS_BY_LEVEL[level],
       },
     });
@@ -35,6 +38,12 @@ export class SessionRepository {
     return prisma.interviewSession.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async findById(id: string): Promise<InterviewSession | null> {
+    return prisma.interviewSession.findUnique({
+      where: { id },
     });
   }
 
@@ -54,10 +63,51 @@ export class SessionRepository {
     });
   }
 
-  async markFinished(id: string): Promise<InterviewSession> {
+  async markFinished(
+    id: string,
+    interviewLocale: InterviewLocale,
+  ): Promise<InterviewSession> {
     return prisma.interviewSession.update({
       where: { id },
-      data: { isFinished: true },
+      data: {
+        isFinished: true,
+        interviewLocale,
+        reviewGenerationStatus: "pending",
+        reviewGenerationError: null,
+      },
+    });
+  }
+
+  async markReviewGenerationFailed(
+    id: string,
+    error: string,
+  ): Promise<InterviewSession> {
+    return prisma.interviewSession.update({
+      where: { id },
+      data: {
+        reviewGenerationStatus: "failed",
+        reviewGenerationError: error,
+      },
+    });
+  }
+
+  async markReviewGenerationReady(id: string): Promise<InterviewSession> {
+    return prisma.interviewSession.update({
+      where: { id },
+      data: {
+        reviewGenerationStatus: "ready",
+        reviewGenerationError: null,
+      },
+    });
+  }
+
+  async markReviewGenerationPending(id: string): Promise<InterviewSession> {
+    return prisma.interviewSession.update({
+      where: { id },
+      data: {
+        reviewGenerationStatus: "pending",
+        reviewGenerationError: null,
+      },
     });
   }
 

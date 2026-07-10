@@ -1,0 +1,73 @@
+import type { ReviewPriority } from "@/modules/interview/validations/interview-schemas";
+import type { ReviewSessionTurn } from "@/modules/review-sessions/protocols/review-session-evaluator";
+import {
+  buildInterviewLocalePromptBlock,
+  type InterviewLocale,
+} from "@/shared/interview-locale/interview-locale";
+
+export const PERSONA_SECTION_HEADER = "## Role";
+export const TOPIC_SECTION_HEADER = "## Topic";
+export const DESCRIPTION_SECTION_HEADER = "## Description";
+export const CURRENT_PRIORITY_SECTION_HEADER = "## Current priority";
+export const TURNS_SECTION_HEADER = "## Review Q&A";
+export const INSTRUCTIONS_SECTION_HEADER = "## Instructions";
+
+export type BuildReviewSessionEvaluationPromptParams = {
+  topic: string;
+  description: string;
+  currentPriority: ReviewPriority;
+  turns: ReviewSessionTurn[];
+  interviewLocale: InterviewLocale;
+};
+
+function buildPersonaBlock(): string {
+  return `${PERSONA_SECTION_HEADER}
+You are a Tech Lead evaluating whether a candidate has sufficiently addressed a single review topic based only on their review-session answers.`;
+}
+
+function buildTurnsBlock(turns: ReviewSessionTurn[]): string {
+  if (turns.length === 0) {
+    return `${TURNS_SECTION_HEADER}
+(none)`;
+  }
+
+  const lines = turns.flatMap((turn, index) => [
+    `### Turn ${index + 1}`,
+    `Question: ${turn.question}`,
+    `Answer: ${turn.answer}`,
+  ]);
+
+  return `${TURNS_SECTION_HEADER}
+${lines.join("\n")}`;
+}
+
+function buildInstructionsBlock(): string {
+  return `${INSTRUCTIONS_SECTION_HEADER}
+Suggest whether this single review item should stay active or be marked learned, and what priority to use if it stays active.
+
+- Mark \`status: "learned"\` only when the answers demonstrate **sufficient** understanding of the topic — not merely getting one question right. When learned, set \`priority\` to \`null\`.
+- When \`status: "active"\`, you **must** set \`priority\` to \`low\`, \`medium\`, or \`high\` (never \`null\`).
+- Raise priority when the answers reinforce the existing gap.
+- Lower priority only with **clear evidence of improvement** across the answers; never lower below \`low\`.
+- If answers show no clear change (neither strong improvement nor reinforcement), keep the same priority.
+- If answers reinforce the gap but the priority would otherwise stay unchanged, bump one step: \`low\` → \`medium\`, \`medium\` → \`high\`, \`high\` stays \`high\`.
+- When the signal is ambiguous, prefer no change: keep \`status: "active"\` with the current priority.
+- Base your decision only on the topic, description, current priority, and review Q&A above — ignore any other context.`;
+}
+
+export function buildReviewSessionEvaluationPrompt(
+  params: BuildReviewSessionEvaluationPromptParams,
+): string {
+  return [
+    buildPersonaBlock(),
+    `${TOPIC_SECTION_HEADER}
+${params.topic}`,
+    `${DESCRIPTION_SECTION_HEADER}
+${params.description}`,
+    `${CURRENT_PRIORITY_SECTION_HEADER}
+${params.currentPriority}`,
+    buildTurnsBlock(params.turns),
+    buildInstructionsBlock(),
+    buildInterviewLocalePromptBlock(params.interviewLocale),
+  ].join("\n\n");
+}
