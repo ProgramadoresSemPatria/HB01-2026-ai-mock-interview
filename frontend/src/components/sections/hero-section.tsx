@@ -39,11 +39,11 @@ const HeroSection = ({ parallaxRef }: HeroSectionProps) => {
           alt="Hone"
           width="min(75vw, 800px)"
           height="min(75vw, 800px)"
-          intensity={100}
+          intensity={120}
           overscan={35}
           noiseOpacity={0.35}
           objectPosition="center"
-          noiseIntensity={30}
+          noiseIntensity={100}
           startOffset={-30}
         />
       </motion.div>
