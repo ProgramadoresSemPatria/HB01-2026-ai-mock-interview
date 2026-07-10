@@ -6,12 +6,9 @@ import type {
   InterviewGraphStreamCompletion,
   InterviewGraphStreamToken,
 } from "@/modules/interview/protocols/interview-graph";
-import type { IReviewItemsGenerator } from "@/modules/interview/protocols/review-items-generator";
+import type { IReviewGenerationQueue } from "@/modules/interview/protocols/review-generation-queue";
 import type { MessageRepository } from "@/modules/interview/repository/message-repository";
 import type { SessionRepository } from "@/modules/interview/repository/session-repository";
-import type { ReviewRepository } from "@/modules/interview/repository/review-repository";
-import { ReviewMergeService } from "@/modules/interview/service/review-merge-service";
-import type { ReviewItemRecord } from "@/modules/interview/types/review-item-record";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
 import type { TokenUsageService } from "@/modules/token-usage/service/token-usage-service";
 import { ConflictError, NotFoundError, TokenLimitExceededError } from "@/shared";
@@ -53,6 +50,8 @@ const baseSession = {
   turnCount: 0,
   maxTurns: 5,
   isFinished: false,
+  reviewGenerationStatus: "idle" as const,
+  reviewGenerationError: null,
   createdAt: new Date("2026-01-01T00:00:00.000Z"),
 };
 
@@ -99,8 +98,7 @@ describe("InterviewStreamService", () => {
   let messageRepository: MessageRepository;
   let resumeRepository: ResumeRepository;
   let graph: IInterviewGraph;
-  let reviewMergeService: ReviewMergeService;
-  let reviewItemsGenerator: IReviewItemsGenerator;
+  let reviewGenerationQueue: IReviewGenerationQueue;
   let tokenUsageService: TokenUsageService;
   let service: InterviewStreamService;
 
@@ -109,6 +107,7 @@ describe("InterviewStreamService", () => {
       findByIdAndUserId: vi.fn(),
       incrementTurnCount: vi.fn(),
       markFinished: vi.fn(),
+      markReviewGenerationFailed: vi.fn(),
     } as unknown as SessionRepository;
 
     messageRepository = {
@@ -125,12 +124,9 @@ describe("InterviewStreamService", () => {
       streamMessages: vi.fn(),
     };
 
-    reviewMergeService = {
-      insertNewTopicsOnly: vi.fn(),
-    } as unknown as ReviewMergeService;
-
-    reviewItemsGenerator = {
-      generate: vi.fn(),
+    reviewGenerationQueue = {
+      add: vi.fn().mockResolvedValue(undefined),
+      remove: vi.fn().mockResolvedValue(undefined),
     };
 
     tokenUsageService = {
@@ -144,8 +140,7 @@ describe("InterviewStreamService", () => {
       messageRepository,
       resumeRepository,
       graph,
-      reviewMergeService,
-      reviewItemsGenerator,
+      reviewGenerationQueue,
       tokenUsageService,
     );
   });
@@ -256,6 +251,7 @@ describe("InterviewStreamService", () => {
     expect(output).toContain('"content":"Hi "');
     expect(output).toContain("event: meta");
     expect(output).toContain('"turnCount":1');
+    expect(output).not.toContain("reviewGenerationStatus");
     expect(output).toContain("data: [DONE]");
     expect(messageRepository.createAi).toHaveBeenCalledWith({
       sessionId: baseSession.id,
@@ -263,10 +259,46 @@ describe("InterviewStreamService", () => {
       content: "Hi there",
     });
     expect(tokenUsageService.recordUsage).toHaveBeenCalled();
+    expect(reviewGenerationQueue.add).not.toHaveBeenCalled();
+    expect(sessionRepository.markFinished).not.toHaveBeenCalled();
     expect(res.end).toHaveBeenCalled();
   });
 
-  it("runs review merge and marks finished on final turn", async () => {
+  it("does not include reviewGenerationStatus or enqueue on mid-turn", async () => {
+    vi.mocked(sessionRepository.findByIdAndUserId).mockResolvedValue(
+      baseSession,
+    );
+    vi.mocked(resumeRepository.findByIdAndUserId).mockResolvedValue({
+      id: "resume-1",
+      structuredSummary,
+    } as unknown as Awaited<ReturnType<ResumeRepository["findByIdAndUserId"]>>);
+    vi.mocked(graph.streamMessages).mockReturnValue(
+      (async function* () {
+        yield { content: "Ok" };
+        return { content: "Ok" };
+      })(),
+    );
+    vi.mocked(sessionRepository.incrementTurnCount).mockResolvedValue({
+      ...baseSession,
+      turnCount: 1,
+    });
+    vi.mocked(messageRepository.createHuman).mockResolvedValue({} as never);
+    vi.mocked(messageRepository.createAi).mockResolvedValue({} as never);
+
+    const res = createMockResponse();
+
+    await service.streamTurn(1, baseSession.id, { content: "Hello", interviewLocale: "en" }, res);
+
+    const output = res.chunks.join("");
+    expect(output).toContain("event: meta");
+    expect(output).toContain('"isFinished":false');
+    expect(output).not.toContain("reviewGenerationStatus");
+    expect(reviewGenerationQueue.add).not.toHaveBeenCalled();
+    expect(sessionRepository.markFinished).not.toHaveBeenCalled();
+    expect(tokenUsageService.assertWithinLimit).toHaveBeenCalledTimes(1);
+  });
+
+  it("marks finished, enqueues review generation, and includes pending status on final turn", async () => {
     vi.mocked(sessionRepository.findByIdAndUserId).mockResolvedValue({
       ...baseSession,
       turnCount: 4,
@@ -286,28 +318,11 @@ describe("InterviewStreamService", () => {
       ...baseSession,
       turnCount: 5,
     });
-    vi.mocked(messageRepository.listBySessionId).mockResolvedValue([
-      {
-        id: "m1",
-        role: "human",
-        content: "Hello",
-        createdAt: new Date(),
-      },
-      {
-        id: "m2",
-        role: "ai",
-        content: "Final answer",
-        createdAt: new Date(),
-      },
-    ] as Awaited<ReturnType<MessageRepository["listBySessionId"]>>);
-    vi.mocked(reviewItemsGenerator.generate).mockResolvedValue({
-      items: [
-        {
-          topic: "Communication",
-          description: "Be concise",
-          priority: "medium",
-        },
-      ],
+    vi.mocked(sessionRepository.markFinished).mockResolvedValue({
+      ...baseSession,
+      turnCount: 5,
+      isFinished: true,
+      reviewGenerationStatus: "pending",
     });
     vi.mocked(messageRepository.createHuman).mockResolvedValue({} as never);
     vi.mocked(messageRepository.createAi).mockResolvedValue({} as never);
@@ -331,70 +346,26 @@ describe("InterviewStreamService", () => {
         callbacks: expect.any(Array),
       }),
     );
-    expect(reviewItemsGenerator.generate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userId: 1,
-        sessionId: baseSession.id,
-        interviewLocale: "pt",
-      }),
-      expect.objectContaining({ callbacks: expect.any(Array) }),
-    );
-    expect(reviewMergeService.insertNewTopicsOnly).toHaveBeenCalledWith(
-      1,
-      baseSession.id,
-      [
-        {
-          topic: "Communication",
-          description: "Be concise",
-          priority: "medium",
-        },
-      ],
-    );
     expect(sessionRepository.markFinished).toHaveBeenCalledWith(
       baseSession.id,
       "pt",
     );
+    expect(reviewGenerationQueue.add).toHaveBeenCalledWith({
+      sessionId: baseSession.id,
+    });
+    expect(messageRepository.listBySessionId).not.toHaveBeenCalled();
+    expect(sessionRepository.markReviewGenerationFailed).not.toHaveBeenCalled();
+    expect(tokenUsageService.assertWithinLimit).toHaveBeenCalledTimes(1);
 
     const output = res.chunks.join("");
+    expect(output).toContain("event: meta");
     expect(output).toContain('"isFinished":true');
+    expect(output).toContain('"reviewGenerationStatus":"pending"');
+    expect(output).toContain("data: [DONE]");
+    expect(output).not.toContain("event: error");
   });
 
-  it("leaves existing active item unchanged when topic is discussed on final turn", async () => {
-    const reviewRepository = {
-      findByUserIdAndTopicCaseInsensitive: vi.fn(),
-      findSimilarByUserIdAndTopic: vi.fn(),
-      upsert: vi.fn(),
-    } as unknown as ReviewRepository;
-
-    const existingActiveItem: ReviewItemRecord = {
-      id: "item-1",
-      userId: 1,
-      sessionId: "old-session",
-      topic: "Communication",
-      description: "Existing description",
-      priority: "low",
-      status: "active",
-      learnedAt: null,
-      createdAt: new Date("2026-01-01T00:00:00.000Z"),
-      updatedAt: new Date("2026-01-01T00:00:00.000Z"),
-    };
-
-    vi.mocked(
-      reviewRepository.findByUserIdAndTopicCaseInsensitive,
-    ).mockResolvedValue(existingActiveItem);
-
-    const realReviewMergeService = new ReviewMergeService(reviewRepository);
-
-    service = new InterviewStreamService(
-      sessionRepository,
-      messageRepository,
-      resumeRepository,
-      graph,
-      realReviewMergeService,
-      reviewItemsGenerator,
-      tokenUsageService,
-    );
-
+  it("marks review generation failed and still finishes chat when enqueue fails", async () => {
     vi.mocked(sessionRepository.findByIdAndUserId).mockResolvedValue({
       ...baseSession,
       turnCount: 4,
@@ -414,46 +385,91 @@ describe("InterviewStreamService", () => {
       ...baseSession,
       turnCount: 5,
     });
-    vi.mocked(messageRepository.listBySessionId).mockResolvedValue([
-      {
-        id: "m1",
-        role: "human",
-        content: "Tell me about communication skills",
-        createdAt: new Date(),
-      },
-      {
-        id: "m2",
-        role: "ai",
-        content: "Final answer",
-        createdAt: new Date(),
-      },
-    ] as Awaited<ReturnType<MessageRepository["listBySessionId"]>>);
-    vi.mocked(reviewItemsGenerator.generate).mockResolvedValue({
-      items: [
-        {
-          topic: "Communication",
-          description: "Be more concise",
-          priority: "high",
-        },
-      ],
+    vi.mocked(sessionRepository.markFinished).mockResolvedValue({
+      ...baseSession,
+      turnCount: 5,
+      isFinished: true,
+      reviewGenerationStatus: "pending",
+    });
+    vi.mocked(sessionRepository.markReviewGenerationFailed).mockResolvedValue({
+      ...baseSession,
+      turnCount: 5,
+      isFinished: true,
+      reviewGenerationStatus: "failed",
+      reviewGenerationError: "Redis unavailable",
+    });
+    vi.mocked(reviewGenerationQueue.add).mockRejectedValue(
+      new Error("Redis unavailable"),
+    );
+    vi.mocked(messageRepository.createHuman).mockResolvedValue({} as never);
+    vi.mocked(messageRepository.createAi).mockResolvedValue({} as never);
+
+    const res = createMockResponse();
+
+    await service.streamTurn(1, baseSession.id, { content: "Hello", interviewLocale: "en" }, res);
+
+    expect(sessionRepository.markFinished).toHaveBeenCalledWith(
+      baseSession.id,
+      "en",
+    );
+    expect(reviewGenerationQueue.add).toHaveBeenCalledWith({
+      sessionId: baseSession.id,
+    });
+    expect(sessionRepository.markReviewGenerationFailed).toHaveBeenCalledWith(
+      baseSession.id,
+      "Redis unavailable",
+    );
+
+    const output = res.chunks.join("");
+    expect(output).toContain("event: meta");
+    expect(output).toContain('"isFinished":true');
+    expect(output).toContain('"reviewGenerationStatus":"failed"');
+    expect(output).toContain("data: [DONE]");
+    expect(output).not.toContain("event: error");
+  });
+
+  it("does not await review generation work on final turn beyond enqueue", async () => {
+    vi.mocked(sessionRepository.findByIdAndUserId).mockResolvedValue({
+      ...baseSession,
+      turnCount: 4,
+      maxTurns: 5,
+    });
+    vi.mocked(resumeRepository.findByIdAndUserId).mockResolvedValue({
+      id: "resume-1",
+      structuredSummary,
+    } as unknown as Awaited<ReturnType<ResumeRepository["findByIdAndUserId"]>>);
+    vi.mocked(graph.streamMessages).mockReturnValue(
+      (async function* () {
+        yield { content: "Final answer" };
+        return { content: "Final answer" };
+      })(),
+    );
+    vi.mocked(sessionRepository.incrementTurnCount).mockResolvedValue({
+      ...baseSession,
+      turnCount: 5,
+    });
+    vi.mocked(sessionRepository.markFinished).mockResolvedValue({
+      ...baseSession,
+      turnCount: 5,
+      isFinished: true,
+      reviewGenerationStatus: "pending",
     });
     vi.mocked(messageRepository.createHuman).mockResolvedValue({} as never);
     vi.mocked(messageRepository.createAi).mockResolvedValue({} as never);
 
     const res = createMockResponse();
 
-    await service.streamTurn(
-      1,
-      baseSession.id,
-      { content: "Hello", interviewLocale: "pt" },
-      res,
-    );
+    await service.streamTurn(1, baseSession.id, { content: "Hello", interviewLocale: "en" }, res);
 
-    expect(reviewRepository.upsert).not.toHaveBeenCalled();
-    expect(sessionRepository.markFinished).toHaveBeenCalledWith(
-      baseSession.id,
-      "pt",
-    );
+    expect(messageRepository.listBySessionId).not.toHaveBeenCalled();
+    expect(tokenUsageService.assertWithinLimit).toHaveBeenCalledTimes(1);
+    expect(tokenUsageService.recordUsage).toHaveBeenCalledTimes(1);
+    expect(reviewGenerationQueue.add).toHaveBeenCalledTimes(1);
+    expect(sessionRepository.markFinished).toHaveBeenCalledTimes(1);
+
+    const output = res.chunks.join("");
+    expect(output).toContain('"reviewGenerationStatus":"pending"');
+    expect(output).toContain('"isFinished":true');
   });
 
   it("does not persist partial AI message when client disconnects", async () => {
@@ -494,6 +510,7 @@ describe("InterviewStreamService", () => {
 
     expect(messageRepository.createAi).not.toHaveBeenCalled();
     expect(sessionRepository.incrementTurnCount).not.toHaveBeenCalled();
+    expect(reviewGenerationQueue.add).not.toHaveBeenCalled();
   });
 
   it("emits error SSE event and DONE when graph stream fails", async () => {
@@ -522,45 +539,7 @@ describe("InterviewStreamService", () => {
     expect(output).toContain('"message":"OpenAI rate limit"');
     expect(output).toContain("data: [DONE]");
     expect(messageRepository.createAi).not.toHaveBeenCalled();
+    expect(reviewGenerationQueue.add).not.toHaveBeenCalled();
     expect(res.end).toHaveBeenCalled();
-  });
-
-  it("emits error SSE event when review generation fails on final turn", async () => {
-    vi.mocked(sessionRepository.findByIdAndUserId).mockResolvedValue({
-      ...baseSession,
-      turnCount: 4,
-      maxTurns: 5,
-    });
-    vi.mocked(resumeRepository.findByIdAndUserId).mockResolvedValue({
-      id: "resume-1",
-      structuredSummary,
-    } as unknown as Awaited<ReturnType<ResumeRepository["findByIdAndUserId"]>>);
-    vi.mocked(graph.streamMessages).mockReturnValue(
-      (async function* () {
-        yield { content: "Final answer" };
-        return { content: "Final answer" };
-      })(),
-    );
-    vi.mocked(sessionRepository.incrementTurnCount).mockResolvedValue({
-      ...baseSession,
-      turnCount: 5,
-    });
-    vi.mocked(messageRepository.listBySessionId).mockResolvedValue([]);
-    vi.mocked(reviewItemsGenerator.generate).mockRejectedValue(
-      new Error("Review model unavailable"),
-    );
-    vi.mocked(messageRepository.createHuman).mockResolvedValue({} as never);
-    vi.mocked(messageRepository.createAi).mockResolvedValue({} as never);
-
-    const res = createMockResponse();
-
-    await service.streamTurn(1, baseSession.id, { content: "Hello", interviewLocale: "en" }, res);
-
-    const output = res.chunks.join("");
-    expect(output).toContain("event: error");
-    expect(output).toContain('"message":"Review model unavailable"');
-    expect(output).toContain("data: [DONE]");
-    expect(output).not.toContain("event: meta");
-    expect(sessionRepository.markFinished).not.toHaveBeenCalled();
   });
 });

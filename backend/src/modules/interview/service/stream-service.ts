@@ -4,10 +4,9 @@ import { createUsageCaptureCallback } from "@/modules/token-usage/callbacks/toke
 import type { TokenUsageService } from "@/modules/token-usage/service/token-usage-service";
 import type { LlmUsage } from "@/modules/token-usage/types/llm-usage";
 import type { IInterviewGraph } from "@/modules/interview/protocols/interview-graph";
-import type { IReviewItemsGenerator } from "@/modules/interview/protocols/review-items-generator";
+import type { IReviewGenerationQueue } from "@/modules/interview/protocols/review-generation-queue";
 import type { MessageRepository } from "@/modules/interview/repository/message-repository";
 import type { SessionRepository } from "@/modules/interview/repository/session-repository";
-import type { ReviewMergeService } from "@/modules/interview/service/review-merge-service";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
 import {
@@ -30,8 +29,7 @@ export class InterviewStreamService {
     private readonly messageRepository: MessageRepository,
     private readonly resumeRepository: ResumeRepository,
     private readonly graph: IInterviewGraph,
-    private readonly reviewMergeService: ReviewMergeService,
-    private readonly reviewItemsGenerator: IReviewItemsGenerator,
+    private readonly reviewGenerationQueue: IReviewGenerationQueue,
     private readonly tokenUsageService: TokenUsageService,
   ) {}
 
@@ -185,47 +183,35 @@ export class InterviewStreamService {
         await this.sessionRepository.incrementTurnCount(sessionId);
 
       let isFinished = updatedSession.isFinished;
+      let reviewGenerationStatus: "pending" | "failed" | undefined;
 
       if (isFinalTurn) {
-        await this.tokenUsageService.assertWithinLimit(userId);
-
-        const messages =
-          await this.messageRepository.listBySessionId(sessionId);
-        const transcript = messages
-          .map((message) => `${message.role}: ${message.content}`)
-          .join("\n");
-
-        const reviewUsageCapture = createUsageCaptureCallback();
-        const review = await this.reviewItemsGenerator.generate(
-          {
-            userId,
-            sessionId,
-            transcript,
-            structuredSummary: resumeSummary,
-            interviewLocale,
-            jobDescription: session.jobDescription,
-          },
-          { callbacks: [reviewUsageCapture.callback] },
-        );
-
-        await this.tokenUsageService.recordUsage(
-          userId,
-          reviewUsageCapture.getUsage(),
-        );
-
-        await this.reviewMergeService.insertNewTopicsOnly(
-          userId,
-          sessionId,
-          review.items,
-        );
         await this.sessionRepository.markFinished(sessionId, interviewLocale);
         isFinished = true;
+        reviewGenerationStatus = "pending";
+
+        try {
+          await this.reviewGenerationQueue.add({ sessionId });
+        } catch (enqueueErr) {
+          const message =
+            enqueueErr instanceof Error
+              ? enqueueErr.message
+              : "Failed to enqueue review generation";
+          await this.sessionRepository.markReviewGenerationFailed(
+            sessionId,
+            message,
+          );
+          reviewGenerationStatus = "failed";
+        }
       }
 
       writeEvent(res, "meta", {
         turnCount: updatedSession.turnCount,
         maxTurns: session.maxTurns,
         isFinished,
+        ...(reviewGenerationStatus !== undefined
+          ? { reviewGenerationStatus }
+          : {}),
       });
       writeDone(res);
       res.end();

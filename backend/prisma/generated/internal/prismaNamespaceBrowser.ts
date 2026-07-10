@@ -105,6 +105,8 @@ export const InterviewSessionScalarFieldEnum = {
   turnCount: 'turnCount',
   maxTurns: 'maxTurns',
   isFinished: 'isFinished',
+  reviewGenerationStatus: 'reviewGenerationStatus',
+  reviewGenerationError: 'reviewGenerationError',
   createdAt: 'createdAt'
 } as const
 

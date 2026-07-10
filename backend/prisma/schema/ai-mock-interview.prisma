@@ -42,6 +42,13 @@ enum InterviewLocale {
   pt
 }
 
+enum ReviewGenerationStatus {
+  idle
+  pending
+  ready
+  failed
+}
+
 model Resume {
   id                String       @id @default(uuid())
   userId            Int
@@ -64,19 +71,21 @@ model Resume {
 }
 
 model InterviewSession {
-  id              String          @id @default(uuid())
-  userId          Int
-  resumeId        String          @map("resume_id")
-  level           InterviewLevel
-  jobDescription  String?         @map("job_description") @db.Text
-  interviewLocale InterviewLocale @default(en) @map("interview_locale")
-  turnCount       Int             @default(0) @map("turn_count")
-  maxTurns        Int             @map("max_turns")
-  isFinished      Boolean         @default(false) @map("is_finished")
-  createdAt       DateTime        @default(now()) @map("created_at")
+  id                     String                 @id @default(uuid())
+  userId                 Int
+  resumeId               String                 @map("resume_id")
+  level                  InterviewLevel
+  jobDescription         String?                @map("job_description") @db.Text
+  interviewLocale        InterviewLocale        @default(en) @map("interview_locale")
+  turnCount              Int                    @default(0) @map("turn_count")
+  maxTurns               Int                    @map("max_turns")
+  isFinished             Boolean                @default(false) @map("is_finished")
+  reviewGenerationStatus ReviewGenerationStatus @default(idle) @map("review_generation_status")
+  reviewGenerationError  String?                @map("review_generation_error") @db.Text
+  createdAt              DateTime               @default(now()) @map("created_at")
 
-  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  resume      Resume             @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume             Resume              @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   messages           InterviewMessage[]
   reviewItems        ReviewItem[]
   interviewFeedbacks InterviewFeedback[]

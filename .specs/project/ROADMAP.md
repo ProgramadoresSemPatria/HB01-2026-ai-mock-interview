@@ -4,6 +4,7 @@
 |----------|---------|--------|------|
 | P1 | AI Mock Interview (backend) | Specified | [spec.md](../features/ai-mock-interview/spec.md) |
 | P1 | Interview Locale (EN \| PT) | Done | [spec.md](../features/interview-locale/spec.md) · [design.md](../features/interview-locale/design.md) · [tasks.md](../features/interview-locale/tasks.md) |
+| P1 | Async Review Items Generation (BullMQ) | Implemented (awaiting commit) | [spec.md](../features/async-review-items-generation/spec.md) · [design.md](../features/async-review-items-generation/design.md) · [tasks.md](../features/async-review-items-generation/tasks.md) · [context.md](../features/async-review-items-generation/context.md) |
 | P2 | AI Mock Interview (frontend) | Pending | — |
 | P2 | Interview Human Feedback (frontend integration) | Specified | [spec.md](../../frontend/.specs/features/interview-human-feedback/spec.md) |
 
@@ -23,6 +24,7 @@
 - [ ] Review generator node
 - [ ] Review items API (read/list)
 - [ ] Conversation history endpoints
+- [ ] Async review-items generation via BullMQ (decouple from final SSE turn)
 
 ### M4 — Frontend Integration
 - [ ] Resume upload UI

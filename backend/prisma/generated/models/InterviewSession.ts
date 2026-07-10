@@ -48,6 +48,8 @@ export type InterviewSessionMinAggregateOutputType = {
   turnCount: number | null
   maxTurns: number | null
   isFinished: boolean | null
+  reviewGenerationStatus: $Enums.ReviewGenerationStatus | null
+  reviewGenerationError: string | null
   createdAt: Date | null
 }
 
@@ -61,6 +63,8 @@ export type InterviewSessionMaxAggregateOutputType = {
   turnCount: number | null
   maxTurns: number | null
   isFinished: boolean | null
+  reviewGenerationStatus: $Enums.ReviewGenerationStatus | null
+  reviewGenerationError: string | null
   createdAt: Date | null
 }
 
@@ -74,6 +78,8 @@ export type InterviewSessionCountAggregateOutputType = {
   turnCount: number
   maxTurns: number
   isFinished: number
+  reviewGenerationStatus: number
+  reviewGenerationError: number
   createdAt: number
   _all: number
 }
@@ -101,6 +107,8 @@ export type InterviewSessionMinAggregateInputType = {
   turnCount?: true
   maxTurns?: true
   isFinished?: true
+  reviewGenerationStatus?: true
+  reviewGenerationError?: true
   createdAt?: true
 }
 
@@ -114,6 +122,8 @@ export type InterviewSessionMaxAggregateInputType = {
   turnCount?: true
   maxTurns?: true
   isFinished?: true
+  reviewGenerationStatus?: true
+  reviewGenerationError?: true
   createdAt?: true
 }
 
@@ -127,6 +137,8 @@ export type InterviewSessionCountAggregateInputType = {
   turnCount?: true
   maxTurns?: true
   isFinished?: true
+  reviewGenerationStatus?: true
+  reviewGenerationError?: true
   createdAt?: true
   _all?: true
 }
@@ -227,6 +239,8 @@ export type InterviewSessionGroupByOutputType = {
   turnCount: number
   maxTurns: number
   isFinished: boolean
+  reviewGenerationStatus: $Enums.ReviewGenerationStatus
+  reviewGenerationError: string | null
   createdAt: Date
   _count: InterviewSessionCountAggregateOutputType | null
   _avg: InterviewSessionAvgAggregateOutputType | null
@@ -263,6 +277,8 @@ export type InterviewSessionWhereInput = {
   turnCount?: Prisma.IntFilter<"InterviewSession"> | number
   maxTurns?: Prisma.IntFilter<"InterviewSession"> | number
   isFinished?: Prisma.BoolFilter<"InterviewSession"> | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFilter<"InterviewSession"> | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.StringNullableFilter<"InterviewSession"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InterviewSession"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   resume?: Prisma.XOR<Prisma.ResumeScalarRelationFilter, Prisma.ResumeWhereInput>
@@ -281,6 +297,8 @@ export type InterviewSessionOrderByWithRelationInput = {
   turnCount?: Prisma.SortOrder
   maxTurns?: Prisma.SortOrder
   isFinished?: Prisma.SortOrder
+  reviewGenerationStatus?: Prisma.SortOrder
+  reviewGenerationError?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   resume?: Prisma.ResumeOrderByWithRelationInput
@@ -302,6 +320,8 @@ export type InterviewSessionWhereUniqueInput = Prisma.AtLeast<{
   turnCount?: Prisma.IntFilter<"InterviewSession"> | number
   maxTurns?: Prisma.IntFilter<"InterviewSession"> | number
   isFinished?: Prisma.BoolFilter<"InterviewSession"> | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFilter<"InterviewSession"> | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.StringNullableFilter<"InterviewSession"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InterviewSession"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   resume?: Prisma.XOR<Prisma.ResumeScalarRelationFilter, Prisma.ResumeWhereInput>
@@ -320,6 +340,8 @@ export type InterviewSessionOrderByWithAggregationInput = {
   turnCount?: Prisma.SortOrder
   maxTurns?: Prisma.SortOrder
   isFinished?: Prisma.SortOrder
+  reviewGenerationStatus?: Prisma.SortOrder
+  reviewGenerationError?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.InterviewSessionCountOrderByAggregateInput
   _avg?: Prisma.InterviewSessionAvgOrderByAggregateInput
@@ -341,6 +363,8 @@ export type InterviewSessionScalarWhereWithAggregatesInput = {
   turnCount?: Prisma.IntWithAggregatesFilter<"InterviewSession"> | number
   maxTurns?: Prisma.IntWithAggregatesFilter<"InterviewSession"> | number
   isFinished?: Prisma.BoolWithAggregatesFilter<"InterviewSession"> | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusWithAggregatesFilter<"InterviewSession"> | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.StringNullableWithAggregatesFilter<"InterviewSession"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"InterviewSession"> | Date | string
 }
 
@@ -352,6 +376,8 @@ export type InterviewSessionCreateInput = {
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
+  reviewGenerationStatus?: $Enums.ReviewGenerationStatus
+  reviewGenerationError?: string | null
   createdAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutInterviewSessionsInput
   resume: Prisma.ResumeCreateNestedOneWithoutSessionsInput
@@ -370,6 +396,8 @@ export type InterviewSessionUncheckedCreateInput = {
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
+  reviewGenerationStatus?: $Enums.ReviewGenerationStatus
+  reviewGenerationError?: string | null
   createdAt?: Date | string
   messages?: Prisma.InterviewMessageUncheckedCreateNestedManyWithoutSessionInput
   reviewItems?: Prisma.ReviewItemUncheckedCreateNestedManyWithoutSessionInput
@@ -384,6 +412,8 @@ export type InterviewSessionUpdateInput = {
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFieldUpdateOperationsInput | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutInterviewSessionsNestedInput
   resume?: Prisma.ResumeUpdateOneRequiredWithoutSessionsNestedInput
@@ -402,6 +432,8 @@ export type InterviewSessionUncheckedUpdateInput = {
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFieldUpdateOperationsInput | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.InterviewMessageUncheckedUpdateManyWithoutSessionNestedInput
   reviewItems?: Prisma.ReviewItemUncheckedUpdateManyWithoutSessionNestedInput
@@ -418,6 +450,8 @@ export type InterviewSessionCreateManyInput = {
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
+  reviewGenerationStatus?: $Enums.ReviewGenerationStatus
+  reviewGenerationError?: string | null
   createdAt?: Date | string
 }
 
@@ -429,6 +463,8 @@ export type InterviewSessionUpdateManyMutationInput = {
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFieldUpdateOperationsInput | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -442,6 +478,8 @@ export type InterviewSessionUncheckedUpdateManyInput = {
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFieldUpdateOperationsInput | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -465,6 +503,8 @@ export type InterviewSessionCountOrderByAggregateInput = {
   turnCount?: Prisma.SortOrder
   maxTurns?: Prisma.SortOrder
   isFinished?: Prisma.SortOrder
+  reviewGenerationStatus?: Prisma.SortOrder
+  reviewGenerationError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -484,6 +524,8 @@ export type InterviewSessionMaxOrderByAggregateInput = {
   turnCount?: Prisma.SortOrder
   maxTurns?: Prisma.SortOrder
   isFinished?: Prisma.SortOrder
+  reviewGenerationStatus?: Prisma.SortOrder
+  reviewGenerationError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -497,6 +539,8 @@ export type InterviewSessionMinOrderByAggregateInput = {
   turnCount?: Prisma.SortOrder
   maxTurns?: Prisma.SortOrder
   isFinished?: Prisma.SortOrder
+  reviewGenerationStatus?: Prisma.SortOrder
+  reviewGenerationError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -563,6 +607,10 @@ export type EnumInterviewLocaleFieldUpdateOperationsInput = {
 
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean
+}
+
+export type EnumReviewGenerationStatusFieldUpdateOperationsInput = {
+  set?: $Enums.ReviewGenerationStatus
 }
 
 export type InterviewSessionCreateNestedOneWithoutMessagesInput = {
@@ -657,6 +705,8 @@ export type InterviewSessionCreateWithoutResumeInput = {
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
+  reviewGenerationStatus?: $Enums.ReviewGenerationStatus
+  reviewGenerationError?: string | null
   createdAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutInterviewSessionsInput
   messages?: Prisma.InterviewMessageCreateNestedManyWithoutSessionInput
@@ -673,6 +723,8 @@ export type InterviewSessionUncheckedCreateWithoutResumeInput = {
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
+  reviewGenerationStatus?: $Enums.ReviewGenerationStatus
+  reviewGenerationError?: string | null
   createdAt?: Date | string
   messages?: Prisma.InterviewMessageUncheckedCreateNestedManyWithoutSessionInput
   reviewItems?: Prisma.ReviewItemUncheckedCreateNestedManyWithoutSessionInput
@@ -718,6 +770,8 @@ export type InterviewSessionScalarWhereInput = {
   turnCount?: Prisma.IntFilter<"InterviewSession"> | number
   maxTurns?: Prisma.IntFilter<"InterviewSession"> | number
   isFinished?: Prisma.BoolFilter<"InterviewSession"> | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFilter<"InterviewSession"> | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.StringNullableFilter<"InterviewSession"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InterviewSession"> | Date | string
 }
 
@@ -729,6 +783,8 @@ export type InterviewSessionCreateWithoutMessagesInput = {
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
+  reviewGenerationStatus?: $Enums.ReviewGenerationStatus
+  reviewGenerationError?: string | null
   createdAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutInterviewSessionsInput
   resume: Prisma.ResumeCreateNestedOneWithoutSessionsInput
@@ -746,6 +802,8 @@ export type InterviewSessionUncheckedCreateWithoutMessagesInput = {
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
+  reviewGenerationStatus?: $Enums.ReviewGenerationStatus
+  reviewGenerationError?: string | null
   createdAt?: Date | string
   reviewItems?: Prisma.ReviewItemUncheckedCreateNestedManyWithoutSessionInput
   interviewFeedbacks?: Prisma.InterviewFeedbackUncheckedCreateNestedManyWithoutSessionInput
@@ -775,6 +833,8 @@ export type InterviewSessionUpdateWithoutMessagesInput = {
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFieldUpdateOperationsInput | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutInterviewSessionsNestedInput
   resume?: Prisma.ResumeUpdateOneRequiredWithoutSessionsNestedInput
@@ -792,6 +852,8 @@ export type InterviewSessionUncheckedUpdateWithoutMessagesInput = {
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFieldUpdateOperationsInput | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviewItems?: Prisma.ReviewItemUncheckedUpdateManyWithoutSessionNestedInput
   interviewFeedbacks?: Prisma.InterviewFeedbackUncheckedUpdateManyWithoutSessionNestedInput
@@ -805,6 +867,8 @@ export type InterviewSessionCreateWithoutReviewItemsInput = {
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
+  reviewGenerationStatus?: $Enums.ReviewGenerationStatus
+  reviewGenerationError?: string | null
   createdAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutInterviewSessionsInput
   resume: Prisma.ResumeCreateNestedOneWithoutSessionsInput
@@ -822,6 +886,8 @@ export type InterviewSessionUncheckedCreateWithoutReviewItemsInput = {
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
+  reviewGenerationStatus?: $Enums.ReviewGenerationStatus
+  reviewGenerationError?: string | null
   createdAt?: Date | string
   messages?: Prisma.InterviewMessageUncheckedCreateNestedManyWithoutSessionInput
   interviewFeedbacks?: Prisma.InterviewFeedbackUncheckedCreateNestedManyWithoutSessionInput
@@ -851,6 +917,8 @@ export type InterviewSessionUpdateWithoutReviewItemsInput = {
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFieldUpdateOperationsInput | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutInterviewSessionsNestedInput
   resume?: Prisma.ResumeUpdateOneRequiredWithoutSessionsNestedInput
@@ -868,6 +936,8 @@ export type InterviewSessionUncheckedUpdateWithoutReviewItemsInput = {
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFieldUpdateOperationsInput | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.InterviewMessageUncheckedUpdateManyWithoutSessionNestedInput
   interviewFeedbacks?: Prisma.InterviewFeedbackUncheckedUpdateManyWithoutSessionNestedInput
@@ -881,6 +951,8 @@ export type InterviewSessionCreateWithoutInterviewFeedbacksInput = {
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
+  reviewGenerationStatus?: $Enums.ReviewGenerationStatus
+  reviewGenerationError?: string | null
   createdAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutInterviewSessionsInput
   resume: Prisma.ResumeCreateNestedOneWithoutSessionsInput
@@ -898,6 +970,8 @@ export type InterviewSessionUncheckedCreateWithoutInterviewFeedbacksInput = {
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
+  reviewGenerationStatus?: $Enums.ReviewGenerationStatus
+  reviewGenerationError?: string | null
   createdAt?: Date | string
   messages?: Prisma.InterviewMessageUncheckedCreateNestedManyWithoutSessionInput
   reviewItems?: Prisma.ReviewItemUncheckedCreateNestedManyWithoutSessionInput
@@ -927,6 +1001,8 @@ export type InterviewSessionUpdateWithoutInterviewFeedbacksInput = {
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFieldUpdateOperationsInput | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutInterviewSessionsNestedInput
   resume?: Prisma.ResumeUpdateOneRequiredWithoutSessionsNestedInput
@@ -944,6 +1020,8 @@ export type InterviewSessionUncheckedUpdateWithoutInterviewFeedbacksInput = {
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFieldUpdateOperationsInput | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.InterviewMessageUncheckedUpdateManyWithoutSessionNestedInput
   reviewItems?: Prisma.ReviewItemUncheckedUpdateManyWithoutSessionNestedInput
@@ -957,6 +1035,8 @@ export type InterviewSessionCreateWithoutUserInput = {
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
+  reviewGenerationStatus?: $Enums.ReviewGenerationStatus
+  reviewGenerationError?: string | null
   createdAt?: Date | string
   resume: Prisma.ResumeCreateNestedOneWithoutSessionsInput
   messages?: Prisma.InterviewMessageCreateNestedManyWithoutSessionInput
@@ -973,6 +1053,8 @@ export type InterviewSessionUncheckedCreateWithoutUserInput = {
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
+  reviewGenerationStatus?: $Enums.ReviewGenerationStatus
+  reviewGenerationError?: string | null
   createdAt?: Date | string
   messages?: Prisma.InterviewMessageUncheckedCreateNestedManyWithoutSessionInput
   reviewItems?: Prisma.ReviewItemUncheckedCreateNestedManyWithoutSessionInput
@@ -1014,6 +1096,8 @@ export type InterviewSessionCreateManyResumeInput = {
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
+  reviewGenerationStatus?: $Enums.ReviewGenerationStatus
+  reviewGenerationError?: string | null
   createdAt?: Date | string
 }
 
@@ -1025,6 +1109,8 @@ export type InterviewSessionUpdateWithoutResumeInput = {
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFieldUpdateOperationsInput | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutInterviewSessionsNestedInput
   messages?: Prisma.InterviewMessageUpdateManyWithoutSessionNestedInput
@@ -1041,6 +1127,8 @@ export type InterviewSessionUncheckedUpdateWithoutResumeInput = {
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFieldUpdateOperationsInput | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.InterviewMessageUncheckedUpdateManyWithoutSessionNestedInput
   reviewItems?: Prisma.ReviewItemUncheckedUpdateManyWithoutSessionNestedInput
@@ -1056,6 +1144,8 @@ export type InterviewSessionUncheckedUpdateManyWithoutResumeInput = {
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFieldUpdateOperationsInput | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1068,6 +1158,8 @@ export type InterviewSessionCreateManyUserInput = {
   turnCount?: number
   maxTurns: number
   isFinished?: boolean
+  reviewGenerationStatus?: $Enums.ReviewGenerationStatus
+  reviewGenerationError?: string | null
   createdAt?: Date | string
 }
 
@@ -1079,6 +1171,8 @@ export type InterviewSessionUpdateWithoutUserInput = {
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFieldUpdateOperationsInput | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   resume?: Prisma.ResumeUpdateOneRequiredWithoutSessionsNestedInput
   messages?: Prisma.InterviewMessageUpdateManyWithoutSessionNestedInput
@@ -1095,6 +1189,8 @@ export type InterviewSessionUncheckedUpdateWithoutUserInput = {
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFieldUpdateOperationsInput | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.InterviewMessageUncheckedUpdateManyWithoutSessionNestedInput
   reviewItems?: Prisma.ReviewItemUncheckedUpdateManyWithoutSessionNestedInput
@@ -1110,6 +1206,8 @@ export type InterviewSessionUncheckedUpdateManyWithoutUserInput = {
   turnCount?: Prisma.IntFieldUpdateOperationsInput | number
   maxTurns?: Prisma.IntFieldUpdateOperationsInput | number
   isFinished?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  reviewGenerationStatus?: Prisma.EnumReviewGenerationStatusFieldUpdateOperationsInput | $Enums.ReviewGenerationStatus
+  reviewGenerationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1172,6 +1270,8 @@ export type InterviewSessionSelect<ExtArgs extends runtime.Types.Extensions.Inte
   turnCount?: boolean
   maxTurns?: boolean
   isFinished?: boolean
+  reviewGenerationStatus?: boolean
+  reviewGenerationError?: boolean
   createdAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   resume?: boolean | Prisma.ResumeDefaultArgs<ExtArgs>
@@ -1191,6 +1291,8 @@ export type InterviewSessionSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   turnCount?: boolean
   maxTurns?: boolean
   isFinished?: boolean
+  reviewGenerationStatus?: boolean
+  reviewGenerationError?: boolean
   createdAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   resume?: boolean | Prisma.ResumeDefaultArgs<ExtArgs>
@@ -1206,6 +1308,8 @@ export type InterviewSessionSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   turnCount?: boolean
   maxTurns?: boolean
   isFinished?: boolean
+  reviewGenerationStatus?: boolean
+  reviewGenerationError?: boolean
   createdAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   resume?: boolean | Prisma.ResumeDefaultArgs<ExtArgs>
@@ -1221,10 +1325,12 @@ export type InterviewSessionSelectScalar = {
   turnCount?: boolean
   maxTurns?: boolean
   isFinished?: boolean
+  reviewGenerationStatus?: boolean
+  reviewGenerationError?: boolean
   createdAt?: boolean
 }
 
-export type InterviewSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "resumeId" | "level" | "jobDescription" | "interviewLocale" | "turnCount" | "maxTurns" | "isFinished" | "createdAt", ExtArgs["result"]["interviewSession"]>
+export type InterviewSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "resumeId" | "level" | "jobDescription" | "interviewLocale" | "turnCount" | "maxTurns" | "isFinished" | "reviewGenerationStatus" | "reviewGenerationError" | "createdAt", ExtArgs["result"]["interviewSession"]>
 export type InterviewSessionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   resume?: boolean | Prisma.ResumeDefaultArgs<ExtArgs>
@@ -1261,6 +1367,8 @@ export type $InterviewSessionPayload<ExtArgs extends runtime.Types.Extensions.In
     turnCount: number
     maxTurns: number
     isFinished: boolean
+    reviewGenerationStatus: $Enums.ReviewGenerationStatus
+    reviewGenerationError: string | null
     createdAt: Date
   }, ExtArgs["result"]["interviewSession"]>
   composites: {}
@@ -1699,6 +1807,8 @@ export interface InterviewSessionFieldRefs {
   readonly turnCount: Prisma.FieldRef<"InterviewSession", 'Int'>
   readonly maxTurns: Prisma.FieldRef<"InterviewSession", 'Int'>
   readonly isFinished: Prisma.FieldRef<"InterviewSession", 'Boolean'>
+  readonly reviewGenerationStatus: Prisma.FieldRef<"InterviewSession", 'ReviewGenerationStatus'>
+  readonly reviewGenerationError: Prisma.FieldRef<"InterviewSession", 'String'>
   readonly createdAt: Prisma.FieldRef<"InterviewSession", 'DateTime'>
 }
     

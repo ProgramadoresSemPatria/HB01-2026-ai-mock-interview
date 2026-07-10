@@ -1218,6 +1218,8 @@ export const InterviewSessionScalarFieldEnum = {
   turnCount: 'turnCount',
   maxTurns: 'maxTurns',
   isFinished: 'isFinished',
+  reviewGenerationStatus: 'reviewGenerationStatus',
+  reviewGenerationError: 'reviewGenerationError',
   createdAt: 'createdAt'
 } as const
 
@@ -1490,6 +1492,20 @@ export type ListEnumInterviewLocaleFieldRefInput<$PrismaModel> = FieldRefInputTy
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'ReviewGenerationStatus'
+ */
+export type EnumReviewGenerationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReviewGenerationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ReviewGenerationStatus[]'
+ */
+export type ListEnumReviewGenerationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReviewGenerationStatus[]'>
     
 
 

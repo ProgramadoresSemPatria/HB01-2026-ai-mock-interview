@@ -1,11 +1,20 @@
 # State
 
-**Last Updated:** 2026-07-09  
-**Current Work:** Interview Locale (EN | PT) — Verified (full gate green)
+**Last Updated:** 2026-07-10  
+**Current Work:** Async Review Items Generation — automated validation passed; interactive UAT in progress; awaiting user commit
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-011: Async review items via BullMQ (same worker) (2026-07-09)
+
+**Decision:** Final interview turn finishes conversation (`isFinished`) and enqueues review-item extraction on a dedicated BullMQ queue processed by existing `src/worker.ts`; session exposes `reviewGenerationStatus` (`idle|pending|ready|failed`). Overturns sync generate-then-finish and prior `ICF-DEC-01` limbo behavior.  
+**Reason:** Last-turn latency, limbo sessions on LLM failure, align with resume async pattern for production.  
+**Trade-off:** Eventual consistency for review list; FE must poll/handle pending; slightly more surface area (status + queue).  
+**Impact:** `InterviewStreamService` finish path, Prisma session columns, new queue + worker handler, session API + SSE meta, FE poll + retry endpoint.  
+**Spec:** `.specs/features/async-review-items-generation/spec.md`  
+**Design:** `.specs/features/async-review-items-generation/design.md`
 
 ### AD-010: Interview locale preference on User + body enum for prompts (2026-07-09)
 
@@ -39,6 +48,13 @@ _None_
 
 ## Lessons Learned
 
+### L-004: Parallel Execute without per-task commits still needs shared factory first (2026-07-10)
+
+**Context:** T7 and T8 both needed `makeReviewGenerationService`.  
+**Problem:** Parallel agents would race creating the same factory file.  
+**Solution:** Orchestrator created the shared factory before launching T7/T8.  
+**Prevents:** Duplicate/conflicting factory files during parallel HTTP+worker work.
+
 ### L-003: Required body fields break unrelated E2E helpers (2026-07-09)
 
 **Context:** Validation after interview-locale made `interviewLocale` required on interview create/stream.  
@@ -57,7 +73,7 @@ _None_
 
 **Context:** Multiple agents committing concurrently on the same branch.  
 **Problem:** Accidental inclusion of unrelated WIP in commits; Soft-resets needed.  
-**Solution:** Each agent stages only its file list; orchestrator serializes commits when paths overlap.  
+**Solution:** Each agent stages only its file list; orchestrator serializes commits when paths overlap. User may also defer all commits to end of Execute.  
 **Prevents:** Contaminated atomic commits during parallel Execute.
 
 ---
@@ -77,12 +93,21 @@ _None_
 - [ ] Analytics dashboard for EN vs PT session counts — Captured during: interview-locale
 - [ ] Resume reprocessing endpoint (re-queue failed/processing jobs)
 - [ ] Webhook or push notification when resume processing completes
+- [ ] Webhook or push when review generation completes — Captured during: async-review-items-generation
 - [ ] Export interview transcript as PDF
+- [ ] Bull Board / admin UI for queue ops — Captured during: async-review-items-generation
 
 ---
 
 ## Todos
 
+- [x] Discuss gray areas for async-review-items-generation → `context.md`
+- [x] Design phase for async-review-items-generation (`design.md`) — approved
+- [x] Tasks breakdown for async-review-items-generation (`tasks.md`)
+- [x] Execute async-review-items-generation (T1–T11) — implemented; user will commit
+- [x] Feature-level automated validation (2026-07-10) — unit/integration/e2e + FE types/build green
+- [ ] Interactive UAT for async-review-items-generation (pending/ready/failed UX)
+- [ ] Commit async-review-items-generation (deferred by user request)
 - [x] Design phase for interview-locale (`design.md`)
 - [x] Tasks breakdown for interview-locale (`tasks.md`)
 - [x] Execute interview-locale (T1–T18)
@@ -106,3 +131,5 @@ _None_
 ## Preferences
 
 - Grill-me used for disambiguation before Specify on interview-locale
+- Spec-driven Specify used for async-review-items-generation (architecture pre-aligned in chat)
+- Prefer single end-of-feature commit over per-task commits when requested

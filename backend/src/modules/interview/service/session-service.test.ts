@@ -82,6 +82,8 @@ function createStubSessionRepository() {
         turnCount: 0,
         maxTurns: MAX_TURNS_BY_LEVEL[params.level],
         isFinished: false,
+        reviewGenerationStatus: "idle" as const,
+        reviewGenerationError: null,
         createdAt: new Date("2026-01-01T00:00:00.000Z"),
       };
     },
@@ -97,6 +99,8 @@ function createStubSessionRepository() {
       turnCount: 1,
       maxTurns: 5,
       isFinished: false,
+      reviewGenerationStatus: "idle" as const,
+      reviewGenerationError: null,
       createdAt: new Date(),
     }),
     markFinished: async (id: string, interviewLocale: "en" | "pt") => ({
@@ -109,6 +113,8 @@ function createStubSessionRepository() {
       turnCount: 1,
       maxTurns: 5,
       isFinished: true,
+      reviewGenerationStatus: "pending" as const,
+      reviewGenerationError: null,
       createdAt: new Date(),
     }),
   };
@@ -338,6 +344,8 @@ describe("SessionService", () => {
         turnCount: 2,
         maxTurns: 7,
         isFinished: false,
+        reviewGenerationStatus: "idle" as const,
+        reviewGenerationError: null,
         createdAt,
       },
     ];
@@ -354,8 +362,51 @@ describe("SessionService", () => {
         isFinished: false,
         hasJobDescription: true,
         createdAt,
+        reviewGenerationStatus: "idle",
+        reviewGenerationError: null,
       },
     ]);
+  });
+
+  it("returns a session summary for an owned session", async () => {
+    const createdAt = new Date("2026-01-02T00:00:00.000Z");
+    sessionRepository.sessionById = {
+      id: sessionId,
+      userId,
+      resumeId,
+      level: "mid",
+      jobDescription: "Backend role",
+      interviewLocale: "en",
+      turnCount: 2,
+      maxTurns: 7,
+      isFinished: true,
+      reviewGenerationStatus: "failed" as const,
+      reviewGenerationError: "LLM timeout",
+      createdAt,
+    };
+
+    const result = await service.getSession(userId, sessionId);
+
+    expect(result).toEqual({
+      id: sessionId,
+      resumeId,
+      level: "mid",
+      turnCount: 2,
+      maxTurns: 7,
+      isFinished: true,
+      hasJobDescription: true,
+      createdAt,
+      reviewGenerationStatus: "failed",
+      reviewGenerationError: "LLM timeout",
+    });
+  });
+
+  it("throws NotFoundError when getting an unknown or other user's session", async () => {
+    sessionRepository.sessionById = null;
+
+    await expect(service.getSession(userId, sessionId)).rejects.toBeInstanceOf(
+      NotFoundError,
+    );
   });
 
   it("returns messages ordered for an owned session", async () => {
@@ -370,6 +421,8 @@ describe("SessionService", () => {
       turnCount: 1,
       maxTurns: 5,
       isFinished: false,
+      reviewGenerationStatus: "idle" as const,
+      reviewGenerationError: null,
       createdAt,
     };
     messageRepository.messages = [

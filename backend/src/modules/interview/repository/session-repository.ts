@@ -41,6 +41,12 @@ export class SessionRepository {
     });
   }
 
+  async findById(id: string): Promise<InterviewSession | null> {
+    return prisma.interviewSession.findUnique({
+      where: { id },
+    });
+  }
+
   async findByIdAndUserId(
     id: string,
     userId: number,
@@ -63,7 +69,45 @@ export class SessionRepository {
   ): Promise<InterviewSession> {
     return prisma.interviewSession.update({
       where: { id },
-      data: { isFinished: true, interviewLocale },
+      data: {
+        isFinished: true,
+        interviewLocale,
+        reviewGenerationStatus: "pending",
+        reviewGenerationError: null,
+      },
+    });
+  }
+
+  async markReviewGenerationFailed(
+    id: string,
+    error: string,
+  ): Promise<InterviewSession> {
+    return prisma.interviewSession.update({
+      where: { id },
+      data: {
+        reviewGenerationStatus: "failed",
+        reviewGenerationError: error,
+      },
+    });
+  }
+
+  async markReviewGenerationReady(id: string): Promise<InterviewSession> {
+    return prisma.interviewSession.update({
+      where: { id },
+      data: {
+        reviewGenerationStatus: "ready",
+        reviewGenerationError: null,
+      },
+    });
+  }
+
+  async markReviewGenerationPending(id: string): Promise<InterviewSession> {
+    return prisma.interviewSession.update({
+      where: { id },
+      data: {
+        reviewGenerationStatus: "pending",
+        reviewGenerationError: null,
+      },
     });
   }
 
