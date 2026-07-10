@@ -41,18 +41,20 @@ const FeaturesSection = ({ parallaxRef }: FeaturesSectionProps) => {
   );
 
   return (
-    <section className="flex flex-col justify-start items-center">
-      <motion.div
-        className="text-center text-9xl mt-50 font-normal text-white instrument-serif sticky top-2"
-        style={{ y, opacity }}
-      >
-        Sharpen Engineering Thinking
-        <h1 className="text-center mt-20 text-2xl font-normal text-white instrument-serif">
-        through AI mock interviews built
-        for modern software engineers.
-        </h1>
-      </motion.div>
-      <ScrollGrid />
+    <section className="flex flex-col items-center">
+      <ScrollGrid
+        header={
+          <motion.div
+            className="text-center text-9xl font-normal text-white instrument-serif"
+            style={{ y, opacity }}
+          >
+            Sharpen Engineering Thinking
+            <h1 className="mt-20 text-center text-2xl font-normal text-white instrument-serif">
+              through AI mock interviews built for modern software engineers.
+            </h1>
+          </motion.div>
+        }
+      />
     </section>
   );
 };
