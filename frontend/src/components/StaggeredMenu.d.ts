@@ -27,6 +27,8 @@ export interface StaggeredMenuProps {
   changeMenuColorOnOpen?: boolean;
   isFixed?: boolean;
   closeOnClickAway?: boolean;
+  showCta?: boolean;
+  ctaHref?: string;
   onMenuOpen?: () => void;
   onMenuClose?: () => void;
 }

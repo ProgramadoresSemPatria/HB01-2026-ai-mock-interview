@@ -280,9 +280,6 @@
   line-height: 1;
   letter-spacing: -2px;
   text-transform: uppercase;
-  transition:
-    background 0.25s,
-    color 0.25s;
   display: inline-block;
   text-decoration: none;
   padding-right: 1.4em;
@@ -312,8 +309,9 @@
   transform-origin: 50% 100%;
 }
 
-.sm-panel-item:hover {
-  color: var(--sm-accent, #5227ff);
+.sm-panel-cta {
+  margin-top: 2rem;
+  pointer-events: auto;
 }
 
 .sm-panel-list[data-numbering] {
@@ -328,7 +326,7 @@
   right: 2.8em;
   font-size: 18px;
   font-weight: 400;
-  color: var(--sm-accent, #5227ff);
+  color: #9ca3af;
   letter-spacing: 0;
   pointer-events: none;
   user-select: none;

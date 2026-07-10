@@ -4,6 +4,7 @@ import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { gsap } from 'gsap';
 import defaultLogo from '@/assets/logo.png';
+import GetStartedButton from '@/components/landing-page/get-started-button';
 import './StaggeredMenu.css';
 
 export const StaggeredMenu = ({
@@ -21,6 +22,8 @@ export const StaggeredMenu = ({
   changeMenuColorOnOpen = true,
   isFixed = false,
   closeOnClickAway = true,
+  showCta = false,
+  ctaHref = '/login',
   onMenuOpen,
   onMenuClose
 }) => {
@@ -428,6 +431,11 @@ export const StaggeredMenu = ({
               </li>
             )}
           </ul>
+          {showCta && (
+            <div className="sm-panel-cta">
+              <GetStartedButton href={ctaHref} />
+            </div>
+          )}
           {displaySocials && socialItems && socialItems.length > 0 && (
             <div className="sm-socials" aria-label="Social links">
               <h3 className="sm-socials-title">Socials</h3>
