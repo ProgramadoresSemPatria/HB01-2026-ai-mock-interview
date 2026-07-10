@@ -34,6 +34,13 @@ export interface ScrollRevealGridProps {
    * while the progress bar keeps growing towards the next checkpoint.
    */
   revealPortion?: number;
+  /**
+   * Extra viewport-heights of scroll after the animation completes, during
+   * which the grid stays sticky with the final state visible.
+   */
+  holdVh?: number;
+  /** Pinned at the top of the sticky viewport while the grid reveals. */
+  header?: ReactNode;
   className?: string;
 }
 
@@ -45,6 +52,8 @@ export function ScrollRevealGrid({
   items,
   vhPerItem = 70,
   revealPortion = 0.8,
+  holdVh = 100,
+  header,
   className = "",
 }: ScrollRevealGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -55,6 +64,19 @@ export function ScrollRevealGrid({
   });
 
   const n = Math.max(items.length, 1);
+  const scrollHeight = n * vhPerItem;
+  const totalHeight = scrollHeight + holdVh;
+  const animationEnd = Math.max(
+    0.001,
+    (scrollHeight - 100) / (totalHeight - 100)
+  );
+
+  const animationProgress = useTransform(
+    scrollYProgress,
+    [0, animationEnd],
+    [0, 1],
+    { clamp: true }
+  );
 
   // Checkpoint fraction for each item, aligned with each column's LEFT edge
   // (0, 1/n, 2/n, ...). The bar itself spans the full width, from 0 to 1.
@@ -66,9 +88,15 @@ export function ScrollRevealGrid({
     <section
       ref={containerRef}
       className={`relative ${className}`}
-      style={{ height: `${n * vhPerItem}vh` }}
+      style={{ height: `${totalHeight}vh` }}
     >
-      <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
+      <div className="sticky top-0 flex h-screen flex-col overflow-hidden">
+        {header ? (
+          <div className="relative z-10 shrink-0 px-6 pt-2 md:px-10">
+            {header}
+          </div>
+        ) : null}
+        <div className="flex min-h-0 flex-1 items-center justify-center">
         <div className="w-full max-w-6xl px-6 md:px-10">
           {/* row 1: graphics */}
           <div className="grid" style={{ gridTemplateColumns }}>
@@ -76,7 +104,7 @@ export function ScrollRevealGrid({
               <div key={item.id} className={i < n - 1 ? "pr-6 md:pr-10" : ""}>
                 <RevealGraphic
                   item={item}
-                  scrollYProgress={scrollYProgress}
+                  animationProgress={animationProgress}
                   {...revealWindow(i, checkpoints, n, revealPortion)}
                 />
               </div>
@@ -84,7 +112,7 @@ export function ScrollRevealGrid({
           </div>
 
           {/* row 2: progress bar (no opacity animation at all, only scaleX) */}
-          <ProgressBar scrollYProgress={scrollYProgress} checkpoints={checkpoints} />
+          <ProgressBar animationProgress={animationProgress} checkpoints={checkpoints} />
 
           {/* row 3: text */}
           <div className="grid mt-8" style={{ gridTemplateColumns }}>
@@ -92,12 +120,13 @@ export function ScrollRevealGrid({
               <div key={item.id} className={i < n - 1 ? "pr-6 md:pr-10" : ""}>
                 <RevealText
                   item={item}
-                  scrollYProgress={scrollYProgress}
+                  animationProgress={animationProgress}
                   {...revealWindow(i, checkpoints, n, revealPortion)}
                 />
               </div>
             ))}
           </div>
+        </div>
         </div>
       </div>
     </section>
@@ -158,20 +187,20 @@ function useOneWayThreshold(progress: MotionValue<number>, threshold: number) {
 
 function RevealGraphic({
   item,
-  scrollYProgress,
+  animationProgress,
   revealStart,
   revealEnd,
 }: {
   item: ScrollRevealItem;
-  scrollYProgress: MotionValue<number>;
+  animationProgress: MotionValue<number>;
   revealStart: number;
   revealEnd: number;
 }) {
   const shouldReduceMotion = useReducedMotion();
 
-  const opacity = useOneWayReveal(scrollYProgress, revealStart, revealEnd);
+  const opacity = useOneWayReveal(animationProgress, revealStart, revealEnd);
   const y = useTransform(
-    scrollYProgress,
+    animationProgress,
     [revealStart, revealEnd],
     shouldReduceMotion ? [0, 0] : [-32, 0] // comes from above, downward
   );
@@ -185,20 +214,20 @@ function RevealGraphic({
 
 function RevealText({
   item,
-  scrollYProgress,
+  animationProgress,
   revealStart,
   revealEnd,
 }: {
   item: ScrollRevealItem;
-  scrollYProgress: MotionValue<number>;
+  animationProgress: MotionValue<number>;
   revealStart: number;
   revealEnd: number;
 }) {
   const shouldReduceMotion = useReducedMotion();
 
-  const opacity = useOneWayReveal(scrollYProgress, revealStart, revealEnd);
+  const opacity = useOneWayReveal(animationProgress, revealStart, revealEnd);
   const y = useTransform(
-    scrollYProgress,
+    animationProgress,
     [revealStart, revealEnd],
     shouldReduceMotion ? [0, 0] : [32, 0] // comes from below, upward
   );
@@ -216,14 +245,14 @@ function RevealText({
 }
 
 function ProgressBar({
-  scrollYProgress,
+  animationProgress,
   checkpoints,
 }: {
-  scrollYProgress: MotionValue<number>;
+  animationProgress: MotionValue<number>;
   checkpoints: number[];
 }) {
   // Grows continuously left-to-right, no opacity involved at all.
-  const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  const scaleX = useTransform(animationProgress, [0, 1], [0, 1]);
 
   return (
     <div className="relative h-8 w-full">
@@ -234,7 +263,7 @@ function ProgressBar({
       />
       {/* checkpoints */}
       {checkpoints.map((p, i) => (
-        <Checkpoint key={i} index={i} position={p} scrollYProgress={scrollYProgress} />
+        <Checkpoint key={i} index={i} position={p} animationProgress={animationProgress} />
       ))}
     </div>
   );
@@ -243,13 +272,13 @@ function ProgressBar({
 function Checkpoint({
   index,
   position,
-  scrollYProgress,
+  animationProgress,
 }: {
   index: number;
   position: number;
-  scrollYProgress: MotionValue<number>;
+  animationProgress: MotionValue<number>;
 }) {
-  const opacity = useOneWayThreshold(scrollYProgress, position);
+  const opacity = useOneWayThreshold(animationProgress, position);
 
   return (
     <motion.div

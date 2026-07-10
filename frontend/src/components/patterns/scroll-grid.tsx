@@ -1,3 +1,4 @@
+import { type ReactNode } from "react";
 import { ScrollRevealGrid } from "../landing-page/scroll-reveal-grid";
 
 // Simple placeholder "wordmark" graphic — swap for your own logo/icon/SVG.
@@ -18,10 +19,11 @@ function Wordmark() {
   );
 }
 
-const ScrollGrid = () => {
+const ScrollGrid = ({ header }: { header?: ReactNode }) => {
   return (
     <main>
       <ScrollRevealGrid
+        header={header}
         items={[
           {
             id: 1,
