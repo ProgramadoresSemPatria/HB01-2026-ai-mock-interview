@@ -16,8 +16,8 @@ const HERO_NOISE_OVERSCAN = 60;
 function Wordmark() {
   return (
     <div className="relative isolate overflow-hidden select-none w-full h-full flex flex-col justify-end items-start">
-      <span className="absolute top-1/2 -translate-y-1/3 left-2 z-10 text-[24px] italic text-neutral-800">
-        AI MOCK <br /> INTERVIEW
+      <span className="absolute right-2 top-0 z-10 text-[24px] italic text-slate-200 opacity-30 manrope">
+        AI POWERED
       </span>
       <span className="relative z-10 text-[56px] font-bold text-white">
         HONE
