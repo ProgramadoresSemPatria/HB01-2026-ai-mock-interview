@@ -29,6 +29,7 @@ const HeroSection = ({ parallaxRef }: HeroSectionProps) => {
         transition={{ duration: 2, ease: "easeInOut" }}
       >
         AI MOCK INTERVIEW
+        <p className="text-2xl text-white font-normal manrope"> TRAIN FOR THE INTERVIEW THAT DECIDES YOUR CAREER  </p>
       </motion.div>
       <motion.div
         style={{ opacity: 0 }}
