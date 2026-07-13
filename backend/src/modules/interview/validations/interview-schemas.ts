@@ -32,6 +32,26 @@ export const reviewItemsGeneratorOutputSchema = z.object({
   items: z.array(reviewItemSchema),
 });
 
+export const answerEvaluationSchema = z.enum([
+  "incorrect",
+  "incomplete",
+  "insufficient",
+  "satisfactory",
+]);
+
+const weakAnswerItemSchema = z.object({
+  question: z.string().trim().min(1, "Question is required"),
+  userAnswer: z.string().trim().min(1, "User answer is required"),
+  evaluation: answerEvaluationSchema,
+  feedback: z.string().trim().min(1, "Feedback is required"),
+  topic: z.string().trim().min(1, "Topic is required"),
+  priority: reviewPrioritySchema,
+});
+
+export const weakAnswersGeneratorOutputSchema = z.object({
+  items: z.array(weakAnswerItemSchema),
+});
+
 export const feedbackRatingSchema = z.enum(["up", "down"]);
 
 export const submitFeedbackSchema = z.object({
@@ -45,6 +65,11 @@ export type StreamMessageInput = z.infer<typeof streamMessageSchema>;
 export type ReviewPriority = z.infer<typeof reviewPrioritySchema>;
 export type ReviewItemsGeneratorOutput = z.infer<
   typeof reviewItemsGeneratorOutputSchema
+>;
+export type AnswerEvaluation = z.infer<typeof answerEvaluationSchema>;
+export type WeakAnswerItem = z.infer<typeof weakAnswerItemSchema>;
+export type WeakAnswersGeneratorOutput = z.infer<
+  typeof weakAnswersGeneratorOutputSchema
 >;
 export type FeedbackRating = z.infer<typeof feedbackRatingSchema>;
 export type SubmitFeedbackInput = z.infer<typeof submitFeedbackSchema>;
