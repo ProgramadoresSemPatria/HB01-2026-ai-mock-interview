@@ -50,3 +50,13 @@ export const FeedbackRating = {
 } as const
 
 export type FeedbackRating = (typeof FeedbackRating)[keyof typeof FeedbackRating]
+
+
+export const AnswerEvaluation = {
+  incorrect: 'incorrect',
+  incomplete: 'incomplete',
+  insufficient: 'insufficient',
+  satisfactory: 'satisfactory'
+} as const
+
+export type AnswerEvaluation = (typeof AnswerEvaluation)[keyof typeof AnswerEvaluation]

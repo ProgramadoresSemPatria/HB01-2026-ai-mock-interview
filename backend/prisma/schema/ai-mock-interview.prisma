@@ -26,6 +26,13 @@ enum FeedbackRating {
   down
 }
 
+enum AnswerEvaluation {
+  incorrect
+  incomplete
+  insufficient
+  satisfactory
+}
+
 model Resume {
   id                String       @id @default(uuid())
   userId            Int
@@ -63,6 +70,7 @@ model InterviewSession {
   messages           InterviewMessage[]
   reviewItems        ReviewItem[]
   interviewFeedbacks InterviewFeedback[]
+  weakAnswers        WeakAnswer[]
 
   @@map("interview_sessions")
   @@index([userId])
@@ -100,6 +108,26 @@ model ReviewItem {
   @@map("review_items")
   @@unique([userId, topic])
   @@index([userId])
+}
+
+model WeakAnswer {
+  id         String           @id @default(uuid())
+  sessionId  String           @map("session_id")
+  userId     Int              @map("user_id")
+  question   String           @db.Text
+  userAnswer String           @map("user_answer") @db.Text
+  evaluation AnswerEvaluation
+  feedback   String           @db.Text
+  topic      String
+  priority   ReviewPriority
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  session InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("weak_answers")
+  @@index([userId])
+  @@index([sessionId])
 }
 
 model InterviewFeedback {

@@ -62,6 +62,11 @@ export type InterviewMessage = Prisma.InterviewMessageModel
  */
 export type ReviewItem = Prisma.ReviewItemModel
 /**
+ * Model WeakAnswer
+ * 
+ */
+export type WeakAnswer = Prisma.WeakAnswerModel
+/**
  * Model InterviewFeedback
  * 
  */

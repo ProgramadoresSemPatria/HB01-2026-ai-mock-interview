@@ -11,6 +11,7 @@ model User {
   interviewSessions InterviewSession[]
   reviewItems        ReviewItem[]
   interviewFeedbacks InterviewFeedback[]
+  weakAnswers        WeakAnswer[]
   tokenUsage        UserTokenUsage[]
 
   @@map("users")

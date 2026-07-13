@@ -269,6 +269,23 @@ export type EnumReviewPriorityWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumReviewPriorityFilter<$PrismaModel>
 }
 
+export type EnumAnswerEvaluationFilter<$PrismaModel = never> = {
+  equals?: $Enums.AnswerEvaluation | Prisma.EnumAnswerEvaluationFieldRefInput<$PrismaModel>
+  in?: $Enums.AnswerEvaluation[] | Prisma.ListEnumAnswerEvaluationFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AnswerEvaluation[] | Prisma.ListEnumAnswerEvaluationFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAnswerEvaluationFilter<$PrismaModel> | $Enums.AnswerEvaluation
+}
+
+export type EnumAnswerEvaluationWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AnswerEvaluation | Prisma.EnumAnswerEvaluationFieldRefInput<$PrismaModel>
+  in?: $Enums.AnswerEvaluation[] | Prisma.ListEnumAnswerEvaluationFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AnswerEvaluation[] | Prisma.ListEnumAnswerEvaluationFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAnswerEvaluationWithAggregatesFilter<$PrismaModel> | $Enums.AnswerEvaluation
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAnswerEvaluationFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAnswerEvaluationFilter<$PrismaModel>
+}
+
 export type EnumFeedbackRatingFilter<$PrismaModel = never> = {
   equals?: $Enums.FeedbackRating | Prisma.EnumFeedbackRatingFieldRefInput<$PrismaModel>
   in?: $Enums.FeedbackRating[] | Prisma.ListEnumFeedbackRatingFieldRefInput<$PrismaModel>
@@ -525,6 +542,23 @@ export type NestedEnumReviewPriorityWithAggregatesFilter<$PrismaModel = never> =
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumReviewPriorityFilter<$PrismaModel>
   _max?: Prisma.NestedEnumReviewPriorityFilter<$PrismaModel>
+}
+
+export type NestedEnumAnswerEvaluationFilter<$PrismaModel = never> = {
+  equals?: $Enums.AnswerEvaluation | Prisma.EnumAnswerEvaluationFieldRefInput<$PrismaModel>
+  in?: $Enums.AnswerEvaluation[] | Prisma.ListEnumAnswerEvaluationFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AnswerEvaluation[] | Prisma.ListEnumAnswerEvaluationFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAnswerEvaluationFilter<$PrismaModel> | $Enums.AnswerEvaluation
+}
+
+export type NestedEnumAnswerEvaluationWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AnswerEvaluation | Prisma.EnumAnswerEvaluationFieldRefInput<$PrismaModel>
+  in?: $Enums.AnswerEvaluation[] | Prisma.ListEnumAnswerEvaluationFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AnswerEvaluation[] | Prisma.ListEnumAnswerEvaluationFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAnswerEvaluationWithAggregatesFilter<$PrismaModel> | $Enums.AnswerEvaluation
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAnswerEvaluationFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAnswerEvaluationFilter<$PrismaModel>
 }
 
 export type NestedEnumFeedbackRatingFilter<$PrismaModel = never> = {

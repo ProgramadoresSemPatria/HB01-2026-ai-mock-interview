@@ -388,6 +388,7 @@ export const ModelName = {
   InterviewSession: 'InterviewSession',
   InterviewMessage: 'InterviewMessage',
   ReviewItem: 'ReviewItem',
+  WeakAnswer: 'WeakAnswer',
   InterviewFeedback: 'InterviewFeedback',
   User: 'User',
   UserTokenUsage: 'UserTokenUsage',
@@ -407,7 +408,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "resume" | "interviewSession" | "interviewMessage" | "reviewItem" | "interviewFeedback" | "user" | "userTokenUsage" | "refreshToken"
+    modelProps: "resume" | "interviewSession" | "interviewMessage" | "reviewItem" | "weakAnswer" | "interviewFeedback" | "user" | "userTokenUsage" | "refreshToken"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -704,6 +705,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ReviewItemCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ReviewItemCountAggregateOutputType> | number
+        }
+      }
+    }
+    WeakAnswer: {
+      payload: Prisma.$WeakAnswerPayload<ExtArgs>
+      fields: Prisma.WeakAnswerFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WeakAnswerFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WeakAnswerPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WeakAnswerFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WeakAnswerPayload>
+        }
+        findFirst: {
+          args: Prisma.WeakAnswerFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WeakAnswerPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WeakAnswerFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WeakAnswerPayload>
+        }
+        findMany: {
+          args: Prisma.WeakAnswerFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WeakAnswerPayload>[]
+        }
+        create: {
+          args: Prisma.WeakAnswerCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WeakAnswerPayload>
+        }
+        createMany: {
+          args: Prisma.WeakAnswerCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WeakAnswerCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WeakAnswerPayload>[]
+        }
+        delete: {
+          args: Prisma.WeakAnswerDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WeakAnswerPayload>
+        }
+        update: {
+          args: Prisma.WeakAnswerUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WeakAnswerPayload>
+        }
+        deleteMany: {
+          args: Prisma.WeakAnswerDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WeakAnswerUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WeakAnswerUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WeakAnswerPayload>[]
+        }
+        upsert: {
+          args: Prisma.WeakAnswerUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WeakAnswerPayload>
+        }
+        aggregate: {
+          args: Prisma.WeakAnswerAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWeakAnswer>
+        }
+        groupBy: {
+          args: Prisma.WeakAnswerGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WeakAnswerGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WeakAnswerCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WeakAnswerCountAggregateOutputType> | number
         }
       }
     }
@@ -1099,6 +1174,22 @@ export const ReviewItemScalarFieldEnum = {
 export type ReviewItemScalarFieldEnum = (typeof ReviewItemScalarFieldEnum)[keyof typeof ReviewItemScalarFieldEnum]
 
 
+export const WeakAnswerScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  userId: 'userId',
+  question: 'question',
+  userAnswer: 'userAnswer',
+  evaluation: 'evaluation',
+  feedback: 'feedback',
+  topic: 'topic',
+  priority: 'priority',
+  createdAt: 'createdAt'
+} as const
+
+export type WeakAnswerScalarFieldEnum = (typeof WeakAnswerScalarFieldEnum)[keyof typeof WeakAnswerScalarFieldEnum]
+
+
 export const InterviewFeedbackScalarFieldEnum = {
   id: 'id',
   sessionId: 'sessionId',
@@ -1313,6 +1404,20 @@ export type ListEnumReviewPriorityFieldRefInput<$PrismaModel> = FieldRefInputTyp
 
 
 /**
+ * Reference to a field of type 'AnswerEvaluation'
+ */
+export type EnumAnswerEvaluationFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AnswerEvaluation'>
+    
+
+
+/**
+ * Reference to a field of type 'AnswerEvaluation[]'
+ */
+export type ListEnumAnswerEvaluationFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AnswerEvaluation[]'>
+    
+
+
+/**
  * Reference to a field of type 'FeedbackRating'
  */
 export type EnumFeedbackRatingFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FeedbackRating'>
@@ -1453,6 +1558,7 @@ export type GlobalOmitConfig = {
   interviewSession?: Prisma.InterviewSessionOmit
   interviewMessage?: Prisma.InterviewMessageOmit
   reviewItem?: Prisma.ReviewItemOmit
+  weakAnswer?: Prisma.WeakAnswerOmit
   interviewFeedback?: Prisma.InterviewFeedbackOmit
   user?: Prisma.UserOmit
   userTokenUsage?: Prisma.UserTokenUsageOmit
