@@ -5,9 +5,11 @@ import type { TokenUsageService } from "@/modules/token-usage/service/token-usag
 import type { LlmUsage } from "@/modules/token-usage/types/llm-usage";
 import type { IInterviewGraph } from "@/modules/interview/protocols/interview-graph";
 import type { IReviewItemsGenerator } from "@/modules/interview/protocols/review-items-generator";
+import type { IWeakAnswersGenerator } from "@/modules/interview/protocols/weak-answers-generator";
 import type { MessageRepository } from "@/modules/interview/repository/message-repository";
 import type { SessionRepository } from "@/modules/interview/repository/session-repository";
 import type { ReviewMergeService } from "@/modules/interview/service/review-merge-service";
+import type { WeakAnswerService } from "@/modules/interview/service/weak-answer-service";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
 import { ConflictError, NotFoundError } from "@/shared";
@@ -27,6 +29,8 @@ export class InterviewStreamService {
     private readonly graph: IInterviewGraph,
     private readonly reviewMergeService: ReviewMergeService,
     private readonly reviewItemsGenerator: IReviewItemsGenerator,
+    private readonly weakAnswersGenerator: IWeakAnswersGenerator,
+    private readonly weakAnswerService: WeakAnswerService,
     private readonly tokenUsageService: TokenUsageService,
   ) {}
 
@@ -191,6 +195,30 @@ export class InterviewStreamService {
           sessionId,
           review.items,
         );
+
+        const weakAnswersUsageCapture = createUsageCaptureCallback();
+        const weakAnswers = await this.weakAnswersGenerator.generate(
+          {
+            userId,
+            sessionId,
+            transcript,
+            structuredSummary: resumeSummary,
+            jobDescription: session.jobDescription,
+          },
+          { callbacks: [weakAnswersUsageCapture.callback] },
+        );
+
+        await this.tokenUsageService.recordUsage(
+          userId,
+          weakAnswersUsageCapture.getUsage(),
+        );
+
+        await this.weakAnswerService.saveWeakAnswers(
+          userId,
+          sessionId,
+          weakAnswers.items,
+        );
+
         await this.sessionRepository.markFinished(sessionId);
         isFinished = true;
       }
