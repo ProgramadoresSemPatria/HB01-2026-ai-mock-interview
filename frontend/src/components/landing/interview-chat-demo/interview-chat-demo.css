@@ -1,0 +1,89 @@
+.interview-chat-demo {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--radius-elevatedcards, 20px);
+  background-color: var(--color-paper-white, #ffffff);
+  height: 600px;
+  max-height: 600px;
+  min-height: 0;
+}
+
+@media (min-width: 768px) {
+  .interview-chat-demo {
+    height: 70vh;
+    max-height: 70vh;
+  }
+}
+
+.interview-chat-demo__layout {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .interview-chat-demo__layout {
+    flex-direction: row;
+  }
+}
+
+.interview-chat-demo__sidebar {
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--color-fog-white, #fafafb);
+}
+
+@media (max-width: 767px) {
+  .interview-chat-demo__sidebar {
+    max-height: 220px;
+    flex-shrink: 0;
+  }
+}
+
+.interview-chat-demo__chat-panel {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-paper-white, #ffffff);
+}
+
+.interview-chat-demo__messages {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.interview-chat-demo__typing-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background-color: var(--color-ash-gray, #979799);
+  animation: interview-chat-typing 1.2s ease-in-out infinite;
+}
+
+.interview-chat-demo__typing-dot:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.interview-chat-demo__typing-dot:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+@keyframes interview-chat-typing {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
