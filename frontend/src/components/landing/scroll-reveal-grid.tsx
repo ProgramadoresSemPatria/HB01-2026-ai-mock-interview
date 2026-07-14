@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, useRef } from "react";
+import Link from "next/link";
 import {
   motion,
   useScroll,
@@ -19,6 +20,16 @@ export interface ScrollRevealItem {
   graphic: ReactNode;
   title: string;
   description: string;
+  /** Optional lucide icon or any ReactNode above the title */
+  icon?: ReactNode;
+  /** Short bullets showing specific features */
+  bullets?: string[];
+  /** Badge text e.g. "NEW" */
+  badge?: string;
+  /** Per-card CTA link label */
+  ctaLabel?: string;
+  /** Per-card CTA href */
+  ctaHref?: string;
 }
 
 export interface ScrollRevealGridProps {
@@ -52,7 +63,7 @@ export function ScrollRevealGrid({
   items,
   vhPerItem = 70,
   revealPortion = 0.8,
-  holdVh = 100,
+  holdVh = 30,
   header,
   className = "",
 }: ScrollRevealGridProps) {
@@ -234,12 +245,38 @@ function RevealText({
 
   return (
     <motion.div style={{ opacity, y }}>
+      {item.badge && (
+        <span className="manrope mb-3 inline-block border border-white/20 px-2 py-0.5 text-xs uppercase tracking-widest text-neutral-400">
+          {item.badge}
+        </span>
+      )}
+      {item.icon && (
+        <div className="mb-3 text-white opacity-70">{item.icon}</div>
+      )}
       <h3 className="manrope mb-3 text-xl font-semibold text-white md:text-2xl">
         {item.title}
       </h3>
       <p className="manrope text-sm leading-relaxed text-neutral-400 md:text-base">
         {item.description}
       </p>
+      {item.bullets && item.bullets.length > 0 && (
+        <ul className="mt-4 space-y-1">
+          {item.bullets.map((bullet) => (
+            <li key={bullet} className="manrope flex items-start gap-2 text-xs text-neutral-500">
+              <span className="mt-1 block h-1 w-1 shrink-0 rounded-full bg-neutral-500" aria-hidden />
+              {bullet}
+            </li>
+          ))}
+        </ul>
+      )}
+      {item.ctaLabel && item.ctaHref && (
+        <Link
+          href={item.ctaHref}
+          className="manrope mt-4 inline-block text-xs uppercase tracking-widest text-neutral-400 underline-offset-4 hover:text-white hover:underline"
+        >
+          {item.ctaLabel} →
+        </Link>
+      )}
     </motion.div>
   );
 }
@@ -259,7 +296,7 @@ function ProgressBar({
       {/* fill */}
       <motion.div
         style={{ scaleX, transformOrigin: "left" }}
-        className="absolute left-0 top-1/2 h-[3px] w-full -translate-y-1/2 bg-slate-200"
+        className="absolute left-0 top-1/2 h-[3px] w-full -translate-y-1/2 bg-white"
       />
       {/* checkpoints */}
       {checkpoints.map((p, i) => (
@@ -285,7 +322,7 @@ function Checkpoint({
   return (
     <motion.div
       style={{ left: `${position * 100}%`, opacity }}
-      className="manrope absolute top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center bg-slate-200 text-md font-bold text-black"
+      className="manrope absolute top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center bg-white text-md font-bold text-black"
     >
       {index + 1}
     </motion.div>

@@ -15,6 +15,13 @@ const ScrollGrid = ({ header }: { header?: ReactNode }) => {
             title: "AI RESUMES",
             description:
               "Instant analysis of your experience against role requirements.",
+            bullets: [
+              "Gap analysis vs. job description",
+              "Keyword strength scoring",
+              "Tailored improvement suggestions",
+            ],
+            ctaLabel: "Analyse my resume",
+            ctaHref: "/login",
           },
           {
             id: 2,
@@ -22,6 +29,13 @@ const ScrollGrid = ({ header }: { header?: ReactNode }) => {
             title: "TOPIC TRACKING",
             description:
               "Hone monitors 40+ engineering domains to ensure you're covered across the entire full-stack spectrum.",
+            bullets: [
+              "40+ domains: System Design, APIs, Algorithms…",
+              "Per-domain progress heatmap",
+              "Adaptive question weighting",
+            ],
+            ctaLabel: "See all domains",
+            ctaHref: "/#features",
           },
           {
             id: 3,
@@ -29,6 +43,13 @@ const ScrollGrid = ({ header }: { header?: ReactNode }) => {
             title: "TECH REVIEW",
             description:
               "Engineering reviews that provide a detailed breakdown of your technical strengths.",
+            bullets: [
+              "Strengths & growth areas per session",
+              "0 canned answers detected metric",
+              "Shareable PDF report",
+            ],
+            ctaLabel: "See a sample report",
+            ctaHref: "/login",
           },
         ]}
       />
