@@ -1,44 +1,45 @@
 "use client";
 
 import { useRef } from "react";
-import {
-  motion,
-  useInView,
-  useReducedMotion,
-} from "motion/react";
+import { motion, useInView, useReducedMotion } from "motion/react";
 
-import GetStartedButton from "@/components/landing/get-started-button";
+import LandingCta from "@/components/landing/get-started-button";
 
-const LandingCtaSection = () => {
+export default function LandingCtaSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const prefersReducedMotion = useReducedMotion();
-  const isInView = useInView(sectionRef, { once: true, amount: 0.4 });
+  const isInView = useInView(sectionRef, { once: true, amount: 0.35 });
 
   return (
     <section
       ref={sectionRef}
-      className="landing-canvas flex min-h-screen flex-col items-center justify-center px-6"
+      className="landing-section relative overflow-hidden bg-paper-white px-6"
     >
+      <div
+        className="landing-jade-wash pointer-events-none absolute inset-0 opacity-60"
+        aria-hidden
+      />
       <motion.div
-        className="flex flex-col items-center text-center"
-        initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 48 }}
+        className="relative z-10 mx-auto flex max-w-[1200px] flex-col items-center text-center"
+        initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
         animate={
           isInView || prefersReducedMotion
             ? { opacity: 1, y: 0 }
-            : { opacity: 0, y: 48 }
+            : { opacity: 0, y: 24 }
         }
-        transition={{ duration: 2, ease: "easeInOut" }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
       >
-        <h2 className="instrument-serif text-9xl font-normal text-white">
-          Ready to Hone Your Craft?
+        <h2 className="landing-heading-lg max-w-3xl">
+          Try Hone free. First interview in under a minute.
         </h2>
-        <p className="manrope mt-20 text-2xl font-normal uppercase text-white">
-          start your first AI mock interview in minutes.
+        <p className="landing-body mt-5 max-w-lg">
+          Connect your resume or explore in demo mode. No credit card.
         </p>
-        <GetStartedButton className="mt-16" />
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <LandingCta label="Get started" variant="solid" href="/login" />
+          <LandingCta label="Book a demo" variant="outline" href="/#demo" />
+        </div>
       </motion.div>
     </section>
   );
-};
-
-export default LandingCtaSection;
+}
