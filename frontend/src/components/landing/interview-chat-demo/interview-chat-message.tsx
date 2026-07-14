@@ -36,17 +36,22 @@ export function InterviewChatMessage({
     >
       {!isHuman && (
         <div
-          className="hidden size-8 shrink-0 items-center justify-center border border-white/20 bg-[#1a1a1a] md:flex"
+          className="hidden size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-mist-gray)] md:flex"
           aria-hidden
         >
-          <Sparkle className="size-3.5 text-white" strokeWidth={1.5} />
+          <Sparkle
+            className="size-3.5 text-[var(--color-ink-black)]"
+            strokeWidth={1.5}
+          />
         </div>
       )}
 
       <div
         className={cn(
-          "max-w-[85%] border border-white/10 bg-[#1a1a1a] p-4",
-          isHuman ? "text-right" : "text-left",
+          "max-w-[85%] rounded-[16px] p-4",
+          isHuman
+            ? "bg-[var(--color-ink-black)] text-right"
+            : "bg-[var(--color-mist-gray)] text-left",
         )}
       >
         <div
@@ -56,13 +61,21 @@ export function InterviewChatMessage({
           )}
         >
           {!isHuman && (
-            <Sparkle className="size-3 text-neutral-500 md:hidden" strokeWidth={1.5} />
+            <Sparkle
+              className="size-3 text-[var(--color-ash-gray)] md:hidden"
+              strokeWidth={1.5}
+            />
           )}
-          <span className="manrope text-[10px] font-medium uppercase tracking-widest text-neutral-500">
+          <span
+            className={cn(
+              "manrope text-[10px] font-medium uppercase tracking-widest",
+              isHuman ? "text-white/70" : "text-[var(--color-ash-gray)]",
+            )}
+          >
             {isHuman ? "Candidate" : "AI Interviewer"}
           </span>
           {isHuman && (
-            <User className="size-3 text-neutral-500" strokeWidth={1.5} />
+            <User className="size-3 text-white/70" strokeWidth={1.5} />
           )}
         </div>
 
@@ -73,7 +86,12 @@ export function InterviewChatMessage({
             <span className="interview-chat-demo__typing-dot" />
           </div>
         ) : (
-          <p className="manrope text-sm leading-relaxed text-white whitespace-pre-wrap">
+          <p
+            className={cn(
+              "manrope text-sm leading-relaxed whitespace-pre-wrap",
+              isHuman ? "text-white" : "text-[var(--color-ink-black)]",
+            )}
+          >
             {content}
           </p>
         )}
@@ -84,11 +102,16 @@ export function InterviewChatMessage({
             isHuman ? "justify-end" : "justify-start",
           )}
         >
-          <span className="manrope text-[10px] text-neutral-500">
+          <span
+            className={cn(
+              "manrope text-[10px]",
+              isHuman ? "text-white/50" : "text-[var(--color-ash-gray)]",
+            )}
+          >
             {formatTimestamp(createdAt)}
           </span>
           {isHuman && !isTyping && (
-            <CheckCheck className="size-3 text-neutral-500" strokeWidth={1.5} />
+            <CheckCheck className="size-3 text-white/50" strokeWidth={1.5} />
           )}
         </div>
       </div>

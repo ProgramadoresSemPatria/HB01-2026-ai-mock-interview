@@ -3,8 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 
-import grainTexture from "@/assets/grain-texture.png";
-
 import { InterviewChatCompose } from "./interview-chat-compose";
 import { InterviewChatMessages } from "./interview-chat-messages";
 import { InterviewSessionSidebar } from "./interview-session-sidebar";
@@ -102,16 +100,7 @@ export function InterviewChatDemo() {
   }
 
   return (
-    <div
-      ref={rootRef}
-      className="interview-chat-demo landing-container rounded-none"
-    >
-      <div
-        className="interview-chat-demo__grain"
-        aria-hidden
-        style={{ backgroundImage: `url(${grainTexture.src})` }}
-      />
-
+    <div ref={rootRef} className="interview-chat-demo">
       <div className="interview-chat-demo__layout">
         <InterviewSessionSidebar meta={SESSION_META} contextText={contextText} />
 
