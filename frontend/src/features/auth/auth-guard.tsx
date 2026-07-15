@@ -17,7 +17,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (!isReady) {
     return (
-      <div className="flex h-screen items-center justify-center bg-(--background) text-sm text-(--muted-foreground)">
+      <div
+        className="app-canvas manrope flex h-dvh items-center justify-center bg-paper-white text-sm text-text-base"
+        role="status"
+        aria-live="polite"
+      >
         Loading…
       </div>
     );

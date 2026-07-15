@@ -20,12 +20,14 @@ export default function LoginPage() {
   }, [isReady, isAuthenticated, router]);
 
   return (
-    <AuthShell mode={showSignIn ? "signin" : "signup"}>
-      {showSignIn ? (
-        <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-      ) : (
-        <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
-      )}
-    </AuthShell>
+    <div className="app-canvas">
+      <AuthShell mode={showSignIn ? "signin" : "signup"}>
+        {showSignIn ? (
+          <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+        ) : (
+          <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+        )}
+      </AuthShell>
+    </div>
   );
 }

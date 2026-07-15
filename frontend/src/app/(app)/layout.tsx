@@ -3,5 +3,9 @@
 import { AuthGuard } from "@/features/auth/auth-guard";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return <AuthGuard>{children}</AuthGuard>;
+  return (
+    <div className="app-canvas">
+      <AuthGuard>{children}</AuthGuard>
+    </div>
+  );
 }
