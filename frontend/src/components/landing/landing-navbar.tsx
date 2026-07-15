@@ -60,13 +60,7 @@ export default function LandingNavbar() {
           ))}
         </div>
 
-        <div className="hidden items-center gap-4 md:flex">
-          <Link
-            href="/#demo"
-            className="manrope text-base font-normal text-ink-black transition-opacity hover:opacity-60"
-          >
-            Book a demo
-          </Link>
+        <div className="hidden items-center md:flex">
           <LandingCta label="Get started" variant="solid" href="/login" />
         </div>
 
@@ -78,7 +72,11 @@ export default function LandingNavbar() {
           aria-label={open ? "Close menu" : "Open menu"}
           onClick={() => setOpen((v) => !v)}
         >
-          {open ? <X size={22} strokeWidth={1.5} /> : <Menu size={22} strokeWidth={1.5} />}
+          {open ? (
+            <X size={22} strokeWidth={1.5} />
+          ) : (
+            <Menu size={22} strokeWidth={1.5} />
+          )}
         </button>
       </nav>
 
@@ -98,13 +96,6 @@ export default function LandingNavbar() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/#demo"
-              className="manrope text-base text-[var(--color-ink-black)]"
-              onClick={() => setOpen(false)}
-            >
-              Book a demo
-            </Link>
             <LandingCta
               label="Get started"
               variant="solid"

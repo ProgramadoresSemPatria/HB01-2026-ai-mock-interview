@@ -16,7 +16,12 @@ function ScoreArtifact({ className }: { className?: string }) {
       <p className="manrope mt-1 text-sm text-slate-gray">
         ↑ 12 pts vs last session
       </p>
-      <svg viewBox="0 0 120 36" className="mt-3 h-9 w-full" aria-hidden fill="none">
+      <svg
+        viewBox="0 0 120 36"
+        className="mt-3 h-9 w-full"
+        aria-hidden
+        fill="none"
+      >
         <path
           d="M2 28 C18 26, 28 8, 44 14 C60 20, 72 4, 88 10 C100 14, 110 22, 118 6"
           stroke="var(--color-jade)"
@@ -64,7 +69,9 @@ function FeedbackArtifact({ className }: { className?: string }) {
           aria-hidden
         >
           AI
-          <span className="absolute -bottom-1 -right-1 text-[10px] text-ink-black">↗</span>
+          <span className="absolute -bottom-1 -right-1 text-[10px] text-ink-black">
+            ↗
+          </span>
         </span>
         <div>
           <p className="manrope text-sm font-medium text-ink-black">Feedback</p>
@@ -84,7 +91,9 @@ function ComposerArtifact({ className }: { className?: string }) {
     <div
       className={`landing-artifact flex items-center gap-3 !rounded-[16px] !py-4 !pl-4 !pr-3 ${className ?? ""}`}
     >
-      <span className="manrope flex-1 text-base text-smoke-gray">Ask anything…</span>
+      <span className="manrope flex-1 text-base text-smoke-gray">
+        Ask anything…
+      </span>
       <span
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-jade text-paper-white"
         aria-hidden
@@ -100,7 +109,9 @@ function ActivationArtifact({ className }: { className?: string }) {
     <div className={`landing-artifact ${className ?? ""}`}>
       <p className="landing-tag mb-1">Activation</p>
       <p className="manrope text-[20px] font-medium text-ink-black">46.2%</p>
-      <p className="manrope mt-1 text-sm text-slate-gray">↑ 5.5× vs last week</p>
+      <p className="manrope mt-1 text-sm text-slate-gray">
+        ↑ 5.5× vs last week
+      </p>
       <svg viewBox="0 0 80 80" className="mx-auto mt-3 h-16 w-16" aria-hidden>
         <circle
           cx="40"
@@ -140,7 +151,11 @@ function attachArtifactFloat(el: Element, index: number) {
       defaults: { ease: "sine.inOut" },
     })
     .to(el, { y: -yAmp, x: xAmp * xDir, duration: duration * 0.38 })
-    .to(el, { y: yAmp * 0.45, x: -xAmp * xDir * 0.35, duration: duration * 0.34 })
+    .to(el, {
+      y: yAmp * 0.45,
+      x: -xAmp * xDir * 0.35,
+      duration: duration * 0.34,
+    })
     .to(el, { y: 0, x: 0, duration: duration * 0.28 });
 }
 
@@ -151,7 +166,9 @@ export default function HeroSection() {
     const root = rootRef.current;
     if (!root) return;
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     const ctx = gsap.context(() => {
       const copy = root.querySelectorAll("[data-hero-copy]");
       const arts = root.querySelectorAll("[data-hero-art]");
@@ -194,7 +211,10 @@ export default function HeroSection() {
       className="landing-hero relative isolate min-h-[100svh] overflow-hidden px-6 pb-24 pt-28 md:pb-32 md:pt-32"
     >
       {/* Soft jade wash */}
-      <div className="landing-jade-wash pointer-events-none absolute inset-0" aria-hidden />
+      <div
+        className="landing-jade-wash pointer-events-none absolute inset-0"
+        aria-hidden
+      />
 
       <div className="relative mx-auto min-h-[calc(100svh-8rem)] max-w-[1200px]">
         {/* Collage artifacts — desktop */}
@@ -264,10 +284,9 @@ export default function HeroSection() {
 
           <div
             data-hero-copy
-            className="mt-10 flex flex-wrap items-center justify-center gap-3"
+            className="mt-10 flex items-center justify-center"
           >
             <LandingCta label="Get started" variant="solid" href="/login" />
-            <LandingCta label="Book a demo" variant="outline" href="/#demo" />
           </div>
         </div>
 

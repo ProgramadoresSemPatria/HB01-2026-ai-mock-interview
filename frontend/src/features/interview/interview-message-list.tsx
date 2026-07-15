@@ -44,15 +44,15 @@ export function InterviewMessageList({
   return (
     <div
       ref={scrollRef}
-      className="flex-1 space-y-4 overflow-y-auto rounded-xl border border-(--border) bg-(--card) p-4"
+      className="flex-1 space-y-4 overflow-y-auto rounded-[20px] bg-paper-white p-4 shadow-(--shadow-subtle-3)"
     >
       {showWelcome && (
         <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
-          <p className="text-sm text-(--muted-foreground)">{welcomeText}</p>
+          <p className="text-sm text-text-base">{welcomeText}</p>
           <button
             type="button"
             onClick={onStart}
-            className="rounded-xl bg-(--primary) px-6 py-2.5 text-sm font-medium text-(--primary-foreground) cursor-pointer transition-opacity hover:opacity-90"
+            className="cursor-pointer rounded-full bg-jade-deep px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
           >
             {startLabel}
           </button>

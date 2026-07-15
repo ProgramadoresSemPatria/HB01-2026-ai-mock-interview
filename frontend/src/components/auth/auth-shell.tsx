@@ -2,32 +2,27 @@ import Link from "next/link";
 import * as React from "react";
 
 import { BrandMark } from "@/components/auth/brand-mark";
-import { Badge } from "@/components/ui/badge";
-import { Surface } from "@/components/ui/surface";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { DashboardPreview } from "@/components/product-previews/dashboard-preview";
 
 const shellCopy = {
   signin: {
-    eyebrow: "Returning candidate",
-    title: "Resume where your last interview left off.",
+    eyebrow: "Your progress, preserved",
+    title: "Resume with every insight intact.",
     description:
-      "Pick up your last mock session, review your backlog, and continue practicing with the same visual language as the public product.",
+      "Return to previous sessions, revisit focused feedback, and keep building on the work you have already done.",
     points: [
-      "Track strengths across system design and coding rounds.",
-      "Keep interview history, resume analysis, and review loops in one place.",
-      "Auth wiring is still pending backend integration.",
+      "Continue recent mock interviews without losing context.",
+      "Review strengths and growth areas before your next round.",
     ],
   },
   signup: {
-    eyebrow: "New account",
-    title: "Start with a polished shell while auth is being wired.",
+    eyebrow: "Practice built around you",
+    title: "Turn your experience into better interviews.",
     description:
-      "Sign in or create an account to upload your resume and start practicing.",
+      "Upload your resume, practice role-relevant questions, and get clear feedback after every session.",
     points: [
-      "Capture product identity before backend auth lands.",
-      "Exercise shared inputs, cards, badges, and CTAs in a real route.",
-      "Keep the swap between sign-up and sign-in fully local for now.",
+      "Shape sessions around your resume and target role.",
+      "See topic coverage and actionable feedback over time.",
     ],
   },
 } as const;
@@ -41,51 +36,58 @@ function AuthShell({ mode, children }: AuthShellProps) {
   const copy = shellCopy[mode];
 
   return (
-    <main className="relative min-h-screen overflow-hidden px-6 py-8 md:px-10">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(11,139,115,0.12),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(23,19,17,0.06),transparent_16%)]" />
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl flex-col gap-8">
-        <div className="flex items-center justify-between gap-4">
+    <main className="relative min-h-dvh overflow-x-hidden bg-[var(--color-paper-white)]">
+      <div
+        className="landing-jade-wash pointer-events-none absolute inset-0 opacity-70"
+        aria-hidden="true"
+      />
+
+      <div className="landing-container relative z-10 flex min-h-dvh flex-col py-6 md:py-8">
+        <header className="flex items-center justify-between gap-4">
           <BrandMark />
           <Link
             href="/"
-            className={cn(
-              buttonVariants({ variant: "ghost", size: "sm", shape: "pill" }),
-              "text-xs uppercase tracking-[0.18em]",
-            )}
+            className="manrope inline-flex h-10 items-center justify-center rounded-[var(--radius-buttons)] border border-[var(--color-ink-black)] bg-transparent px-4 text-sm font-normal text-[var(--color-ink-black)] outline-none transition-[background-color,color] hover:bg-[var(--color-ink-black)] hover:text-[var(--color-paper-white)] focus-visible:ring-2 focus-visible:ring-[var(--color-jade)] focus-visible:ring-offset-2"
           >
             Back to home
           </Link>
-        </div>
+        </header>
 
-        <div className="grid flex-1 gap-8 lg:grid-cols-[minmax(0,520px)_minmax(0,1fr)] lg:items-center">
-          <div>{children}</div>
+        <div className="grid flex-1 items-center gap-8 py-10 lg:grid-cols-[minmax(0,520px)_minmax(0,1fr)] lg:gap-12 lg:py-12">
+          <div className="mx-auto w-full max-w-[520px] lg:mx-0">{children}</div>
 
-          <Surface
-            variant="inverse"
-            radius="xl"
-            padding="xl"
-            className="relative overflow-hidden"
-          >
-            <div className="absolute -right-10 top-10 size-40 rounded-full bg-[radial-gradient(circle,rgba(95,212,189,0.28)_0%,transparent_70%)] blur-2xl" />
-            <Badge tone="inverse">{copy.eyebrow}</Badge>
-            <h1 className="mt-8 font-display text-4xl leading-none tracking-[-0.05em] text-text-inverse md:text-[3.2rem]">
-              {copy.title}
-            </h1>
-            <p className="mt-5 max-w-xl text-sm leading-7 text-text-inverse-muted md:text-base">
-              {copy.description}
-            </p>
+          <aside className="landing-jade-card relative overflow-hidden !p-6 md:!p-8 lg:!p-10">
+            <div className="relative z-10">
+              <p className="landing-tag !text-[var(--text-base)]">
+                {copy.eyebrow}
+              </p>
+              <h2 className="instrument-serif mt-3 max-w-xl text-[2.25rem] font-normal leading-[1.1] tracking-[-0.03em] text-[var(--color-ink-black)] md:text-[3rem]">
+                {copy.title}
+              </h2>
+              <p className="manrope mt-4 max-w-xl text-[15px] leading-6 text-[var(--text-base)] md:text-base">
+                {copy.description}
+              </p>
 
-            <div className="mt-12 space-y-4">
-              {copy.points.map((point) => (
-                <div
-                  key={point}
-                  className="rounded-[var(--radius-card)] border border-border-inverse bg-surface-inverse-soft px-5 py-4 text-sm leading-6 text-text-inverse"
-                >
-                  {point}
-                </div>
-              ))}
+              <ul className="manrope mt-6 space-y-3 text-sm leading-6 text-[var(--text-base)]">
+                {copy.points.map((point) => (
+                  <li key={point} className="flex items-start gap-3">
+                    <span
+                      className="mt-[0.6rem] size-1.5 shrink-0 rounded-full bg-[var(--color-jade)]"
+                      aria-hidden="true"
+                    />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-8">
+                <DashboardPreview
+                  labelClassName="!text-[var(--text-base)]"
+                  mutedTextClassName="!text-[var(--text-base)]"
+                />
+              </div>
             </div>
-          </Surface>
+          </aside>
         </div>
       </div>
     </main>

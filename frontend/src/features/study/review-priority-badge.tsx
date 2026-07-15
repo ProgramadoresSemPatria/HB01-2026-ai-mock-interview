@@ -6,16 +6,15 @@ const PRIORITY_STYLES: Record<
   { badge: string; label: string }
 > = {
   high: {
-    badge: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    badge: "bg-red-100 text-red-700",
     label: "high priority",
   },
   medium: {
-    badge: "bg-(--accent) text-(--accent-foreground)",
+    badge: "bg-jade-pale text-jade-deep",
     label: "medium priority",
   },
   low: {
-    badge:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+    badge: "bg-mist-gray text-text-base",
     label: "low priority",
   },
 };

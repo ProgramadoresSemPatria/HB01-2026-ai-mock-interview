@@ -138,8 +138,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-outfit), system-ui, sans-serif;
-  --font-display: var(--font-playfair), Georgia, serif;
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
+  --font-display: var(--font-instrument-serif), Georgia, serif;
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -267,8 +267,8 @@
   }
 }
 
-/* Steep landing system — scoped to .landing-canvas only */
-.landing-canvas {
+/* Steep visual system — scoped to public and product canvases */
+:where(.landing-canvas, .app-canvas, html:has(.app-canvas) body) {
   --color-ink-black: #17191c;
   --color-paper-white: #ffffff;
   --color-mist-gray: #f2f2f3;
@@ -296,9 +296,12 @@
   --radius-smallcards: 16px;
   --radius-elevatedcards: 20px;
 
-  --shadow-subtle: oklab(0 0 0 / 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.08) 0px 4px 24px 0px;
-  --shadow-subtle-2: oklab(0 0 0 / 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 8px 40px 0px;
-  --shadow-subtle-3: rgba(4, 23, 43, 0.05) 0px 0px 0px 1px,
+  --shadow-subtle:
+    oklab(0 0 0 / 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.08) 0px 4px 24px 0px;
+  --shadow-subtle-2:
+    oklab(0 0 0 / 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 8px 40px 0px;
+  --shadow-subtle-3:
+    rgba(4, 23, 43, 0.05) 0px 0px 0px 1px,
     rgba(0, 0, 0, 0.1) 0px 20px 25px -5px, rgba(0, 0, 0, 0.1) 0px 8px 10px -6px;
 
   --page-max-width: 1200px;
@@ -318,6 +321,10 @@
   min-height: 100dvh;
   background-color: var(--color-paper-white);
   color: var(--color-ink-black);
+}
+
+html:has(.app-canvas) body {
+  font-family: var(--font-manrope), system-ui, sans-serif;
 }
 
 html:has(.landing-canvas) {
@@ -342,13 +349,13 @@ html:has(.landing-canvas)::-webkit-scrollbar-thumb:hover {
   background-color: var(--landing-scrollbar-thumb-hover);
 }
 
-html:has(.landing-canvas) body {
+html:has(:where(.landing-canvas, .app-canvas)) body {
   background: var(--landing-canvas);
   background-image: none;
   color-scheme: light;
 }
 
-html:has(.landing-canvas) body::before {
+html:has(:where(.landing-canvas, .app-canvas)) body::before {
   display: none;
 }
 

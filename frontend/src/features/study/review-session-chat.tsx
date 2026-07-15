@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -37,11 +44,9 @@ import { ReviewSessionProgress } from "./review-session-progress";
 function ReviewTopicDivider({ topic }: { topic: string }) {
   return (
     <div className="flex items-center gap-3 py-2">
-      <div className="h-px flex-1 bg-(--border)" />
-      <span className="text-xs font-medium text-(--muted-foreground)">
-        {topic}
-      </span>
-      <div className="h-px flex-1 bg-(--border)" />
+      <div className="h-px flex-1 bg-border-hairline" />
+      <span className="text-xs font-medium text-text-base">{topic}</span>
+      <div className="h-px flex-1 bg-border-hairline" />
     </div>
   );
 }
@@ -117,6 +122,10 @@ type ReviewSessionChatProps = {
 };
 
 export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
+  return <ReviewSessionChatContent key={sessionId} sessionId={sessionId} />;
+}
+
+function ReviewSessionChatContent({ sessionId }: ReviewSessionChatProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { getAccessToken, fetchWithAuth } = useAuth();
@@ -137,22 +146,27 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
   const lastItemIndexRef = useRef(-1);
   const sessionItemsRef = useRef(session?.items ?? []);
 
-  sessionItemsRef.current = session?.items ?? [];
+  useLayoutEffect(() => {
+    sessionItemsRef.current = session?.items ?? [];
+  }, [session?.items]);
 
   const canSend =
     session?.status === "in_progress" && !isStreaming && !isRedirecting;
   const showWelcome =
     messages.length === 0 && !isStreaming && session?.status === "in_progress";
 
-  const resolveTopicName = useCallback((meta: ReviewSessionStreamMetaProgress) => {
-    const items = sessionItemsRef.current;
+  const resolveTopicName = useCallback(
+    (meta: ReviewSessionStreamMetaProgress) => {
+      const items = sessionItemsRef.current;
 
-    return (
-      items[meta.itemIndex]?.topic ??
-      items.find((item) => item.id === meta.reviewSessionItemId)?.topic ??
-      "Next topic"
-    );
-  }, []);
+      return (
+        items[meta.itemIndex]?.topic ??
+        items.find((item) => item.id === meta.reviewSessionItemId)?.topic ??
+        "Next topic"
+      );
+    },
+    [],
+  );
 
   const handleProgressMeta = useCallback(
     (meta: ReviewSessionStreamMetaProgress) => {
@@ -164,11 +178,7 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
           meta.itemIndex > lastItemIndexRef.current
         ) {
           setMessages((current) =>
-            appendTopicDivider(
-              current,
-              resolveTopicName(meta),
-              meta.itemIndex,
-            ),
+            appendTopicDivider(current, resolveTopicName(meta), meta.itemIndex),
           );
         }
 
@@ -180,20 +190,23 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
 
   const seedReportCache = useCallback(
     (meta: Extract<ReviewSessionStreamMeta, { status: "pending_review" }>) => {
-      queryClient.setQueryData<ReviewSession>(queryKeys.reviewSession(sessionId), {
-        id: sessionId,
-        status: "pending_review",
-        items: meta.report.map((item) => ({
-          id: item.reviewSessionItemId,
-          reviewItemId: item.reviewItemId,
-          topic: item.topic,
-          currentPriority: item.currentPriority,
-          suggestedStatus: item.suggestedStatus,
-          suggestedPriority: item.suggestedPriority,
-          confirmedStatus: null,
-          confirmedPriority: null,
-        })),
-      });
+      queryClient.setQueryData<ReviewSession>(
+        queryKeys.reviewSession(sessionId),
+        {
+          id: sessionId,
+          status: "pending_review",
+          items: meta.report.map((item) => ({
+            id: item.reviewSessionItemId,
+            reviewItemId: item.reviewItemId,
+            topic: item.topic,
+            currentPriority: item.currentPriority,
+            suggestedStatus: item.suggestedStatus,
+            suggestedPriority: item.suggestedPriority,
+            confirmedStatus: null,
+            confirmedPriority: null,
+          })),
+        },
+      );
     },
     [queryClient, sessionId],
   );
@@ -252,18 +265,6 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
       router.replace("/study");
     }
   }, [router, sessionQuery.error]);
-
-  useEffect(() => {
-    setMessages([]);
-    setProgressMeta(null);
-    setDraft("");
-    setIsStreaming(false);
-    setStreamingContent("");
-    setIsRedirecting(false);
-    lastItemIndexRef.current = -1;
-    abortRef.current?.abort();
-    abortRef.current = null;
-  }, [sessionId]);
 
   useEffect(() => {
     return () => abortRef.current?.abort();
@@ -385,21 +386,23 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
 
   if (sessionQuery.isLoading) {
     return (
-      <p className="text-sm text-(--muted-foreground)">Loading review session…</p>
+      <p className="text-sm text-text-base" role="status">
+        Loading review session…
+      </p>
     );
   }
 
   if (sessionQuery.error && !(sessionQuery.error instanceof ApiError)) {
     return (
       <div className="mx-auto max-w-3xl space-y-2">
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-red-700" role="alert">
           {sessionQuery.error instanceof Error
             ? sessionQuery.error.message
             : "Failed to load review session"}
         </p>
         <Link
           href="/study"
-          className="cursor-pointer text-sm text-(--primary) underline"
+          className="cursor-pointer rounded-sm text-sm text-jade-deep underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
         >
           Back to Study
         </Link>
@@ -409,20 +412,24 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
 
   if (isRedirecting) {
     return (
-      <p className="text-sm text-(--muted-foreground)">Redirecting…</p>
+      <p className="text-sm text-text-base" role="status">
+        Redirecting…
+      </p>
     );
   }
 
   if (session && session.status !== "in_progress") {
     return (
-      <p className="text-sm text-(--muted-foreground)">Redirecting…</p>
+      <p className="text-sm text-text-base" role="status">
+        Redirecting…
+      </p>
     );
   }
 
   return (
     <div className="flex h-full w-full min-h-0 flex-col">
       <div className="mb-4 flex shrink-0 items-center justify-between">
-        <h1 className="text-lg font-semibold text-(--foreground)">
+        <h1 className="instrument-serif text-2xl leading-tight text-ink-black">
           Review session
         </h1>
         <ReviewSessionProgress meta={progressMeta} />
@@ -430,12 +437,10 @@ export function ReviewSessionChat({ sessionId }: ReviewSessionChatProps) {
 
       <div className="flex min-h-0 flex-1 flex-col">
         {hasTopicDividers ? (
-          <div className="flex-1 space-y-4 overflow-y-auto rounded-xl border border-(--border) bg-(--card) p-4">
+          <div className="flex-1 space-y-4 overflow-y-auto rounded-[20px] bg-paper-white p-4 shadow-(--shadow-subtle-3)">
             {displayItems.map((item) => {
               if (item.type === "topic") {
-                return (
-                  <ReviewTopicDivider key={item.id} topic={item.topic} />
-                );
+                return <ReviewTopicDivider key={item.id} topic={item.topic} />;
               }
 
               const message = item.message;

@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef } from "react";
-import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "motion/react";
 
 export default function QuoteSection() {
@@ -13,7 +12,9 @@ export default function QuoteSection() {
     <section ref={ref} className="landing-section bg-paper-white px-6">
       <motion.div
         className="mx-auto max-w-[960px]"
-        initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
+        initial={
+          prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }
+        }
         animate={
           isInView || prefersReducedMotion
             ? { opacity: 1, y: 0 }
@@ -32,12 +33,6 @@ export default function QuoteSection() {
           <p className="manrope mt-8 text-sm text-jade-deep">
             — The philosophy behind Hone
           </p>
-          <Link
-            href="/login"
-            className="manrope mt-10 inline-block text-base text-jade-deep underline-offset-4 hover:underline"
-          >
-            Read the story →
-          </Link>
         </div>
       </motion.div>
     </section>

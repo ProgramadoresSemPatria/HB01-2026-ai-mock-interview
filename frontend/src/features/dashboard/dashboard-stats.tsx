@@ -11,10 +11,10 @@ type DashboardStatsProps = {
 };
 
 const CARDS = [
-  { key: "completed", label: "SESSIONS COMPLETED", icon: Clock },
-  { key: "active", label: "ACTIVE SESSIONS", icon: Dumbbell },
-  { key: "review", label: "REVIEW ITEMS", icon: ListChecks },
-  { key: "level", label: "HIGHEST LEVEL", icon: Award },
+  { key: "completed", label: "Sessions completed", icon: Clock },
+  { key: "active", label: "Active sessions", icon: Dumbbell },
+  { key: "review", label: "Review items", icon: ListChecks },
+  { key: "level", label: "Highest level", icon: Award },
 ] as const;
 
 export function DashboardStats({
@@ -38,26 +38,35 @@ export function DashboardStats({
   };
 
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <ul
+      aria-label="Interview activity summary"
+      className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
+    >
       {CARDS.map(({ key, label, icon: Icon }) => (
-        <div
+        <li
           key={key}
-          className="space-y-3 rounded-xl border border-(--border) bg-(--card) p-5 shadow-sm"
+          className="landing-mist-card flex min-w-0 flex-col gap-3 p-5!"
         >
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-(--muted-foreground)">
-            {label}
-          </p>
-          <div className="flex items-end justify-between">
-            <p className="text-3xl font-bold leading-none text-(--foreground)">
-              {values[key]}
-            </p>
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-(--muted)">
-              <Icon className="h-4 w-4 text-(--foreground)" />
+          <div className="flex items-start justify-between gap-3">
+            <p className="landing-tag pt-1 text-text-base!">{label}</p>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-jade-mist">
+              <Icon
+                aria-hidden="true"
+                className="h-4 w-4 text-jade-deep"
+                strokeWidth={1.8}
+              />
             </div>
           </div>
-          <p className="text-xs text-(--muted-foreground)">{subs[key]}</p>
-        </div>
+          <div className="mt-auto min-w-0">
+            <p className="manrope truncate text-2xl font-medium leading-none text-ink-black">
+              {values[key]}
+            </p>
+            <p className="manrope mt-2 text-xs leading-relaxed text-text-base">
+              {subs[key]}
+            </p>
+          </div>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

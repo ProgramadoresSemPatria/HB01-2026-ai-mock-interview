@@ -21,7 +21,9 @@ export default function LandingCtaSection() {
       />
       <motion.div
         className="relative z-10 mx-auto flex max-w-[1200px] flex-col items-center text-center"
-        initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+        initial={
+          prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }
+        }
         animate={
           isInView || prefersReducedMotion
             ? { opacity: 1, y: 0 }
@@ -35,9 +37,8 @@ export default function LandingCtaSection() {
         <p className="landing-body mt-5 max-w-lg">
           Connect your resume or explore in demo mode. No credit card.
         </p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-10 flex items-center justify-center">
           <LandingCta label="Get started" variant="solid" href="/login" />
-          <LandingCta label="Book a demo" variant="outline" href="/#demo" />
         </div>
       </motion.div>
     </section>
