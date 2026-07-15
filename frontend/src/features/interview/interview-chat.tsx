@@ -41,9 +41,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
   const [draft, setDraft] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
-  const [pendingHuman, setPendingHuman] = useState<SessionMessage | null>(
-    null,
-  );
+  const [pendingHuman, setPendingHuman] = useState<SessionMessage | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const streamingContentRef = useRef("");
   const [viewMode, setViewMode] = useState<"chat" | "review">("chat");
@@ -69,10 +67,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
 
   const displayMessages: DisplayMessage[] = [...serverMessages];
 
-  if (
-    pendingHuman &&
-    !displayMessages.some((m) => m.id === pendingHuman.id)
-  ) {
+  if (pendingHuman && !displayMessages.some((m) => m.id === pendingHuman.id)) {
     displayMessages.push(pendingHuman);
   }
 
@@ -204,9 +199,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
         },
       );
     } catch (err) {
-      toast.error(
-        err instanceof ApiError ? err.message : "Failed to retry",
-      );
+      toast.error(err instanceof ApiError ? err.message : "Failed to retry");
     } finally {
       setIsRetrying(false);
     }
@@ -285,7 +278,11 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
   }
 
   if (messagesQuery.isLoading) {
-    return <p className="text-sm text-(--muted-foreground)">Loading chat…</p>;
+    return (
+      <p className="text-sm text-text-base" role="status">
+        Loading chat…
+      </p>
+    );
   }
 
   if (messagesQuery.error) {
@@ -299,8 +296,13 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
 
     return (
       <div className="mx-auto max-w-3xl space-y-2">
-        <p className="text-sm text-red-600">{message}</p>
-        <Link href="/dashboard" className="cursor-pointer text-sm text-(--primary) underline">
+        <p className="text-sm text-red-700" role="alert">
+          {message}
+        </p>
+        <Link
+          href="/dashboard"
+          className="cursor-pointer rounded-sm text-sm text-jade-deep underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+        >
           Back to dashboard
         </Link>
       </div>
@@ -309,28 +311,33 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
 
   return (
     <div className="flex flex-col h-full w-full min-h-0">
-      <div className="mb-4 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold text-(--foreground)">
+      <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-2">
+          <h2 className="instrument-serif shrink-0 text-2xl leading-tight text-ink-black">
             Mock interview
-          </h1>
+          </h2>
           {session && (
-            <p className="text-xs text-(--muted-foreground) mr-2">
+            <p className="shrink-0 text-xs text-text-base">
               Turn {session.turnCount} / {session.maxTurns}
               {isCompleted && " · Finished"}
             </p>
           )}
 
           {isCompleted && (
-            <div className="flex rounded-lg border border-(--border) bg-(--muted)/20 p-0.5">
+            <div
+              className="flex rounded-full border border-border-hairline bg-mist-gray p-0.5"
+              role="group"
+              aria-label="Interview view"
+            >
               <button
                 type="button"
                 onClick={() => setViewMode("chat")}
+                aria-pressed={viewMode === "chat"}
                 className={cn(
-                  "cursor-pointer px-3 py-1 text-xs font-semibold rounded-md transition-colors",
+                  "min-h-11 cursor-pointer rounded-full px-3 py-1 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2",
                   viewMode === "chat"
-                    ? "bg-(--foreground) text-(--background)"
-                    : "text-(--muted-foreground) hover:text-(--foreground)"
+                    ? "bg-paper-white text-ink-black shadow-sm"
+                    : "text-text-base hover:text-ink-black",
                 )}
               >
                 Chat
@@ -338,11 +345,12 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
               <button
                 type="button"
                 onClick={() => setViewMode("review")}
+                aria-pressed={viewMode === "review"}
                 className={cn(
-                  "cursor-pointer px-3 py-1 text-xs font-semibold rounded-md transition-colors",
+                  "min-h-11 cursor-pointer rounded-full px-3 py-1 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2",
                   viewMode === "review"
-                    ? "bg-(--foreground) text-(--background)"
-                    : "text-(--muted-foreground) hover:text-(--foreground)"
+                    ? "bg-paper-white text-ink-black shadow-sm"
+                    : "text-text-base hover:text-ink-black",
                 )}
               >
                 Review
@@ -355,7 +363,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
           <button
             type="button"
             onClick={() => setViewMode("review")}
-            className="cursor-pointer text-sm font-medium text-(--primary) underline"
+            className="inline-flex min-h-11 shrink-0 cursor-pointer items-center rounded-sm text-sm font-medium text-jade-deep underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
           >
             View review
           </button>

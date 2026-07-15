@@ -24,6 +24,9 @@ import { queryKeys } from "@/lib/query/keys";
 import { cn } from "@/lib/utils";
 import { ApiError } from "@/lib/api/client";
 import type { SessionMessage } from "@/types/interview";
+import { AppCard } from "@/components/app/app-card";
+import { AppEmptyState } from "@/components/app/app-empty-state";
+import { AppPageHeader } from "@/components/app/app-page-header";
 
 function getClosingFeedback(messages: SessionMessage[]): string | null {
   for (let i = messages.length - 1; i >= 0; i -= 1) {
@@ -48,54 +51,108 @@ function SessionFeedbackDetail({
   const closingFeedback = getClosingFeedback(messages);
 
   const sessionItems =
-    reviewQuery.data?.reviewItems.filter((item) => item.sessionId === sessionId) ?? [];
+    reviewQuery.data?.reviewItems.filter(
+      (item) => item.sessionId === sessionId,
+    ) ?? [];
 
   if (messagesQuery.isLoading) {
     return (
-      <div className="flex h-full items-center justify-center gap-2 py-12 text-sm text-(--muted-foreground)">
-        <Loader2 className="h-5 w-5 animate-spin text-(--primary)" />
+      <div
+        className="flex h-full items-center justify-center gap-2 py-12 text-sm text-text-base"
+        role="status"
+      >
+        <Loader2 className="h-5 w-5 animate-spin text-jade-deep" />
         Loading feedback details…
+      </div>
+    );
+  }
+
+  if (messagesQuery.error) {
+    const message =
+      messagesQuery.error instanceof ApiError
+        ? messagesQuery.error.message
+        : messagesQuery.error instanceof Error
+          ? messagesQuery.error.message
+          : "Failed to load feedback details";
+
+    return (
+      <div className="h-full overflow-y-auto space-y-6 p-6">
+        <AppPageHeader
+          headingLevel={2}
+          title="Feedback details"
+          description={`Source CV: ${resumeName}`}
+        />
+        <AppCard variant="mist" className="p-6">
+          <p
+            className="text-sm text-(--status-critical-foreground)"
+            role="alert"
+          >
+            {message}
+          </p>
+        </AppCard>
       </div>
     );
   }
 
   return (
     <div className="h-full overflow-y-auto p-6 space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-(--foreground)">
-          Feedback Details
-        </h2>
-        <p className="text-xs text-(--muted-foreground) mt-1">
-          Source CV: {resumeName}
-        </p>
-      </div>
+      <AppPageHeader
+        headingLevel={2}
+        title="Feedback details"
+        description={`Source CV: ${resumeName}`}
+      />
 
       {closingFeedback ? (
-        <div className="space-y-2 pt-4 border-t border-(--border)">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-(--muted-foreground)">
+        <div className="space-y-2 border-t border-border-hairline pt-4">
+          <h3 className="text-sm font-semibold text-ink-black">
             General Feedback
           </h3>
-          <div className="rounded-xl bg-(--muted)/40 px-5 py-4 text-sm leading-relaxed text-(--foreground) prose prose-sm max-w-none space-y-2.5 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5">
+          <AppCard
+            variant="mist"
+            className="prose prose-sm max-w-none space-y-2.5 px-5 py-4 text-sm leading-relaxed text-text-base [&_li]:my-0.5 [&_ol]:list-decimal [&_ol]:pl-4 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-4"
+          >
             <ReactMarkdown>{closingFeedback}</ReactMarkdown>
-          </div>
+          </AppCard>
         </div>
       ) : (
-        <p className="text-sm text-(--muted-foreground) py-4">No general feedback text found in messages.</p>
+        <AppEmptyState
+          compact
+          headingLevel={3}
+          title="No general feedback found"
+        />
       )}
 
-      <div className="space-y-3 pt-4 border-t border-(--border)">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-(--muted-foreground)">
+      <div className="space-y-3 border-t border-border-hairline pt-4">
+        <h3 className="text-sm font-semibold text-ink-black">
           Study Topics Generated
         </h3>
         {reviewQuery.isLoading && (
-          <p className="text-xs text-(--muted-foreground)">Loading topics…</p>
+          <p className="text-xs text-text-base" role="status">
+            Loading topics…
+          </p>
         )}
-        {!reviewQuery.isLoading && sessionItems.length === 0 && (
-          <p className="text-sm text-(--muted-foreground)">No study topics were generated for this session.</p>
+        {!reviewQuery.isLoading && reviewQuery.error && (
+          <p
+            className="text-sm text-(--status-critical-foreground)"
+            role="alert"
+          >
+            {reviewQuery.error instanceof Error
+              ? reviewQuery.error.message
+              : "Failed to load study topics"}
+          </p>
         )}
-        {!reviewQuery.isLoading && sessionItems.length > 0 && (
-          <ReviewItemsGrid items={sessionItems} />
-        )}
+        {!reviewQuery.isLoading &&
+          !reviewQuery.error &&
+          sessionItems.length === 0 && (
+            <AppEmptyState
+              compact
+              headingLevel={3}
+              title="No study topics generated"
+            />
+          )}
+        {!reviewQuery.isLoading &&
+          !reviewQuery.error &&
+          sessionItems.length > 0 && <ReviewItemsGrid items={sessionItems} />}
       </div>
     </div>
   );
@@ -105,21 +162,31 @@ function FeedbackContent() {
   const { getAccessToken } = useAuth();
   const queryClient = useQueryClient();
 
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
+    null,
+  );
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const { data: sessionsData, isLoading: isLoadingSessions } = useSessions();
+  const {
+    data: sessionsData,
+    isLoading: isLoadingSessions,
+    error: sessionsError,
+  } = useSessions();
   const sessions = sessionsData?.sessions ?? [];
   const finishedSessions = sessions.filter((s) => s.isFinished);
   const resolvedSessionId =
     selectedSessionId ?? finishedSessions[0]?.id ?? null;
 
-  const { data: resumesData } = useResumes();
+  const { data: resumesData, error: resumesError } = useResumes();
   const resumes = resumesData?.resumes ?? [];
 
   async function handleDeleteSession(id: string, e: React.MouseEvent) {
     e.stopPropagation(); // Stop click from selecting
-    if (!confirm("Are you sure you want to delete this interview feedback and all its review topics?")) {
+    if (
+      !confirm(
+        "Are you sure you want to delete this interview feedback and all its review topics?",
+      )
+    ) {
       return;
     }
 
@@ -133,11 +200,11 @@ function FeedbackContent() {
     try {
       await interviewApi.deleteSession(id, token);
       toast.success("Feedback deleted successfully");
-      
+
       // Invalidate queries
       void queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
       void queryClient.invalidateQueries({ queryKey: ["review-items"] });
-      
+
       if (resolvedSessionId === id) {
         setSelectedSessionId(null);
       }
@@ -159,31 +226,58 @@ function FeedbackContent() {
   const selectedResumeName = selectedResume ? selectedResume.name : "Resume";
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden md:flex-row">
       {/* Sidebar List */}
-      <div className="w-80 border-r border-(--border) bg-(--card) flex flex-col h-full shrink-0 overflow-hidden">
-        <div className="p-4 border-b border-(--border) flex items-center gap-2 text-(--primary)">
+      <aside className="flex max-h-[42%] w-full shrink-0 flex-col overflow-hidden border-b border-border-hairline bg-fog-white md:h-full md:max-h-none md:w-80 md:border-r md:border-b-0">
+        <div className="flex items-center gap-2 border-b border-border-hairline p-4 text-ink-black">
           <BookOpen className="h-5 w-5" />
-          <h2 className="text-sm font-bold uppercase tracking-wider">Feedbacks List</h2>
+          <h1 className="text-sm font-semibold">Feedback</h1>
         </div>
 
-        <div className="flex-1 overflow-y-auto divide-y divide-(--border)/40">
+        <div className="flex-1 divide-y divide-border-hairline overflow-y-auto">
+          {resumesError && !isLoadingSessions && !sessionsError && (
+            <p
+              className="px-4 py-3 text-xs text-(--status-critical-foreground)"
+              role="alert"
+            >
+              {resumesError instanceof Error
+                ? resumesError.message
+                : "Failed to load CV names"}
+            </p>
+          )}
           {isLoadingSessions ? (
-            <div className="flex items-center gap-2 py-12 text-xs text-(--muted-foreground) justify-center">
+            <div
+              className="flex items-center justify-center gap-2 py-12 text-xs text-text-base"
+              role="status"
+            >
               <Loader2 className="h-4 w-4 animate-spin" />
               Loading feedbacks…
             </div>
+          ) : sessionsError ? (
+            <p
+              className="px-4 py-8 text-center text-sm text-(--status-critical-foreground)"
+              role="alert"
+            >
+              {sessionsError instanceof Error
+                ? sessionsError.message
+                : "Failed to load feedback reports"}
+            </p>
           ) : finishedSessions.length === 0 ? (
-            <div className="p-6 text-center text-xs text-(--muted-foreground) space-y-2">
-              <AlertCircle className="mx-auto h-8 w-8 opacity-40" />
-              <p>No finished interview feedbacks found yet.</p>
-              <a
-                href="/practice"
-                className="cursor-pointer inline-block mt-2 rounded bg-(--foreground) px-3 py-1 text-[10px] font-semibold text-(--background)"
-              >
-                Go Practice
-              </a>
-            </div>
+            <AppEmptyState
+              compact
+              headingLevel={2}
+              icon={<AlertCircle className="h-5 w-5" />}
+              title="No feedback yet"
+              description="Complete an interview to see its feedback here."
+              action={
+                <a
+                  href="/practice"
+                  className="inline-flex min-h-11 cursor-pointer items-center rounded-full bg-jade-deep px-3 py-1.5 text-xs font-semibold text-white hover:bg-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+                >
+                  Go practice
+                </a>
+              }
+            />
           ) : (
             finishedSessions.map((sess) => {
               const isActive = resolvedSessionId === sess.id;
@@ -193,32 +287,36 @@ function FeedbackContent() {
               return (
                 <div
                   key={sess.id}
-                  onClick={() => setSelectedSessionId(sess.id)}
                   className={cn(
-                    "w-full text-left p-3.5 flex items-center justify-between gap-2 transition-colors cursor-pointer hover:bg-(--muted)/20",
-                    isActive && "bg-(--accent)/15 border-l-4 border-(--primary) pl-2.5",
+                    "flex w-full items-center justify-between gap-2 p-2 transition-colors hover:bg-mist-gray",
+                    isActive && "bg-jade-pale",
                   )}
                 >
-                  <div className="min-w-0 flex-1 flex flex-col gap-1">
-                    <span className="text-xs font-bold text-(--foreground) truncate">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSessionId(sess.id)}
+                    className="flex min-h-11 min-w-0 flex-1 cursor-pointer flex-col gap-1 rounded-xl p-1.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+                  >
+                    <span className="truncate text-xs font-semibold text-ink-black">
                       {resumeName}
                     </span>
-                    <div className="flex items-center gap-2 text-[10px] text-(--muted-foreground)">
-                      <span className="capitalize font-semibold text-(--primary)">
+                    <span className="flex items-center gap-2 text-[10px] text-text-base">
+                      <span className="font-semibold capitalize text-text-base">
                         {sess.level}
                       </span>
                       <span>•</span>
                       <span>
                         {new Date(sess.createdAt).toLocaleDateString()}
                       </span>
-                    </div>
-                  </div>
+                    </span>
+                  </button>
 
                   <button
                     type="button"
                     disabled={deletingId === sess.id}
                     onClick={(e) => handleDeleteSession(sess.id, e)}
-                    className="cursor-pointer p-1.5 rounded-lg border border-(--border) text-red-600 hover:bg-red-500/10 transition-colors disabled:opacity-50 shrink-0"
+                    className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border-hairline text-red-700 transition-colors hover:bg-red-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
+                    aria-label={`Delete feedback for ${resumeName}`}
                     title="Delete feedback"
                   >
                     {deletingId === sess.id ? (
@@ -232,31 +330,32 @@ function FeedbackContent() {
             })
           )}
         </div>
-      </div>
+      </aside>
 
       {/* Detail Pane */}
-      <div className="flex-1 bg-(--background) flex flex-col h-full min-w-0 overflow-hidden relative">
-        {resolvedSessionId ? (
+      <section className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-paper-white">
+        {sessionsError ? (
+          <div className="flex flex-1 items-center justify-center p-8">
+            <p className="text-sm text-(--status-critical-foreground)">
+              Feedback details are unavailable because reports could not be
+              loaded.
+            </p>
+          </div>
+        ) : resolvedSessionId ? (
           <SessionFeedbackDetail
             sessionId={resolvedSessionId}
             resumeName={selectedResumeName}
           />
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-(--background)">
-            <div className="max-w-md space-y-3">
-              <div className="mx-auto size-14 rounded-full bg-(--accent)/30 flex items-center justify-center text-(--primary)">
-                <MessageSquare className="h-6 w-6" />
-              </div>
-              <h2 className="text-lg font-bold text-(--foreground)">
-                Select Feedback Report
-              </h2>
-              <p className="text-xs text-(--muted-foreground) leading-relaxed">
-                Choose one of your completed interview session evaluations in the sidebar to review the full details and generated topics.
-              </p>
-            </div>
+          <div className="flex flex-1 items-center justify-center bg-paper-white p-8">
+            <AppEmptyState
+              icon={<MessageSquare className="h-6 w-6" />}
+              title="Select a feedback report"
+              description="Choose a completed interview evaluation to review its details and generated topics."
+            />
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

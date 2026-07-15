@@ -14,6 +14,9 @@ import { ApiError } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 import type { CreateSessionInput, InterviewLevel } from "@/types/interview";
 import { MAX_JOB_DESCRIPTION_LENGTH } from "@/types/interview";
+import { AppCard } from "@/components/app/app-card";
+import { AppEmptyState } from "@/components/app/app-empty-state";
+import { AppPageHeader } from "@/components/app/app-page-header";
 
 const LEVELS: { value: InterviewLevel; label: string; description: string }[] =
   [
@@ -79,56 +82,77 @@ function NewSessionContent() {
 
   if (!resumeId) {
     return (
-      <p className="text-sm text-(--muted-foreground)">
-        No resume selected.{" "}
-        <a href="/practice" className="text-(--primary) underline">
-          Upload one first
-        </a>
-        .
-      </p>
+      <AppEmptyState
+        headingLevel={1}
+        title="No resume selected"
+        description="Choose or upload a resume before starting an interview."
+        action={
+          <a
+            href="/practice"
+            className="inline-flex rounded-full bg-jade-deep px-4 py-2 text-sm font-semibold text-white hover:bg-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+          >
+            Choose a resume
+          </a>
+        }
+      />
     );
   }
 
   return (
-    <div className="mx-auto max-w-md space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold text-(--foreground)">
-          Choose interview level
-        </h1>
-        {resumeQuery.data && (
-          <p className="mt-1 text-sm text-(--muted-foreground)">
-            Resume: {resumeQuery.data.name}
-            {resumeQuery.data.status !== "ready" &&
-              ` (${resumeQuery.data.status})`}
-          </p>
-        )}
-      </div>
+    <div className="mx-auto max-w-xl space-y-6">
+      <AppPageHeader
+        title="Choose interview level"
+        description={
+          resumeQuery.data ? (
+            <>
+              Resume: {resumeQuery.data.name}
+              {resumeQuery.data.status !== "ready" &&
+                ` (${resumeQuery.data.status})`}
+            </>
+          ) : undefined
+        }
+      />
 
-      <div className="space-y-2">
-        {LEVELS.map((opt) => (
-          <button
-            key={opt.value}
-            type="button"
-            onClick={() => setLevel(opt.value)}
-            className={cn(
-              "flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors",
-              level === opt.value
-                ? "border-(--primary) bg-(--accent)/40"
-                : "border-(--border) hover:bg-(--muted)/50",
-            )}
-          >
-            <span className="font-medium text-(--foreground)">{opt.label}</span>
-            <span className="text-xs text-(--muted-foreground)">
-              {opt.description}
-            </span>
-          </button>
-        ))}
-      </div>
+      {resumeQuery.error && (
+        <p
+          className="rounded-2xl bg-(--status-critical-surface) px-4 py-3 text-sm text-text-base"
+          role="alert"
+        >
+          {resumeQuery.error instanceof Error
+            ? resumeQuery.error.message
+            : "Failed to load the selected resume"}
+        </p>
+      )}
+
+      <fieldset>
+        <legend className="mb-2 text-sm font-medium text-ink-black">
+          Difficulty
+        </legend>
+        <AppCard variant="mist" className="space-y-2 p-5">
+          {LEVELS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setLevel(opt.value)}
+              aria-pressed={level === opt.value}
+              className={cn(
+                "flex min-h-11 w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2",
+                level === opt.value
+                  ? "border-jade bg-jade-pale"
+                  : "border-border-hairline bg-paper-white hover:bg-fog-white",
+              )}
+            >
+              <span className="font-medium text-ink-black">{opt.label}</span>
+              <span className="text-xs text-text-base">{opt.description}</span>
+            </button>
+          ))}
+        </AppCard>
+      </fieldset>
 
       <div className="space-y-1.5">
         <label
           htmlFor="job-description"
-          className="text-sm font-medium text-(--foreground)"
+          className="text-sm font-medium text-ink-black"
         >
           Job description (optional)
         </label>
@@ -139,9 +163,9 @@ function NewSessionContent() {
           placeholder="Paste a job posting to tailor questions to a specific role…"
           rows={5}
           maxLength={MAX_JOB_DESCRIPTION_LENGTH}
-          className="w-full resize-y rounded-xl border border-(--border) bg-(--background) px-4 py-3 text-sm text-(--foreground) placeholder:text-(--muted-foreground) focus:outline-none focus:ring-2 focus:ring-(--primary)"
+          className="w-full resize-y rounded-2xl border border-border-hairline bg-paper-white px-4 py-3 text-sm text-ink-black placeholder:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
         />
-        <p className="text-xs text-(--muted-foreground) text-right">
+        <p className="text-right text-xs text-text-base">
           {jobDescription.length}/{MAX_JOB_DESCRIPTION_LENGTH}
         </p>
       </div>
@@ -152,9 +176,10 @@ function NewSessionContent() {
         disabled={
           isSubmitting ||
           resumeQuery.isLoading ||
+          Boolean(resumeQuery.error) ||
           resumeQuery.data?.status !== "ready"
         }
-        className="w-full rounded-lg bg-(--foreground) py-2.5 text-sm font-medium text-(--background) disabled:opacity-50"
+        className="w-full rounded-full bg-jade-deep py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink-black disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
       >
         {isSubmitting ? "Starting…" : "Start interview"}
       </button>
@@ -165,9 +190,7 @@ function NewSessionContent() {
 export default function NewSessionPage() {
   return (
     <AppShell>
-      <Suspense
-        fallback={<p className="text-sm text-(--muted-foreground)">Loading…</p>}
-      >
+      <Suspense fallback={<p className="text-sm text-text-base">Loading…</p>}>
         <NewSessionContent />
       </Suspense>
     </AppShell>

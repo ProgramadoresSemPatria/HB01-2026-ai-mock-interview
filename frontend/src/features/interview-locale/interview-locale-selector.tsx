@@ -32,10 +32,10 @@ export function InterviewLocaleSelector() {
   }
 
   return (
-    <div className="space-y-1.5">
-      <label className="text-xs font-semibold text-(--muted-foreground) uppercase tracking-wider">
+    <fieldset className="space-y-1.5">
+      <legend className="text-xs font-semibold text-text-base">
         Interview language
-      </label>
+      </legend>
       <div className="grid grid-cols-2 gap-1">
         {OPTIONS.map((opt) => (
           <button
@@ -43,18 +43,20 @@ export function InterviewLocaleSelector() {
             type="button"
             disabled={!isReady || isSaving}
             onClick={() => void handleSelect(opt.value)}
+            aria-pressed={locale === opt.value}
             className={cn(
-              "flex items-center justify-center py-2 px-1 border rounded-lg text-center transition-all cursor-pointer",
+              "flex min-h-11 cursor-pointer items-center justify-center rounded-2xl border px-1 py-2 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2",
               locale === opt.value
-                ? "border-(--primary) bg-(--accent)/20 text-(--primary) font-semibold"
-                : "border-(--border) text-(--foreground) hover:bg-(--muted)/40",
-              (!isReady || isSaving) && "opacity-50 pointer-events-none",
+                ? "border-jade bg-jade-mist font-semibold text-jade-deep"
+                : "border-border-hairline bg-paper-white text-ink-black hover:bg-mist-gray",
+              (!isReady || isSaving) &&
+                "pointer-events-none cursor-not-allowed opacity-50",
             )}
           >
             <span className="text-xs">{opt.label}</span>
           </button>
         ))}
       </div>
-    </div>
+    </fieldset>
   );
 }

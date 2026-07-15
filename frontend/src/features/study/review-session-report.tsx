@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
@@ -13,6 +19,7 @@ import { reviewSessionsApi } from "@/lib/api/review-sessions";
 import { useReviewSession } from "@/lib/query/hooks/use-review-session";
 import { queryKeys } from "@/lib/query/keys";
 import type { ReviewSessionItemReport } from "@/types/review-sessions";
+import { AppPageHeader } from "@/components/app/app-page-header";
 
 import {
   ApplyPayloadValidationError,
@@ -47,7 +54,7 @@ function ReportCardsForm({ sessionId, items }: ReportCardsFormProps) {
   const cardsRef = useRef(cards);
   const isStableMountedRef = useRef(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     cardsRef.current = cards;
   }, [cards]);
 
@@ -70,7 +77,10 @@ function ReportCardsForm({ sessionId, items }: ReportCardsFormProps) {
   }, [accessToken, sessionId]);
 
   const tryKeepaliveApplyRef = useRef(tryKeepaliveApply);
-  tryKeepaliveApplyRef.current = tryKeepaliveApply;
+
+  useLayoutEffect(() => {
+    tryKeepaliveApplyRef.current = tryKeepaliveApply;
+  }, [tryKeepaliveApply]);
 
   useEffect(() => {
     const handlePageLeave = () => {
@@ -172,17 +182,12 @@ function ReportCardsForm({ sessionId, items }: ReportCardsFormProps) {
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 p-4 md:p-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold text-(--foreground)">
-          Review suggestions
-        </h1>
-        <p className="text-sm text-(--muted-foreground)">
-          Adjust each topic if needed, then apply your choices to update your
-          study list.
-        </p>
-      </div>
+      <AppPageHeader
+        title="Review suggestions"
+        description="Adjust each topic if needed, then apply your choices to update your study list."
+      />
 
-      <div className="space-y-4">
+      <ul className="list-none space-y-4">
         {cards.map((card) => (
           <ReviewReportCard
             key={card.reviewSessionItemId}
@@ -192,16 +197,16 @@ function ReportCardsForm({ sessionId, items }: ReportCardsFormProps) {
             }
           />
         ))}
-      </div>
+      </ul>
 
-      <div className="sticky bottom-0 -mx-4 border-t border-(--border) bg-(--background) px-4 py-3 md:-mx-6 md:px-6">
+      <div className="sticky bottom-0 -mx-4 border-t border-border-hairline bg-paper-white/95 px-4 py-3 backdrop-blur-sm md:-mx-6 md:px-6">
         <div className="flex justify-end">
           <button
             type="button"
             onClick={() => void handleApply()}
             disabled={isApplying || cards.length === 0}
             aria-busy={isApplying}
-            className="cursor-pointer flex min-w-[5.5rem] items-center justify-center gap-1.5 rounded-lg bg-(--foreground) px-4 py-2.5 text-sm font-medium text-(--background) disabled:pointer-events-none disabled:opacity-50"
+            className="flex min-w-22 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-jade-deep px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink-black disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
           >
             {isApplying ? (
               <>
@@ -251,8 +256,11 @@ export function ReviewSessionReport({ sessionId }: ReviewSessionReportProps) {
 
   if (sessionQuery.isLoading || session?.status !== "pending_review") {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center gap-2 text-sm text-(--muted-foreground)">
-        <Loader2 className="h-5 w-5 animate-spin text-(--primary)" />
+      <div
+        className="flex min-h-[40vh] items-center justify-center gap-2 text-sm text-text-base"
+        role="status"
+      >
+        <Loader2 className="h-5 w-5 animate-spin text-jade-deep" />
         Loading review report…
       </div>
     );

@@ -17,9 +17,16 @@ export default function InterviewPage({
   }, [sessionId, router]);
 
   return (
-    <div className="flex h-screen items-center justify-center gap-2">
-      <Loader2 className="h-6 w-6 animate-spin text-(--primary)" />
-      <span className="text-sm text-(--muted-foreground)">Redirecting to Practice…</span>
+    <div
+      className="manrope flex h-dvh items-center justify-center gap-2 bg-paper-white text-sm text-text-base"
+      role="status"
+      aria-live="polite"
+    >
+      <Loader2
+        className="h-6 w-6 animate-spin text-jade-deep"
+        aria-hidden="true"
+      />
+      <span>Redirecting to Practice…</span>
     </div>
   );
 }

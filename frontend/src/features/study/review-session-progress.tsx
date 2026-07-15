@@ -40,7 +40,7 @@ export function ReviewSessionProgress(props: ReviewSessionProgressProps) {
   const { itemIndex, totalItems, turnsCompleted, questionsPerItem } = progress;
 
   return (
-    <p className="text-xs text-(--muted-foreground)">
+    <p className="text-xs text-text-base">
       Topic {itemIndex + 1}/{totalItems} — Question {turnsCompleted + 1}/
       {questionsPerItem}
     </p>
