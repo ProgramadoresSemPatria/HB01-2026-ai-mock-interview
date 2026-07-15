@@ -20,7 +20,9 @@ export default function ChatDemoSection() {
     >
       <motion.div
         className="mx-auto max-w-[1200px]"
-        initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+        initial={
+          prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }
+        }
         animate={
           isInView || prefersReducedMotion
             ? { opacity: 1, y: 0 }
@@ -33,17 +35,16 @@ export default function ChatDemoSection() {
           See the interview in action
         </h2>
         <p className="landing-body mx-auto mt-4 max-w-xl text-center">
-          Watch a scripted session — questions, reasoning, and follow-ups the way
-          a real loop feels.
+          Watch a scripted session — questions, reasoning, and follow-ups the
+          way a real loop feels.
         </p>
 
         <div className="landing-artifact mt-12 overflow-hidden p-0">
           <InterviewChatDemo />
         </div>
 
-        <div className="mt-8 flex justify-center gap-3">
+        <div className="mt-8 flex justify-center">
           <LandingCta label="Get started" variant="solid" href="/login" />
-          <LandingCta label="Book a demo" variant="outline" href="/login" />
         </div>
 
         <ProductPreviews />
