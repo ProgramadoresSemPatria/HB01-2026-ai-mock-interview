@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AlertCircle, BookOpen, Loader2 } from "lucide-react";
+import { BookOpen, Loader2 } from "lucide-react";
 
 import { useAuth } from "@/features/auth/session-provider";
 import { InterviewLocaleSelector } from "@/features/interview-locale/interview-locale-selector";
@@ -13,12 +13,18 @@ import { useInterviewLocale } from "@/features/interview-locale/use-interview-lo
 import { StudyItemCard } from "@/features/study/study-item-card";
 import { StudyResumeBanner } from "@/features/study/study-resume-banner";
 import { StudySelectionBar } from "@/features/study/study-selection-bar";
-import { StudyTabs } from "@/features/study/study-tabs";
+import {
+  getStudyPanelId,
+  getStudyTabId,
+  StudyTabs,
+} from "@/features/study/study-tabs";
 import { setLastReviewSessionId } from "@/features/study/lib/review-session-storage";
 import { ApiError } from "@/lib/api/client";
 import { reviewItemsApi } from "@/lib/api/review-items";
 import { reviewSessionsApi } from "@/lib/api/review-sessions";
 import { useReviewItems } from "@/lib/query/hooks/use-review-items";
+import { AppEmptyState } from "@/components/app/app-empty-state";
+import { AppPageHeader } from "@/components/app/app-page-header";
 
 type StudyTab = "active" | "learned";
 
@@ -92,7 +98,9 @@ export function StudyHubContent() {
       await invalidateReviewItems();
     } catch (err) {
       toast.error(
-        err instanceof ApiError ? err.message : "Failed to mark topic as learned",
+        err instanceof ApiError
+          ? err.message
+          : "Failed to mark topic as learned",
       );
       await invalidateReviewItems();
     } finally {
@@ -175,114 +183,124 @@ export function StudyHubContent() {
   }
 
   const showSelection = activeTab === "active" && items.length > 0;
+  const inactiveTab: StudyTab = activeTab === "active" ? "learned" : "active";
   const isItemPending = (itemId: string) => pendingItemId === itemId;
 
   return (
     <div className="space-y-6 pb-20">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-(--primary)">
-            <BookOpen className="h-5 w-5" />
-            <h1 className="text-xl font-bold text-(--foreground)">Study</h1>
+      <AppPageHeader
+        title="Study"
+        description="Manage your study backlog and start focused review sessions."
+        actions={
+          <div className="w-full sm:w-40">
+            <InterviewLocaleSelector />
           </div>
-          <p className="text-sm text-(--muted-foreground)">
-            Manage your study backlog and start focused review sessions.
-          </p>
-        </div>
-        <div className="sm:w-40 shrink-0">
-          <InterviewLocaleSelector />
-        </div>
-      </div>
+        }
+      />
 
       <StudyResumeBanner />
 
       <StudyTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
-      {reviewQuery.isLoading && (
-        <div className="flex items-center gap-2 py-12 text-sm text-(--muted-foreground)">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Loading topics…
-        </div>
-      )}
-
-      {reviewQuery.error && (
-        <p className="text-sm text-red-600">
-          {reviewQuery.error instanceof Error
-            ? reviewQuery.error.message
-            : "Failed to load study topics"}
-        </p>
-      )}
-
-      {!reviewQuery.isLoading &&
-        !reviewQuery.error &&
-        items.length === 0 &&
-        activeTab === "active" && (
-          <div className="rounded-xl border border-dashed border-(--border) p-8 text-center">
-            <AlertCircle className="mx-auto h-8 w-8 text-(--muted-foreground) opacity-40" />
-            <p className="mt-3 text-sm text-(--muted-foreground)">
-              No active study topics yet. Complete a mock interview to generate
-              topics from your feedback.
-            </p>
-            <Link
-              href="/practice"
-              className="mt-4 inline-block cursor-pointer rounded-lg bg-(--foreground) px-4 py-2 text-xs font-semibold text-(--background)"
-            >
-              Go to Practice
-            </Link>
+      <div
+        id={getStudyPanelId(activeTab)}
+        role="tabpanel"
+        aria-labelledby={getStudyTabId(activeTab)}
+        tabIndex={0}
+        className="space-y-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+      >
+        {reviewQuery.isLoading && (
+          <div
+            className="flex items-center gap-2 py-12 text-sm text-text-base"
+            role="status"
+          >
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading topics…
           </div>
         )}
 
-      {!reviewQuery.isLoading &&
-        !reviewQuery.error &&
-        items.length === 0 &&
-        activeTab === "learned" && (
-          <div className="rounded-xl border border-dashed border-(--border) p-8 text-center">
-            <p className="text-sm text-(--muted-foreground)">
-              No mastered topics yet.
-            </p>
-          </div>
+        {reviewQuery.error && (
+          <p className="text-sm text-red-700" role="alert">
+            {reviewQuery.error instanceof Error
+              ? reviewQuery.error.message
+              : "Failed to load study topics"}
+          </p>
         )}
 
-      {!reviewQuery.isLoading && !reviewQuery.error && items.length > 0 && (
-        <div className="space-y-4">
-          {items.map((item) => (
-            <StudyItemCard
-              key={item.id}
-              item={item}
-              selectable={showSelection}
-              selected={effectiveSelectedIds.has(item.id)}
-              onSelectToggle={
-                showSelection && !isItemPending(item.id)
-                  ? () => handleSelectToggle(item.id)
-                  : undefined
-              }
-              onMarkLearned={
-                !isItemPending(item.id)
-                  ? () => void handleMarkLearned(item.id)
-                  : undefined
-              }
-              onReactivate={
-                !isItemPending(item.id)
-                  ? () => void handleReactivate(item.id)
-                  : undefined
-              }
-              onDelete={
-                !isItemPending(item.id)
-                  ? () => void handleDelete(item.id)
-                  : undefined
+        {!reviewQuery.isLoading &&
+          !reviewQuery.error &&
+          items.length === 0 &&
+          activeTab === "active" && (
+            <AppEmptyState
+              icon={<BookOpen className="h-6 w-6" />}
+              title="No active study topics yet"
+              description="Complete a mock interview to generate topics from your feedback."
+              action={
+                <Link
+                  href="/practice"
+                  className="inline-flex cursor-pointer rounded-full bg-jade-deep px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+                >
+                  Go to Practice
+                </Link>
               }
             />
-          ))}
-        </div>
-      )}
+          )}
 
-      {showSelection && (
-        <StudySelectionBar
-          selectedCount={effectiveSelectedIds.size}
-          onStart={() => void handleStartSession()}
-          isStarting={isStarting}
-        />
-      )}
+        {!reviewQuery.isLoading &&
+          !reviewQuery.error &&
+          items.length === 0 &&
+          activeTab === "learned" && (
+            <AppEmptyState title="No mastered topics yet" />
+          )}
+
+        {!reviewQuery.isLoading && !reviewQuery.error && items.length > 0 && (
+          <ul className="list-none space-y-4">
+            {items.map((item) => (
+              <StudyItemCard
+                key={item.id}
+                item={item}
+                selectable={showSelection}
+                selected={effectiveSelectedIds.has(item.id)}
+                onSelectToggle={
+                  showSelection && !isItemPending(item.id)
+                    ? () => handleSelectToggle(item.id)
+                    : undefined
+                }
+                onMarkLearned={
+                  !isItemPending(item.id)
+                    ? () => void handleMarkLearned(item.id)
+                    : undefined
+                }
+                onReactivate={
+                  !isItemPending(item.id)
+                    ? () => void handleReactivate(item.id)
+                    : undefined
+                }
+                onDelete={
+                  !isItemPending(item.id)
+                    ? () => void handleDelete(item.id)
+                    : undefined
+                }
+              />
+            ))}
+          </ul>
+        )}
+
+        {showSelection && (
+          <StudySelectionBar
+            selectedCount={effectiveSelectedIds.size}
+            onStart={() => void handleStartSession()}
+            isStarting={isStarting}
+          />
+        )}
+      </div>
+
+      <div
+        id={getStudyPanelId(inactiveTab)}
+        role="tabpanel"
+        aria-labelledby={getStudyTabId(inactiveTab)}
+        hidden
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type KeyboardEvent } from "react";
 import {
   User,
   Briefcase,
@@ -17,11 +17,26 @@ import { useResumes } from "@/lib/query/hooks/use-resumes";
 import { useResume } from "@/lib/query/hooks/use-resume";
 import { getStoredResumeId } from "@/features/auth/session-storage";
 import { cn } from "@/lib/utils";
+import { AppCard } from "@/components/app/app-card";
+import { AppEmptyState } from "@/components/app/app-empty-state";
+import { AppPageHeader } from "@/components/app/app-page-header";
 
-type TabType = "personal" | "experiences" | "projects" | "skills" | "certifications";
+type TabType =
+  | "personal"
+  | "experiences"
+  | "projects"
+  | "skills"
+  | "certifications";
+
+const getProfileTabId = (tab: TabType) => `profile-tab-${tab}`;
+const getProfilePanelId = (tab: TabType) => `profile-panel-${tab}`;
 
 export default function ProfilePage() {
-  const { data: resumesData, isLoading: isLoadingList } = useResumes();
+  const {
+    data: resumesData,
+    isLoading: isLoadingList,
+    error: listError,
+  } = useResumes();
   const resumes = resumesData?.resumes ?? [];
   const readyResumes = resumes.filter((r) => r.status === "ready");
 
@@ -42,7 +57,11 @@ export default function ProfilePage() {
     return hasActive ? activeId : readyResumes[0].id;
   }, [readyResumes, selectedResumeId]);
 
-  const { data: resume, isLoading: isLoadingResume } = useResume(resolvedResumeId);
+  const {
+    data: resume,
+    isLoading: isLoadingResume,
+    error: resumeError,
+  } = useResume(resolvedResumeId);
 
   const parsed = resume?.structuredSummary;
 
@@ -54,83 +73,127 @@ export default function ProfilePage() {
     { value: "certifications", label: "Certifications", icon: Award },
   ];
 
+  function handleTabKeyDown(
+    event: KeyboardEvent<HTMLButtonElement>,
+    currentIndex: number,
+  ) {
+    let nextIndex: number | null = null;
+
+    if (event.key === "ArrowRight") {
+      nextIndex = (currentIndex + 1) % tabs.length;
+    } else if (event.key === "ArrowLeft") {
+      nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    } else if (event.key === "Home") {
+      nextIndex = 0;
+    } else if (event.key === "End") {
+      nextIndex = tabs.length - 1;
+    }
+
+    if (nextIndex === null) return;
+
+    event.preventDefault();
+    const nextTab = tabs[nextIndex].value;
+    setActiveTab(nextTab);
+    document.getElementById(getProfileTabId(nextTab))?.focus();
+  }
+
   return (
     <AppShell>
       <div className="mx-auto max-w-4xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-(--foreground)">
-              Resume Profile
-            </h1>
-            <p className="mt-1 text-sm text-(--muted-foreground)">
-              Parsed data automatically extracted by AI from your uploaded CV.
-            </p>
-          </div>
-
-          {/* Resume Selector */}
-          {readyResumes.length > 1 && (
-            <div className="flex items-center gap-2">
-              <label htmlFor="resume-select" className="text-xs font-semibold text-(--muted-foreground) uppercase tracking-wider">
-                Select CV:
-              </label>
-              <select
-                id="resume-select"
-                value={resolvedResumeId ?? ""}
-                onChange={(e) => setSelectedResumeId(e.target.value)}
-                className="cursor-pointer rounded-lg border border-(--border) bg-(--background) px-3 py-1.5 text-sm font-medium text-(--foreground) focus:outline-none focus:ring-2 focus:ring-(--primary)"
-              >
-                {readyResumes.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-        </div>
+        <AppPageHeader
+          title="Resume profile"
+          description="Parsed data automatically extracted by AI from your uploaded CV."
+          actions={
+            readyResumes.length > 1 ? (
+              <div className="flex items-center gap-2">
+                <label
+                  htmlFor="resume-select"
+                  className="text-xs font-semibold text-text-base"
+                >
+                  Select CV:
+                </label>
+                <select
+                  id="resume-select"
+                  value={resolvedResumeId ?? ""}
+                  onChange={(e) => setSelectedResumeId(e.target.value)}
+                  className="cursor-pointer rounded-full border border-border-hairline bg-paper-white px-3 py-1.5 text-sm font-medium text-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+                >
+                  {readyResumes.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : undefined
+          }
+        />
 
         {isLoadingList && (
-          <div className="flex items-center gap-2 py-12 text-sm text-(--muted-foreground) justify-center">
+          <div
+            className="flex items-center justify-center gap-2 py-12 text-sm text-text-base"
+            role="status"
+          >
             <Loader2 className="h-5 w-5 animate-spin" />
             Loading profiles…
           </div>
         )}
 
-        {!isLoadingList && readyResumes.length === 0 && (
-          <div className="flex flex-col items-center justify-center gap-3 py-16 text-center border border-dashed border-(--border) rounded-2xl bg-(--card)">
-            <AlertCircle className="h-10 w-10 text-amber-500" />
-            <div className="max-w-md">
-              <h3 className="text-sm font-semibold text-(--foreground)">No ready CV found</h3>
-              <p className="mt-1 text-xs text-(--muted-foreground)">
-                We couldn't find any successfully processed resumes. Please upload a PDF resume in the Resumes tab first.
-              </p>
-            </div>
-            <a
-              href="/resumes"
-              className="cursor-pointer mt-2 rounded-lg bg-(--foreground) px-4 py-2 text-xs font-medium text-(--background) transition-opacity hover:opacity-85"
-            >
-              Go to Resumes
-            </a>
-          </div>
+        {!isLoadingList && listError && (
+          <p
+            className="py-12 text-center text-sm text-(--status-critical-foreground)"
+            role="alert"
+          >
+            {listError instanceof Error
+              ? listError.message
+              : "Failed to load resume profiles"}
+          </p>
         )}
 
-        {!isLoadingList && readyResumes.length > 0 && (
+        {!isLoadingList && !listError && readyResumes.length === 0 && (
+          <AppEmptyState
+            icon={<AlertCircle className="h-6 w-6" />}
+            headingLevel={2}
+            title="No ready CV found"
+            description="We couldn't find a successfully processed resume. Upload a PDF resume first."
+            action={
+              <a
+                href="/resumes"
+                className="inline-flex cursor-pointer rounded-full bg-jade-deep px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+              >
+                Go to Resumes
+              </a>
+            }
+          />
+        )}
+
+        {!isLoadingList && !listError && readyResumes.length > 0 && (
           <div className="space-y-6">
             {/* Tabs Selector */}
-            <div className="flex border-b border-(--border) overflow-x-auto gap-4 scrollbar-none">
-              {tabs.map((tab) => {
+            <div
+              className="flex gap-4 overflow-x-auto border-b border-border-hairline"
+              role="tablist"
+              aria-label="Resume profile sections"
+            >
+              {tabs.map((tab, index) => {
                 const Icon = tab.icon;
                 const active = activeTab === tab.value;
                 return (
                   <button
                     key={tab.value}
+                    id={getProfileTabId(tab.value)}
                     type="button"
+                    role="tab"
+                    aria-selected={active}
+                    aria-controls={getProfilePanelId(tab.value)}
+                    tabIndex={active ? 0 : -1}
                     onClick={() => setActiveTab(tab.value)}
+                    onKeyDown={(event) => handleTabKeyDown(event, index)}
                     className={cn(
-                      "cursor-pointer flex items-center gap-2 pb-3 text-sm font-medium border-b-2 transition-colors shrink-0 px-1",
+                      "flex min-h-11 shrink-0 cursor-pointer items-center gap-2 border-b-2 px-1 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2",
                       active
-                        ? "border-(--primary) text-(--primary)"
-                        : "border-transparent text-(--muted-foreground) hover:text-(--foreground)",
+                        ? "border-jade-deep text-jade-deep"
+                        : "border-transparent text-text-base hover:text-ink-black",
                     )}
                   >
                     <Icon className="h-4 w-4" />
@@ -141,196 +204,240 @@ export default function ProfilePage() {
             </div>
 
             {/* Profile Tab Contents */}
-            {isLoadingResume && (
-              <div className="flex items-center gap-2 py-12 text-sm text-(--muted-foreground) justify-center">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                Parsing CV details…
-              </div>
-            )}
-
-            {!isLoadingResume && parsed && (
-              <div className="rounded-2xl border border-(--border) bg-(--card) p-6 shadow-sm min-h-[300px]">
-                {/* Personal Tab */}
-                {activeTab === "personal" && (
-                  <div className="space-y-6">
-                    <div className="flex items-start gap-4">
-                      <div className="flex size-14 items-center justify-center rounded-xl bg-(--accent)/30 text-(--primary)">
-                        <User className="h-7 w-7" />
-                      </div>
-                      <div>
-                        <h2 className="text-xl font-bold text-(--foreground)">
-                          {parsed.personal_info.name}
-                        </h2>
-                        <p className="text-sm font-medium text-(--primary) mt-0.5">
-                          {parsed.personal_info.title}
-                        </p>
-                      </div>
+            {tabs.map((tab) => {
+              const panelActive = activeTab === tab.value;
+              return (
+                <AppCard
+                  key={tab.value}
+                  id={getProfilePanelId(tab.value)}
+                  role="tabpanel"
+                  aria-labelledby={getProfileTabId(tab.value)}
+                  tabIndex={panelActive ? 0 : -1}
+                  hidden={!panelActive}
+                  className="min-h-[300px] p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+                >
+                  {isLoadingResume && (
+                    <div
+                      className="flex items-center justify-center gap-2 py-12 text-sm text-text-base"
+                      role="status"
+                    >
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Parsing CV details…
                     </div>
-
-                    <div className="pt-4 border-t border-(--border)">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-(--muted-foreground) mb-2">
-                        About
-                      </h3>
-                      <p className="text-sm text-(--foreground) leading-relaxed whitespace-pre-line">
-                        {parsed.personal_info.about || "No summary provided."}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-(--border) text-sm">
-                      <div className="flex items-center gap-2.5 text-(--muted-foreground)">
-                        <FileText className="h-4 w-4 shrink-0" />
-                        <span className="truncate text-(--foreground)">
-                          Source: {resume.name}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Experiences Tab */}
-                {activeTab === "experiences" && (
-                  <div className="space-y-6">
-                    <h2 className="text-lg font-semibold text-(--foreground) border-b border-(--border) pb-2">
-                      Work History
-                    </h2>
-                    {parsed.experiences.length === 0 ? (
-                      <p className="text-sm text-(--muted-foreground) text-center py-8">
-                        No work experiences found.
-                      </p>
-                    ) : (
-                      <div className="space-y-6 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[2px] before:bg-(--border)">
-                        {parsed.experiences.map((exp, idx) => (
-                          <div key={idx} className="relative pl-8">
-                            <div className="absolute left-[7px] top-1.5 size-2.5 rounded-full bg-(--primary) ring-4 ring-(--card)" />
+                  )}
+                  {!isLoadingResume && resumeError && (
+                    <p
+                      className="py-12 text-center text-sm text-(--status-critical-foreground)"
+                      role="alert"
+                    >
+                      {resumeError instanceof Error
+                        ? resumeError.message
+                        : "Failed to load profile details"}
+                    </p>
+                  )}
+                  {!isLoadingResume && !resumeError && !parsed && (
+                    <p className="py-12 text-center text-sm text-text-base">
+                      Parsed profile details are unavailable.
+                    </p>
+                  )}
+                  {!isLoadingResume && !resumeError && parsed && (
+                    <>
+                      {/* Personal Tab */}
+                      {activeTab === "personal" && (
+                        <div className="space-y-6">
+                          <div className="flex items-start gap-4">
+                            <div className="flex size-14 items-center justify-center rounded-2xl bg-jade-pale text-jade-deep">
+                              <User className="h-7 w-7" />
+                            </div>
                             <div>
-                              <h3 className="text-base font-bold text-(--foreground)">
-                                {exp.role}
-                              </h3>
-                              <p className="text-sm font-medium text-(--primary) mt-0.5">
-                                {exp.company}
+                              <h2 className="text-xl font-semibold text-ink-black">
+                                {parsed.personal_info.name}
+                              </h2>
+                              <p className="mt-0.5 text-sm font-medium text-text-base">
+                                {parsed.personal_info.title}
                               </p>
-                              {exp.highlights && exp.highlights.length > 0 && (
-                                <ul className="list-disc list-outside pl-4 mt-3 space-y-1.5 text-sm text-(--muted-foreground)">
-                                  {exp.highlights.map((item, key) => (
-                                    <li key={key}>{item}</li>
-                                  ))}
-                                </ul>
-                              )}
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
 
-                {/* Projects Tab */}
-                {activeTab === "projects" && (
-                  <div className="space-y-6">
-                    <h2 className="text-lg font-semibold text-(--foreground) border-b border-(--border) pb-2">
-                      Technical Projects
-                    </h2>
-                    {parsed.projects.length === 0 ? (
-                      <p className="text-sm text-(--muted-foreground) text-center py-8">
-                        No projects found.
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-1 gap-6">
-                        {parsed.projects.map((proj, idx) => (
-                          <div
-                            key={idx}
-                            className="rounded-xl border border-(--border) p-5 bg-(--background)/40 space-y-3"
-                          >
-                            <div>
-                              <h3 className="text-base font-bold text-(--foreground)">
-                                {proj.name}
-                              </h3>
-                              <p className="text-sm text-(--muted-foreground) mt-1">
-                                {proj.description}
-                              </p>
+                          <div className="border-t border-border-hairline pt-4">
+                            <h3 className="mb-2 text-sm font-semibold text-ink-black">
+                              About
+                            </h3>
+                            <p className="whitespace-pre-line text-sm leading-relaxed text-text-base">
+                              {parsed.personal_info.about ||
+                                "No summary provided."}
+                            </p>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-4 border-t border-border-hairline pt-4 text-sm sm:grid-cols-2">
+                            <div className="flex items-center gap-2.5 text-text-base">
+                              <FileText className="h-4 w-4 shrink-0" />
+                              <span className="truncate text-ink-black">
+                                Source: {resume.name}
+                              </span>
                             </div>
+                          </div>
+                        </div>
+                      )}
 
-                            {proj.technologies && proj.technologies.length > 0 && (
-                              <div className="flex flex-wrap gap-1.5">
-                                {proj.technologies.map((tech, key) => (
-                                  <span
-                                    key={key}
-                                    className="px-2 py-0.5 rounded bg-(--accent)/35 text-(--accent-foreground) text-[11px] font-medium"
-                                  >
-                                    {tech}
+                      {/* Experiences Tab */}
+                      {activeTab === "experiences" && (
+                        <div className="space-y-6">
+                          <h2 className="border-b border-border-hairline pb-2 text-lg font-semibold text-ink-black">
+                            Work History
+                          </h2>
+                          {parsed.experiences.length === 0 ? (
+                            <AppEmptyState
+                              compact
+                              headingLevel={3}
+                              title="No work experiences found"
+                            />
+                          ) : (
+                            <div className="relative space-y-6 before:absolute before:bottom-2 before:left-3 before:top-2 before:w-px before:bg-border-hairline">
+                              {parsed.experiences.map((exp, idx) => (
+                                <div key={idx} className="relative pl-8">
+                                  <div className="absolute left-[7px] top-1.5 size-2.5 rounded-full bg-jade-deep ring-4 ring-paper-white" />
+                                  <div>
+                                    <h3 className="text-base font-semibold text-ink-black">
+                                      {exp.role}
+                                    </h3>
+                                    <p className="mt-0.5 text-sm font-medium text-text-base">
+                                      {exp.company}
+                                    </p>
+                                    {exp.highlights &&
+                                      exp.highlights.length > 0 && (
+                                        <ul className="mt-3 list-outside list-disc space-y-1.5 pl-4 text-sm text-text-base">
+                                          {exp.highlights.map((item, key) => (
+                                            <li key={key}>{item}</li>
+                                          ))}
+                                        </ul>
+                                      )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Projects Tab */}
+                      {activeTab === "projects" && (
+                        <div className="space-y-6">
+                          <h2 className="border-b border-border-hairline pb-2 text-lg font-semibold text-ink-black">
+                            Technical Projects
+                          </h2>
+                          {parsed.projects.length === 0 ? (
+                            <AppEmptyState
+                              compact
+                              headingLevel={3}
+                              title="No projects found"
+                            />
+                          ) : (
+                            <div className="grid grid-cols-1 gap-6">
+                              {parsed.projects.map((proj, idx) => (
+                                <div
+                                  key={idx}
+                                  className="space-y-3 rounded-2xl bg-mist-gray p-5"
+                                >
+                                  <div>
+                                    <h3 className="text-base font-semibold text-ink-black">
+                                      {proj.name}
+                                    </h3>
+                                    <p className="mt-1 text-sm text-text-base">
+                                      {proj.description}
+                                    </p>
+                                  </div>
+
+                                  {proj.technologies &&
+                                    proj.technologies.length > 0 && (
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {proj.technologies.map((tech, key) => (
+                                          <span
+                                            key={key}
+                                            className="rounded-full bg-jade-pale px-2 py-0.5 text-[11px] font-medium text-jade-deep"
+                                          >
+                                            {tech}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
+
+                                  {proj.highlights &&
+                                    proj.highlights.length > 0 && (
+                                      <ul className="list-disc space-y-1 border-t border-border-hairline pt-2 pl-4 text-sm text-text-base">
+                                        {proj.highlights.map((item, key) => (
+                                          <li key={key}>{item}</li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Skills Tab */}
+                      {activeTab === "skills" && (
+                        <div className="space-y-4">
+                          <h2 className="border-b border-border-hairline pb-2 text-lg font-semibold text-ink-black">
+                            Professional Skills
+                          </h2>
+                          {parsed.skills.length === 0 ? (
+                            <AppEmptyState
+                              compact
+                              headingLevel={3}
+                              title="No skills found"
+                            />
+                          ) : (
+                            <div className="flex flex-wrap gap-2 pt-2">
+                              {parsed.skills.map((skill, idx) => (
+                                <span
+                                  key={idx}
+                                  className="rounded-full bg-jade-pale px-3.5 py-1.5 text-xs font-medium text-jade-deep"
+                                >
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Certifications Tab */}
+                      {activeTab === "certifications" && (
+                        <div className="space-y-4">
+                          <h2 className="border-b border-border-hairline pb-2 text-lg font-semibold text-ink-black">
+                            Certifications & Licenses
+                          </h2>
+                          {parsed.certifications.length === 0 ? (
+                            <AppEmptyState
+                              compact
+                              headingLevel={3}
+                              title="No certifications found"
+                            />
+                          ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                              {parsed.certifications.map((cert, idx) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center gap-3 rounded-2xl bg-mist-gray p-3.5"
+                                >
+                                  <Award className="h-5 w-5 shrink-0 text-jade-deep" />
+                                  <span className="text-sm font-semibold text-ink-black">
+                                    {cert}
                                   </span>
-                                ))}
-                              </div>
-                            )}
-
-                            {proj.highlights && proj.highlights.length > 0 && (
-                              <ul className="list-disc pl-4 space-y-1 text-sm text-(--muted-foreground) pt-2 border-t border-(--border)/50">
-                                {proj.highlights.map((item, key) => (
-                                  <li key={key}>{item}</li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Skills Tab */}
-                {activeTab === "skills" && (
-                  <div className="space-y-4">
-                    <h2 className="text-lg font-semibold text-(--foreground) border-b border-(--border) pb-2">
-                      Professional Skills
-                    </h2>
-                    {parsed.skills.length === 0 ? (
-                      <p className="text-sm text-(--muted-foreground) text-center py-8">
-                        No skills found.
-                      </p>
-                    ) : (
-                      <div className="flex flex-wrap gap-2 pt-2">
-                        {parsed.skills.map((skill, idx) => (
-                          <span
-                            key={idx}
-                            className="px-3.5 py-1.5 rounded-xl bg-(--primary)/8 text-(--primary) border border-(--primary)/15 font-medium text-xs shadow-sm"
-                          >
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Certifications Tab */}
-                {activeTab === "certifications" && (
-                  <div className="space-y-4">
-                    <h2 className="text-lg font-semibold text-(--foreground) border-b border-(--border) pb-2">
-                      Certifications & Licenses
-                    </h2>
-                    {parsed.certifications.length === 0 ? (
-                      <p className="text-sm text-(--muted-foreground) text-center py-8">
-                        No certifications found.
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                        {parsed.certifications.map((cert, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-3 p-3.5 rounded-xl border border-(--border) bg-(--background)/30"
-                          >
-                            <Award className="h-5 w-5 text-(--primary) shrink-0" />
-                            <span className="text-sm font-semibold text-(--foreground)">
-                              {cert}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </AppCard>
+              );
+            })}
           </div>
         )}
       </div>

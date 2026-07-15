@@ -30,6 +30,7 @@ import {
   getStoredResumeId,
   setStoredResumeId,
 } from "@/features/auth/session-storage";
+import { AppEmptyState } from "@/components/app/app-empty-state";
 
 const LEVELS: { value: InterviewLevel; label: string; turns: string }[] = [
   { value: "entry", label: "Entry Level", turns: "5 turns" },
@@ -53,11 +54,19 @@ function PracticeContent() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
 
-  const { data: resumesData, isLoading: isLoadingResumes } = useResumes();
+  const {
+    data: resumesData,
+    isLoading: isLoadingResumes,
+    error: resumesError,
+  } = useResumes();
   const resumes = resumesData?.resumes ?? [];
   const readyResumes = resumes.filter((r) => r.status === "ready");
 
-  const { data: sessionsData, isLoading: isLoadingSessions } = useSessions();
+  const {
+    data: sessionsData,
+    isLoading: isLoadingSessions,
+    error: sessionsError,
+  } = useSessions();
   const sessions = useMemo(
     () => sessionsData?.sessions ?? [],
     [sessionsData?.sessions],
@@ -126,12 +135,12 @@ function PracticeContent() {
       }
 
       const { id } = await interviewApi.createSession(body, token);
-      
+
       toast.success("New interview session created!");
-      
+
       // Invalidate query to refresh list
       void queryClient.invalidateQueries({ queryKey: queryKeys.sessions });
-      
+
       // Select the new session
       setActiveSessionId(id);
       router.push(`/practice?sessionId=${id}`);
@@ -149,31 +158,46 @@ function PracticeContent() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden md:flex-row">
       {/* Lateral Panel */}
-      <div className="w-80 border-r border-(--border) bg-(--card) flex flex-col h-full shrink-0 overflow-y-auto">
-        <div className="p-4 border-b border-(--border) space-y-4">
-          <div className="flex items-center gap-2 text-(--primary)">
+      <aside className="flex max-h-[48%] w-full shrink-0 flex-col overflow-y-auto border-b border-border-hairline bg-fog-white md:h-full md:max-h-none md:w-80 md:border-r md:border-b-0">
+        <div className="shrink-0 space-y-4 border-b border-border-hairline p-4">
+          <div className="flex items-center gap-2 text-ink-black">
             <Dumbbell className="h-5 w-5" />
-            <h2 className="text-sm font-bold uppercase tracking-wider">Practice Panel</h2>
+            <h1 className="text-sm font-semibold">Practice panel</h1>
           </div>
 
           {/* Active CV Selector */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-(--muted-foreground) uppercase tracking-wider">
+            <label
+              htmlFor="practice-resume"
+              className="text-xs font-semibold text-text-base"
+            >
               Active CV
             </label>
             {isLoadingResumes ? (
-              <div className="flex items-center gap-2 py-2 text-xs text-(--muted-foreground)">
+              <div className="flex items-center gap-2 py-2 text-xs text-text-base">
                 <Loader2 className="h-3 w-3 animate-spin" />
                 Loading CVs…
               </div>
+            ) : resumesError ? (
+              <p
+                className="rounded-2xl bg-(--status-critical-surface) p-3 text-xs text-text-base"
+                role="alert"
+              >
+                {resumesError instanceof Error
+                  ? resumesError.message
+                  : "Failed to load CVs"}
+              </p>
             ) : readyResumes.length === 0 ? (
-              <div className="flex items-start gap-2 p-3 rounded-lg border border-dashed border-amber-500/25 bg-amber-500/5">
-                <AlertCircle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                <div className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+              <div className="flex items-start gap-2 rounded-2xl bg-jade-pale p-3">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-jade-deep" />
+                <div className="text-[11px] font-medium text-jade-deep">
                   No ready CV found.{" "}
-                  <a href="/resumes" className="cursor-pointer underline font-bold">
+                  <a
+                    href="/resumes"
+                    className="cursor-pointer rounded-sm font-bold underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+                  >
                     Upload one
                   </a>{" "}
                   first to practice.
@@ -181,12 +205,13 @@ function PracticeContent() {
               </div>
             ) : (
               <select
+                id="practice-resume"
                 value={resolvedResumeId ?? ""}
                 onChange={(e) => {
                   setStoredResumeId(e.target.value);
                   setActiveResumeId(e.target.value);
                 }}
-                className="cursor-pointer w-full rounded-lg border border-(--border) bg-(--background) px-3 py-2 text-sm font-medium text-(--foreground) focus:outline-none focus:ring-2 focus:ring-(--primary)"
+                className="w-full cursor-pointer rounded-2xl border border-border-hairline bg-paper-white px-3 py-2 text-sm font-medium text-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
               >
                 {readyResumes.map((r) => (
                   <option key={r.id} value={r.id}>
@@ -200,36 +225,42 @@ function PracticeContent() {
           <InterviewLocaleSelector />
 
           {/* Choose level */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-(--muted-foreground) uppercase tracking-wider">
+          <fieldset className="space-y-1.5">
+            <legend className="text-xs font-semibold text-text-base">
               Difficulty Level
-            </label>
+            </legend>
             <div className="grid grid-cols-3 gap-1">
               {LEVELS.map((opt) => (
                 <button
                   key={opt.value}
                   type="button"
                   onClick={() => setLevel(opt.value)}
+                  aria-pressed={level === opt.value}
                   className={cn(
-                    "flex flex-col items-center justify-center py-2 px-1 border rounded-lg text-center transition-all cursor-pointer",
+                    "flex cursor-pointer flex-col items-center justify-center rounded-2xl border px-1 py-2 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2",
                     level === opt.value
-                      ? "border-(--primary) bg-(--accent)/20 text-(--primary) font-semibold"
-                      : "border-(--border) text-(--foreground) hover:bg-(--muted)/40",
+                      ? "border-jade bg-jade-pale font-semibold text-jade-deep"
+                      : "border-border-hairline bg-paper-white text-ink-black hover:bg-mist-gray",
                   )}
                 >
                   <span className="text-xs">{opt.label.split(" ")[0]}</span>
-                  <span className="text-[9px] opacity-75">{opt.turns}</span>
+                  <span className="text-[10px] text-text-base">
+                    {opt.turns}
+                  </span>
                 </button>
               ))}
             </div>
-          </div>
+          </fieldset>
 
           {/* Optional job description */}
           <div className="space-y-1.5">
             <button
+              id="practice-job-description-label"
               type="button"
               onClick={() => setShowJobDescription((open) => !open)}
-              className="cursor-pointer flex w-full items-center justify-between text-xs font-semibold text-(--muted-foreground) uppercase tracking-wider"
+              aria-expanded={showJobDescription}
+              aria-controls="practice-job-description"
+              className="flex min-h-11 w-full cursor-pointer items-center justify-between text-xs font-semibold text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
             >
               <span>Job description (optional)</span>
               <ChevronRight
@@ -242,14 +273,16 @@ function PracticeContent() {
             {showJobDescription && (
               <div className="space-y-1">
                 <textarea
+                  id="practice-job-description"
+                  aria-labelledby="practice-job-description-label"
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
                   placeholder="Paste a job posting to tailor questions to a specific role…"
                   rows={4}
                   maxLength={MAX_JOB_DESCRIPTION_LENGTH}
-                  className="w-full resize-y rounded-lg border border-(--border) bg-(--background) px-3 py-2 text-xs text-(--foreground) placeholder:text-(--muted-foreground) focus:outline-none focus:ring-2 focus:ring-(--primary)"
+                  className="w-full resize-y rounded-2xl border border-border-hairline bg-paper-white px-3 py-2 text-xs text-ink-black placeholder:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
                 />
-                <p className="text-[10px] text-(--muted-foreground) text-right">
+                <p className="text-right text-[10px] text-text-base">
                   {jobDescription.length}/{MAX_JOB_DESCRIPTION_LENGTH}
                 </p>
               </div>
@@ -259,9 +292,13 @@ function PracticeContent() {
           {/* Start New Session CTA */}
           <button
             type="button"
-            disabled={isCreatingSession || readyResumes.length === 0}
+            disabled={
+              isCreatingSession ||
+              Boolean(resumesError) ||
+              readyResumes.length === 0
+            }
             onClick={handleStartNewInterview}
-            className="cursor-pointer flex w-full items-center justify-center gap-2 rounded-xl bg-(--foreground) px-4 py-2.5 text-sm font-medium text-(--background) transition-opacity hover:opacity-85 disabled:opacity-50 disabled:pointer-events-none"
+            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-jade-deep px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink-black disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
           >
             {isCreatingSession ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -273,24 +310,36 @@ function PracticeContent() {
         </div>
 
         {/* Sessions History */}
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="p-3 bg-(--muted)/30 border-b border-(--border) flex items-center gap-2">
-            <Clock className="h-3.5 w-3.5 text-(--muted-foreground)" />
-            <span className="text-xs font-bold uppercase tracking-wider text-(--muted-foreground)">
+        <div className="flex flex-none flex-col">
+          <div className="flex items-center gap-2 border-b border-border-hairline bg-mist-gray p-3">
+            <Clock className="h-3.5 w-3.5 text-text-base" />
+            <span className="text-xs font-semibold text-text-base">
               Previous Conversations
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto divide-y divide-(--border)/40">
+          <div className="divide-y divide-border-hairline">
             {isLoadingSessions ? (
-              <div className="flex items-center gap-2 py-8 text-xs text-(--muted-foreground) justify-center">
+              <div className="flex items-center justify-center gap-2 py-8 text-xs text-text-base">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Loading sessions…
               </div>
+            ) : sessionsError ? (
+              <p
+                className="px-4 py-8 text-center text-xs text-(--status-critical-foreground)"
+                role="alert"
+              >
+                {sessionsError instanceof Error
+                  ? sessionsError.message
+                  : "Failed to load previous sessions"}
+              </p>
             ) : sessions.length === 0 ? (
-              <div className="p-6 text-center text-xs text-(--muted-foreground)">
-                No previous sessions found. Start a new session above!
-              </div>
+              <AppEmptyState
+                compact
+                headingLevel={2}
+                title="No previous sessions"
+                description="Start a new practice above to build your history."
+              />
             ) : (
               sessions.map((sess) => {
                 const isActive = resolvedSessionId === sess.id;
@@ -303,27 +352,30 @@ function PracticeContent() {
                     type="button"
                     onClick={() => handleSelectSession(sess.id)}
                     className={cn(
-                      "cursor-pointer w-full text-left p-3.5 flex flex-col gap-1 transition-colors hover:bg-(--muted)/20",
-                      isActive && "bg-(--accent)/15 border-l-4 border-(--primary) pl-2.5",
+                      "flex w-full cursor-pointer flex-col gap-1 p-3.5 text-left transition-colors hover:bg-mist-gray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-jade",
+                      isActive && "bg-jade-pale",
                     )}
                   >
                     <div className="flex justify-between items-start gap-2 min-w-0">
-                      <span className="text-xs font-bold text-(--foreground) truncate flex-1">
+                      <span className="flex-1 truncate text-xs font-semibold text-ink-black">
                         {resumeName}
                       </span>
-                      <span className={cn(
-                        "text-[9px] uppercase tracking-wider font-semibold px-1 rounded shrink-0",
-                        sess.isFinished
-                          ? "bg-slate-500/10 text-slate-600"
-                          : "bg-emerald-500/10 text-emerald-600"
-                      )}>
+                      <span
+                        className={cn(
+                          "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                          sess.isFinished
+                            ? "bg-(--status-neutral-surface) text-(--status-neutral-foreground)"
+                            : "bg-jade-pale text-jade-deep",
+                        )}
+                      >
                         {sess.isFinished ? "Finished" : "Active"}
                       </span>
                     </div>
 
-                    <div className="flex justify-between items-center text-[10px] text-(--muted-foreground)">
+                    <div className="flex items-center justify-between text-[10px] text-text-base">
                       <span className="capitalize font-medium">
-                        {sess.level} level · {sess.turnCount}/{sess.maxTurns} turns
+                        {sess.level} level · {sess.turnCount}/{sess.maxTurns}{" "}
+                        turns
                       </span>
                       <span>
                         {new Date(sess.createdAt).toLocaleDateString()}
@@ -335,45 +387,63 @@ function PracticeContent() {
             )}
           </div>
         </div>
-      </div>
+      </aside>
 
       {/* Expanded Chat Pane */}
-      <div className="flex-1 bg-(--background) flex flex-col h-full min-w-0 overflow-hidden relative">
-        {resolvedSessionId ? (
+      <section className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-paper-white">
+        {sessionsError ? (
+          <div className="flex flex-1 items-center justify-center bg-paper-white p-8">
+            <p
+              className="max-w-md text-center text-sm text-(--status-critical-foreground)"
+              role="alert"
+            >
+              Session data could not be loaded. Interview chat is unavailable.
+            </p>
+          </div>
+        ) : resolvedSessionId ? (
           <div className="flex-1 flex flex-col h-full p-4 overflow-hidden">
-            <InterviewChat key={resolvedSessionId} sessionId={resolvedSessionId} />
+            <InterviewChat
+              key={resolvedSessionId}
+              sessionId={resolvedSessionId}
+            />
+          </div>
+        ) : resumesError ? (
+          <div className="flex flex-1 items-center justify-center bg-paper-white p-8">
+            <p
+              className="max-w-md text-center text-sm text-(--status-critical-foreground)"
+              role="alert"
+            >
+              Resume data could not be loaded. Starting a new interview is
+              unavailable.
+            </p>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-(--background)">
-            <div className="max-w-md space-y-4">
-              <div className="mx-auto size-16 rounded-full bg-(--accent)/30 flex items-center justify-center text-(--primary) animate-bounce">
-                <MessageSquare className="h-8 w-8" />
-              </div>
-              <h2 className="text-xl font-bold text-(--foreground)">
-                AI Mock Interview
-              </h2>
-              <p className="text-sm text-(--muted-foreground) leading-relaxed">
-                Improve your system design and coding communication skills with our real-time AI interviewer.
-              </p>
-              <div className="pt-2 border-t border-(--border)/50 flex flex-col gap-2">
-                <p className="text-xs text-(--muted-foreground)">
-                  {readyResumes.length === 0
-                    ? "Upload your resume PDF first to start practicing."
-                    : "Select a previous conversation from history or start a new practice in the sidebar panel to begin."}
-                </p>
-                {readyResumes.length === 0 && (
-                  <a
-                    href="/resumes"
-                    className="cursor-pointer inline-flex mx-auto items-center gap-1.5 rounded-lg bg-(--foreground) px-4 py-2 text-xs font-semibold text-(--background) transition-opacity hover:opacity-85"
-                  >
-                    Go to Resumes
-                  </a>
-                )}
-              </div>
-            </div>
+          <div className="flex flex-1 items-center justify-center bg-paper-white p-8">
+            <AppEmptyState
+              icon={<MessageSquare className="h-6 w-6" />}
+              title="AI mock interview"
+              description="Improve your system design and coding communication skills with a real-time AI interviewer."
+              action={
+                <div className="flex flex-col items-center gap-3">
+                  <p className="max-w-md text-xs leading-5 text-text-base">
+                    {readyResumes.length === 0
+                      ? "Upload your resume PDF first to start practicing."
+                      : "Select a previous conversation from history or start a new practice in the sidebar panel to begin."}
+                  </p>
+                  {readyResumes.length === 0 && (
+                    <a
+                      href="/resumes"
+                      className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-jade-deep px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+                    >
+                      Go to Resumes
+                    </a>
+                  )}
+                </div>
+              }
+            />
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }
@@ -383,9 +453,9 @@ export default function PracticePage() {
     <AppShell noPadding={true}>
       <Suspense
         fallback={
-          <div className="flex h-screen items-center justify-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin text-(--primary)" />
-            <span className="text-sm text-(--muted-foreground)">Loading Practice…</span>
+          <div className="flex h-dvh items-center justify-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin text-jade-deep" />
+            <span className="text-sm text-text-base">Loading Practice…</span>
           </div>
         }
       >

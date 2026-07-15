@@ -5,8 +5,12 @@ import { AlertCircle } from "lucide-react";
 import { ReviewPriorityBadge } from "@/features/study/review-priority-badge";
 import { cn } from "@/lib/utils";
 import type { ReviewPriority } from "@/types/review-items";
+import { AppCard } from "@/components/app/app-card";
 
-import type { ReportCardState, ReportCardStatePatch } from "./lib/report-card-state";
+import type {
+  ReportCardState,
+  ReportCardStatePatch,
+} from "./lib/report-card-state";
 
 const PRIORITY_OPTIONS: ReviewPriority[] = ["low", "medium", "high"];
 
@@ -35,68 +39,71 @@ export function ReviewReportCard({ card, onChange }: ReviewReportCardProps) {
   const isActive = card.status === "active";
 
   return (
-    <div className="space-y-4 rounded-xl border border-(--border) bg-(--card) p-5 shadow-sm">
+    <AppCard as="li" className="space-y-4 p-5">
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="font-semibold text-(--foreground)">{card.topic}</p>
+          <h2 className="font-semibold text-ink-black">{card.topic}</h2>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-xs text-(--muted-foreground)">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-text-base">
           <span>Current:</span>
           <ReviewPriorityBadge priority={card.currentPriority} />
         </div>
 
         {card.evaluationFailed ? (
-          <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-300">
-            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <div className="flex items-start gap-2 rounded-lg border border-border-hairline bg-(--status-critical-surface) px-3 py-2 text-xs text-text-base">
+            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-(--status-critical-foreground)" />
             <span>{formatSuggestedCopy(card)}</span>
           </div>
         ) : (
-          <p className="text-xs text-(--muted-foreground)">
-            {formatSuggestedCopy(card)}
-          </p>
+          <p className="text-xs text-text-base">{formatSuggestedCopy(card)}</p>
         )}
       </div>
 
       <div className="space-y-3">
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => onChange({ status: "active" })}
-            className={cn(
-              "cursor-pointer rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
-              isActive
-                ? "border-(--primary) bg-(--primary) text-(--primary-foreground)"
-                : "border-(--border) text-(--foreground) hover:bg-(--muted)",
-            )}
-          >
-            Keep active
-          </button>
-          <button
-            type="button"
-            onClick={() => onChange({ status: "learned" })}
-            className={cn(
-              "cursor-pointer rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
-              !isActive
-                ? "border-(--primary) bg-(--primary) text-(--primary-foreground)"
-                : "border-(--border) text-(--foreground) hover:bg-(--muted)",
-            )}
-          >
-            Mark as learned
-          </button>
-        </div>
+        <fieldset>
+          <legend className="mb-2 text-xs font-medium text-text-base">
+            Review outcome
+          </legend>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => onChange({ status: "active" })}
+              aria-pressed={isActive}
+              className={cn(
+                "min-h-11 cursor-pointer rounded-full border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2",
+                isActive
+                  ? "border-jade-deep bg-jade-deep text-white"
+                  : "border-border-hairline text-ink-black hover:bg-mist-gray",
+              )}
+            >
+              Keep active
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange({ status: "learned" })}
+              aria-pressed={!isActive}
+              className={cn(
+                "min-h-11 cursor-pointer rounded-full border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2",
+                !isActive
+                  ? "border-jade-deep bg-jade-deep text-white"
+                  : "border-border-hairline text-ink-black hover:bg-mist-gray",
+              )}
+            >
+              Mark as learned
+            </button>
+          </div>
+        </fieldset>
 
         {isActive && (
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-(--muted-foreground)">
-              Priority
-            </span>
+            <span className="text-xs font-medium text-text-base">Priority</span>
             <select
               value={card.priority ?? card.currentPriority}
               onChange={(event) =>
                 onChange({ priority: event.target.value as ReviewPriority })
               }
-              className="w-full max-w-xs cursor-pointer rounded-lg border border-(--border) bg-(--background) px-3 py-2 text-sm text-(--foreground)"
+              className="w-full max-w-xs cursor-pointer rounded-2xl border border-border-hairline bg-paper-white px-3 py-2 text-sm text-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
             >
               {PRIORITY_OPTIONS.map((priority) => (
                 <option key={priority} value={priority}>
@@ -107,6 +114,6 @@ export function ReviewReportCard({ card, onChange }: ReviewReportCardProps) {
           </label>
         )}
       </div>
-    </div>
+    </AppCard>
   );
 }

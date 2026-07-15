@@ -59,9 +59,9 @@ export function InterviewFeedbackWidget({
   return (
     <form
       onSubmit={(e) => void handleSubmit(e)}
-      className="mt-3 space-y-3 border-t border-emerald-200 pt-3 dark:border-emerald-900/40"
+      className="mt-3 space-y-3 border-t border-jade/20 pt-3"
     >
-      <p className="text-xs font-medium text-(--foreground)">
+      <p className="text-xs font-medium text-ink-black">
         Was this interview helpful?
       </p>
 
@@ -72,10 +72,10 @@ export function InterviewFeedbackWidget({
           disabled={isSubmitting}
           aria-pressed={selectedRating === "up"}
           className={cn(
-            "cursor-pointer flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors disabled:pointer-events-none disabled:opacity-50",
+            "flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2",
             selectedRating === "up"
-              ? "border-emerald-500 bg-emerald-100 text-emerald-800 dark:border-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-200"
-              : "border-(--border) bg-(--background) text-(--foreground) hover:bg-(--muted)/30",
+              ? "border-jade bg-jade-mist text-jade-deep"
+              : "border-border-hairline bg-paper-white text-ink-black hover:bg-mist-gray",
           )}
         >
           👍 Helpful
@@ -87,10 +87,10 @@ export function InterviewFeedbackWidget({
           disabled={isSubmitting}
           aria-pressed={selectedRating === "down"}
           className={cn(
-            "cursor-pointer flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors disabled:pointer-events-none disabled:opacity-50",
+            "flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2",
             selectedRating === "down"
-              ? "border-red-400 bg-red-50 text-red-800 dark:border-red-600 dark:bg-red-950/50 dark:text-red-200"
-              : "border-(--border) bg-(--background) text-(--foreground) hover:bg-(--muted)/30",
+              ? "border-red-400 bg-red-50 text-red-800"
+              : "border-border-hairline bg-paper-white text-ink-black hover:bg-mist-gray",
           )}
         >
           👎 Not helpful
@@ -98,16 +98,23 @@ export function InterviewFeedbackWidget({
       </div>
 
       <div>
+        <label
+          htmlFor={`interview-feedback-comment-${sessionId}`}
+          className="mb-1.5 block text-xs font-medium text-ink-black"
+        >
+          Optional comment
+        </label>
         <textarea
+          id={`interview-feedback-comment-${sessionId}`}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           maxLength={MAX_COMMENT_LENGTH}
-          placeholder="Optional comment…"
+          placeholder="Share any details…"
           rows={3}
           disabled={isSubmitting}
-          className="w-full resize-none rounded-lg border border-(--border) bg-(--background) px-3 py-2.5 text-sm text-(--foreground) placeholder:text-(--muted-foreground) focus:outline-none focus:ring-2 focus:ring-(--primary) disabled:opacity-50"
+          className="w-full resize-none rounded-2xl border border-border-hairline bg-paper-white px-3 py-2.5 text-sm text-ink-black placeholder:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2 disabled:opacity-50"
         />
-        <p className="mt-1 text-right text-[10px] text-(--muted-foreground)">
+        <p className="mt-1 text-right text-[10px] text-text-base">
           {comment.length}/{MAX_COMMENT_LENGTH}
         </p>
       </div>
@@ -115,7 +122,7 @@ export function InterviewFeedbackWidget({
       <button
         type="submit"
         disabled={isSubmitting || selectedRating === null}
-        className="cursor-pointer flex w-full items-center justify-center gap-2 rounded-lg bg-(--foreground) px-4 py-3 text-sm font-semibold text-(--background) transition-opacity hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-jade-deep px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-ink-black disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
       >
         {isSubmitting ? (
           <>
@@ -130,7 +137,7 @@ export function InterviewFeedbackWidget({
       </button>
 
       {submitted && (
-        <p className="text-center text-xs text-emerald-700 dark:text-emerald-400">
+        <p className="text-center text-xs text-jade-deep" role="status">
           Thanks for your feedback!
         </p>
       )}

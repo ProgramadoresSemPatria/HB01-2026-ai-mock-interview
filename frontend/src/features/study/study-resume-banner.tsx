@@ -34,16 +34,14 @@ export function StudyResumeBanner() {
   const config = BANNER_CONFIG[session.status];
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-(--primary)/30 bg-(--accent)/15 px-4 py-3">
+    <div className="flex items-center justify-between gap-4 rounded-2xl bg-jade-pale px-4 py-3 text-jade-deep">
       <div className="flex min-w-0 items-center gap-3">
-        <BookOpen className="h-5 w-5 shrink-0 text-(--primary)" />
-        <p className="text-sm font-medium text-(--foreground)">
-          {config.message}
-        </p>
+        <BookOpen className="h-5 w-5 shrink-0" />
+        <p className="text-sm font-medium text-jade-deep">{config.message}</p>
       </div>
       <Link
         href={config.href(session.id)}
-        className="flex shrink-0 cursor-pointer items-center gap-1 text-sm font-medium text-(--primary) hover:opacity-75"
+        className="flex shrink-0 cursor-pointer items-center gap-1 rounded-full px-2 py-1 text-sm font-semibold text-jade-deep hover:bg-jade-mist focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
       >
         Resume
         <ChevronRight className="h-4 w-4" />

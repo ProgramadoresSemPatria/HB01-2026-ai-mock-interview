@@ -1,0 +1,32 @@
+/* image-parallax.css */
+
+.image-parallax {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.image-parallax__frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.image-parallax__img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform;
+}
+
+.image-parallax__grain {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  mix-blend-mode: overlay;
+}

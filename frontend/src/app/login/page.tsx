@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import SignInForm from "@/components/sign-in-form";
-import SignUpForm from "@/components/sign-up-form";
-import { AuthShell } from "@/components/shells/auth-shell";
+import SignInForm from "@/components/auth/sign-in-form";
+import SignUpForm from "@/components/auth/sign-up-form";
+import { AuthShell } from "@/components/auth/auth-shell";
 import { useAuth } from "@/features/auth/session-provider";
 
 export default function LoginPage() {
@@ -20,12 +20,14 @@ export default function LoginPage() {
   }, [isReady, isAuthenticated, router]);
 
   return (
-    <AuthShell mode={showSignIn ? "signin" : "signup"}>
-      {showSignIn ? (
-        <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-      ) : (
-        <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
-      )}
-    </AuthShell>
+    <div className="app-canvas">
+      <AuthShell mode={showSignIn ? "signin" : "signup"}>
+        {showSignIn ? (
+          <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+        ) : (
+          <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+        )}
+      </AuthShell>
+    </div>
   );
 }

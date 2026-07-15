@@ -3,6 +3,8 @@ import { ArrowRight } from "lucide-react";
 
 import { ReviewPriorityBadge } from "@/features/study/review-priority-badge";
 import type { ReviewItem } from "@/types/review-items";
+import { AppCard } from "@/components/app/app-card";
+import { AppEmptyState } from "@/components/app/app-empty-state";
 
 export function ReviewItemsGrid({
   items,
@@ -15,52 +17,66 @@ export function ReviewItemsGrid({
 
   if (visible.length === 0) {
     return (
-      <p className="text-sm text-(--muted-foreground)">
-        No review items yet. Complete an interview to generate your study
-        backlog.
-      </p>
+      <AppCard>
+        <AppEmptyState
+          headingLevel={3}
+          title="Your review backlog is clear"
+          description="Complete an interview to reveal topics worth revisiting."
+          action={
+            <Link
+              href="/practice"
+              className="manrope inline-flex h-10 items-center justify-center rounded-full border border-jade-deep bg-jade-deep px-4 text-sm font-medium text-paper-white transition-colors hover:border-ink-black hover:bg-ink-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-jade-deep"
+            >
+              Start practice
+            </Link>
+          }
+        />
+      </AppCard>
     );
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <ul className="grid list-none gap-4 md:grid-cols-2 lg:grid-cols-3">
       {visible.map((item) => {
         return (
-          <div
+          <li
             key={item.id}
-            className="space-y-3 rounded-xl border border-(--border) bg-(--card) p-5 shadow-sm"
+            className="landing-artifact flex min-w-0 flex-col p-5!"
           >
-            <ReviewPriorityBadge priority={item.priority} />
-            <div>
-              <p className="font-semibold text-(--foreground)">{item.topic}</p>
-              <p className="mt-1 text-xs leading-relaxed text-(--muted-foreground)">
+            <div className="pb-3">
+              <ReviewPriorityBadge priority={item.priority} />
+            </div>
+            <div className="border-t border-border-hairline pt-3">
+              <p className="manrope font-medium text-ink-black">{item.topic}</p>
+              <p className="manrope mt-1 text-xs leading-relaxed text-text-base">
                 {item.description}
               </p>
             </div>
-          </div>
+          </li>
         );
       })}
-    </div>
+    </ul>
   );
 }
 
 export function ReviewItemsSectionHeader() {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h3 className="text-lg font-semibold text-(--foreground)">
+        <p className="landing-tag mb-1 text-text-base!">Feedback</p>
+        <h2 className="instrument-serif text-2xl leading-tight text-ink-black">
           Review backlog
-        </h3>
-        <p className="text-xs text-(--muted-foreground)">
+        </h2>
+        <p className="manrope mt-1 text-xs text-text-base">
           Topics identified after your mock interviews.
         </p>
       </div>
       <Link
         href="/feedback"
-        className="cursor-pointer flex items-center gap-1.5 text-sm font-medium text-(--primary) transition-opacity hover:opacity-75"
+        className="manrope flex items-center gap-1.5 text-sm font-medium text-jade-deep underline-offset-4 transition-colors hover:text-ink-black hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-jade-deep"
       >
         View all
-        <ArrowRight className="h-3.5 w-3.5" />
+        <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
       </Link>
     </div>
   );
