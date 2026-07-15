@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, forwardRef, useCallback, type Ref } from "react";
+import { useRef, forwardRef, useMemo, type Ref } from "react";
 import {
   motion,
   useScroll,
@@ -63,7 +63,10 @@ const ImageParallax = forwardRef<HTMLDivElement, ImageParallaxProps>(
     forwardedRef,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const setRef = useCallback(mergeRefs(containerRef, forwardedRef), [forwardedRef]);
+    const setRef = useMemo(
+      () => mergeRefs(containerRef, forwardedRef),
+      [forwardedRef],
+    );
     const prefersReducedMotion = useReducedMotion();
 
     const { scrollYProgress } = useScroll({
