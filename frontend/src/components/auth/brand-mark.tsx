@@ -1,12 +1,13 @@
 import Link from "next/link";
-import Image from "next/image";
-
-import logo from "@/assets/logo.png";
 
 export function BrandMark() {
   return (
-    <Link href="/" className="inline-flex items-center gap-3">
-      <Image src={logo} alt="Hone" width={120} height={32} priority />
+    <Link
+      href="/"
+      className="instrument-serif inline-flex text-2xl font-normal tracking-tight text-[var(--color-ink-black)] outline-none transition-opacity hover:opacity-60 focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-[var(--color-jade)] focus-visible:ring-offset-4"
+      aria-label="Hone home"
+    >
+      Hone
     </Link>
   );
 }

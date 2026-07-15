@@ -1,11 +1,4 @@
-const TOPIC_BARS = [
-  { label: "System Design", pct: 82 },
-  { label: "Algorithms", pct: 71 },
-  { label: "Distributed Systems", pct: 60 },
-  { label: "APIs & REST", pct: 90 },
-  { label: "Data Modeling", pct: 55 },
-  { label: "Scalability", pct: 67 },
-];
+import { DashboardPreview } from "@/components/product-previews/dashboard-preview";
 
 const STRENGTHS = [
   "Articulated trade-offs without prompting",
@@ -18,50 +11,6 @@ const GROWTH_AREAS = [
   "Latency vs. throughput framing",
   "Consensus algorithm depth",
 ];
-
-function DashboardPreview() {
-  return (
-    <div className="landing-artifact p-6">
-      <div className="mb-6 flex items-end justify-between">
-        <div>
-          <p className="landing-tag">Performance score</p>
-          <span className="manrope text-[20px] font-medium text-[var(--color-ink-black)]">
-            73
-            <span className="text-[var(--color-slate-gray)]">/100</span>
-          </span>
-        </div>
-        <div className="text-right">
-          <p className="landing-tag">Sessions</p>
-          <span className="manrope text-xl font-medium text-[var(--color-ink-black)]">
-            5
-          </span>
-        </div>
-      </div>
-
-      <p className="landing-tag mb-3">Topic coverage</p>
-      <div className="space-y-2">
-        {TOPIC_BARS.map((t) => (
-          <div key={t.label}>
-            <div className="mb-1 flex justify-between">
-              <span className="manrope text-xs text-[var(--color-ink-black)]">
-                {t.label}
-              </span>
-              <span className="manrope text-xs text-[var(--color-ash-gray)]">
-                {t.pct}%
-              </span>
-            </div>
-            <div className="h-[2px] w-full bg-[var(--color-mist-gray)]">
-              <div
-                className="h-full bg-jade"
-                style={{ width: `${t.pct}%` }}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function FeedbackPreview() {
   return (
