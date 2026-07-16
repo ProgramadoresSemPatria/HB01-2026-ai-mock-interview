@@ -47,6 +47,12 @@ export class SessionRepository {
     });
   }
 
+  async findById(id: string): Promise<InterviewSession | null> {
+    return prisma.interviewSession.findUnique({
+      where: { id },
+    });
+  }
+
   async incrementTurnCount(id: string): Promise<InterviewSession> {
     return prisma.interviewSession.update({
       where: { id },

@@ -116,6 +116,31 @@ describe("SessionRepository (integration)", () => {
     expect(found).toBeNull();
   });
 
+  it("findById returns session regardless of owner", async () => {
+    const { user, resumeId } = await seedUserAndResume();
+
+    const created = await repository.create({
+      userId: user.id,
+      resumeId,
+      level: "entry",
+    });
+
+    const found = await repository.findById(created.id);
+
+    expect(found).toMatchObject({
+      id: created.id,
+      userId: user.id,
+      resumeId,
+      level: "entry",
+    });
+  });
+
+  it("findById returns null when session does not exist", async () => {
+    const found = await repository.findById(crypto.randomUUID());
+
+    expect(found).toBeNull();
+  });
+
   it("incrementTurnCount", async () => {
     const { user, resumeId } = await seedUserAndResume();
 
