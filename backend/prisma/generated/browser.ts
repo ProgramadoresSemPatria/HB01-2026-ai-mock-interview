@@ -48,6 +48,11 @@ export type ReviewSession = Prisma.ReviewSessionModel
  */
 export type ReviewSessionItem = Prisma.ReviewSessionItemModel
 /**
+ * Model WeakAnswer
+ * 
+ */
+export type WeakAnswer = Prisma.WeakAnswerModel
+/**
  * Model InterviewFeedback
  * 
  */

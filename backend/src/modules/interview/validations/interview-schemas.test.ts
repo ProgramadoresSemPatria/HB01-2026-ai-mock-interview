@@ -5,6 +5,7 @@ import {
   reviewItemsGeneratorOutputSchema,
   streamMessageSchema,
   submitFeedbackSchema,
+  weakAnswersGeneratorOutputSchema,
 } from "./interview-schemas";
 
 const validResumeId = "550e8400-e29b-41d4-a716-446655440000";
@@ -292,6 +293,77 @@ describe("reviewItemsGeneratorOutputSchema", () => {
 
   it("rejects missing items field", () => {
     const result = reviewItemsGeneratorOutputSchema.safeParse({});
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("weakAnswersGeneratorOutputSchema", () => {
+  const validOutput = {
+    items: [
+      {
+        question: "How would you scale a read-heavy API?",
+        userAnswer: "I'd just add more servers.",
+        evaluation: "insufficient" as const,
+        feedback: "Mention caching, read replicas, and CDN strategies.",
+        topic: "System design",
+        priority: "high" as const,
+      },
+    ],
+  };
+
+  it("accepts a valid items array", () => {
+    const result = weakAnswersGeneratorOutputSchema.safeParse(validOutput);
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validOutput);
+    }
+  });
+
+  it("accepts an empty items array", () => {
+    const result = weakAnswersGeneratorOutputSchema.safeParse({ items: [] });
+
+    expect(result.success).toBe(true);
+  });
+
+  it.each(["incorrect", "incomplete", "insufficient", "satisfactory"] as const)(
+    "accepts evaluation %s",
+    (evaluation) => {
+      const result = weakAnswersGeneratorOutputSchema.safeParse({
+        items: [{ ...validOutput.items[0], evaluation }],
+      });
+
+      expect(result.success).toBe(true);
+    },
+  );
+
+  it("rejects invalid evaluation", () => {
+    const result = weakAnswersGeneratorOutputSchema.safeParse({
+      items: [{ ...validOutput.items[0], evaluation: "wrong" }],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects item with empty question", () => {
+    const result = weakAnswersGeneratorOutputSchema.safeParse({
+      items: [{ ...validOutput.items[0], question: "  " }],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects item with empty feedback", () => {
+    const result = weakAnswersGeneratorOutputSchema.safeParse({
+      items: [{ ...validOutput.items[0], feedback: "" }],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects missing items field", () => {
+    const result = weakAnswersGeneratorOutputSchema.safeParse({});
 
     expect(result.success).toBe(false);
   });

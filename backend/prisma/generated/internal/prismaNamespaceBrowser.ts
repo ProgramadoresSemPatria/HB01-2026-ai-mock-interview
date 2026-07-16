@@ -57,6 +57,7 @@ export const ModelName = {
   ReviewItem: 'ReviewItem',
   ReviewSession: 'ReviewSession',
   ReviewSessionItem: 'ReviewSessionItem',
+  WeakAnswer: 'WeakAnswer',
   InterviewFeedback: 'InterviewFeedback',
   User: 'User',
   UserTokenUsage: 'UserTokenUsage',
@@ -173,6 +174,22 @@ export const ReviewSessionItemScalarFieldEnum = {
 } as const
 
 export type ReviewSessionItemScalarFieldEnum = (typeof ReviewSessionItemScalarFieldEnum)[keyof typeof ReviewSessionItemScalarFieldEnum]
+
+
+export const WeakAnswerScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  userId: 'userId',
+  question: 'question',
+  userAnswer: 'userAnswer',
+  evaluation: 'evaluation',
+  feedback: 'feedback',
+  topic: 'topic',
+  priority: 'priority',
+  createdAt: 'createdAt'
+} as const
+
+export type WeakAnswerScalarFieldEnum = (typeof WeakAnswerScalarFieldEnum)[keyof typeof WeakAnswerScalarFieldEnum]
 
 
 export const InterviewFeedbackScalarFieldEnum = {

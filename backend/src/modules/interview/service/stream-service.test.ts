@@ -7,6 +7,7 @@ import type {
   InterviewGraphStreamToken,
 } from "@/modules/interview/protocols/interview-graph";
 import type { IReviewGenerationQueue } from "@/modules/interview/protocols/review-generation-queue";
+import type { IWeakAnswerQueue } from "@/modules/interview/protocols/weak-answer-queue";
 import type { MessageRepository } from "@/modules/interview/repository/message-repository";
 import type { SessionRepository } from "@/modules/interview/repository/session-repository";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
@@ -99,6 +100,7 @@ describe("InterviewStreamService", () => {
   let resumeRepository: ResumeRepository;
   let graph: IInterviewGraph;
   let reviewGenerationQueue: IReviewGenerationQueue;
+  let weakAnswerQueue: IWeakAnswerQueue;
   let tokenUsageService: TokenUsageService;
   let service: InterviewStreamService;
 
@@ -129,6 +131,10 @@ describe("InterviewStreamService", () => {
       remove: vi.fn().mockResolvedValue(undefined),
     };
 
+    weakAnswerQueue = {
+      add: vi.fn().mockResolvedValue(undefined),
+    };
+
     tokenUsageService = {
       assertWithinLimit: vi.fn().mockResolvedValue(undefined),
       recordUsage: vi.fn().mockResolvedValue(undefined),
@@ -141,6 +147,7 @@ describe("InterviewStreamService", () => {
       resumeRepository,
       graph,
       reviewGenerationQueue,
+      weakAnswerQueue,
       tokenUsageService,
     );
   });
@@ -353,6 +360,9 @@ describe("InterviewStreamService", () => {
     expect(reviewGenerationQueue.add).toHaveBeenCalledWith({
       sessionId: baseSession.id,
     });
+    expect(weakAnswerQueue.add).toHaveBeenCalledWith({
+      sessionId: baseSession.id,
+    });
     expect(messageRepository.listBySessionId).not.toHaveBeenCalled();
     expect(sessionRepository.markReviewGenerationFailed).not.toHaveBeenCalled();
     expect(tokenUsageService.assertWithinLimit).toHaveBeenCalledTimes(1);
@@ -419,11 +429,63 @@ describe("InterviewStreamService", () => {
       baseSession.id,
       "Redis unavailable",
     );
+    expect(weakAnswerQueue.add).toHaveBeenCalledWith({
+      sessionId: baseSession.id,
+    });
 
     const output = res.chunks.join("");
     expect(output).toContain("event: meta");
     expect(output).toContain('"isFinished":true');
     expect(output).toContain('"reviewGenerationStatus":"failed"');
+    expect(output).toContain("data: [DONE]");
+    expect(output).not.toContain("event: error");
+  });
+
+  it("still finishes the turn when the weak-answer queue enqueue fails", async () => {
+    vi.mocked(sessionRepository.findByIdAndUserId).mockResolvedValue({
+      ...baseSession,
+      turnCount: 4,
+      maxTurns: 5,
+    });
+    vi.mocked(resumeRepository.findByIdAndUserId).mockResolvedValue({
+      id: "resume-1",
+      structuredSummary,
+    } as unknown as Awaited<ReturnType<ResumeRepository["findByIdAndUserId"]>>);
+    vi.mocked(graph.streamMessages).mockReturnValue(
+      (async function* () {
+        yield { content: "Final answer" };
+        return { content: "Final answer" };
+      })(),
+    );
+    vi.mocked(sessionRepository.incrementTurnCount).mockResolvedValue({
+      ...baseSession,
+      turnCount: 5,
+    });
+    vi.mocked(sessionRepository.markFinished).mockResolvedValue({
+      ...baseSession,
+      turnCount: 5,
+      isFinished: true,
+      reviewGenerationStatus: "pending",
+    });
+    vi.mocked(weakAnswerQueue.add).mockRejectedValue(
+      new Error("Redis unavailable"),
+    );
+    vi.mocked(messageRepository.createHuman).mockResolvedValue({} as never);
+    vi.mocked(messageRepository.createAi).mockResolvedValue({} as never);
+
+    const res = createMockResponse();
+
+    await service.streamTurn(1, baseSession.id, { content: "Hello", interviewLocale: "en" }, res);
+
+    expect(reviewGenerationQueue.add).toHaveBeenCalledWith({
+      sessionId: baseSession.id,
+    });
+    expect(sessionRepository.markReviewGenerationFailed).not.toHaveBeenCalled();
+
+    const output = res.chunks.join("");
+    expect(output).toContain("event: meta");
+    expect(output).toContain('"isFinished":true');
+    expect(output).toContain('"reviewGenerationStatus":"pending"');
     expect(output).toContain("data: [DONE]");
     expect(output).not.toContain("event: error");
   });

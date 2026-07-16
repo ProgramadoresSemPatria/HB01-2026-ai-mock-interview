@@ -1,5 +1,6 @@
 import { makeTokenUsageService } from "@/factories/token-usage/token-usage-service-factory";
 import * as reviewGenerationQueue from "@/infrastructure/queue/review-generation-queue";
+import { add as addWeakAnswerJob } from "@/infrastructure/queue/weak-answer-queue";
 import { MessageRepository } from "@/modules/interview/repository/message-repository";
 import { SessionRepository } from "@/modules/interview/repository/session-repository";
 import { InterviewStreamService } from "@/modules/interview/service/stream-service";
@@ -14,6 +15,7 @@ export function makeInterviewStreamService(): InterviewStreamService {
     new ResumeRepository(),
     makeInterviewGraph(),
     reviewGenerationQueue,
+    { add: addWeakAnswerJob },
     makeTokenUsageService(),
   );
 }

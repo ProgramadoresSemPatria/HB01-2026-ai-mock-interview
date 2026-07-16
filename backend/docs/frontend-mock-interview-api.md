@@ -22,9 +22,10 @@ Documento de integração para consumir o backend de **entrevista simulada com I
 7. [Como a entrevista funciona (turnos e nós)](#como-a-entrevista-funciona-turnos-e-nós)
 8. [Itens de revisão (review items)](#itens-de-revisão-review-items)
 9. [Sessões de revisão (review sessions)](#sessões-de-revisão-review-sessions)
-10. [Erros HTTP](#erros-http)
-11. [CORS e limitações](#cors-e-limitações)
-12. [Sugestão de estados na UI](#sugestão-de-estados-na-ui)
+10. [Respostas fracas (weak answers)](#respostas-fracas-weak-answers)
+11. [Erros HTTP](#erros-http)
+12. [CORS e limitações](#cors-e-limitações)
+13. [Sugestão de estados na UI](#sugestão-de-estados-na-ui)
 
 ---
 
@@ -57,6 +58,8 @@ sequenceDiagram
   Note over UI,API: Último turno: interviewer + prompt de closing (sem nova pergunta)
   UI->>API: GET /api/review-items
   API-->>UI: { reviewItems }
+  UI->>API: GET /api/weak-answers
+  API-->>UI: { weakAnswers }
 ```
 
 **Ordem recomendada na UI:**
@@ -905,6 +908,52 @@ Aplica as decisões do usuário sobre **todos** os itens do relatório em uma ú
 
 ---
 
+## Respostas fracas (weak answers)
+
+Além dos tópicos agregados de `review-items`, o backend também analisa **cada pergunta/resposta** da entrevista no último turno e persiste um registro individual para respostas avaliadas como `incorrect`, `incomplete` ou `insufficient`. Respostas `satisfactory` **não** são salvas.
+
+### Listar respostas fracas (`GET /api/weak-answers`)
+
+| Método | Path | Auth |
+|--------|------|------|
+| `GET` | `/api/weak-answers` | Bearer |
+
+**Resposta `200`:**
+
+```json
+{
+  "weakAnswers": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "sessionId": "660e8400-e29b-41d4-a716-446655440001",
+      "question": "How would you scale a read-heavy API?",
+      "userAnswer": "I'd just add more servers.",
+      "evaluation": "insufficient",
+      "feedback": "Mention caching, read replicas, and CDN strategies.",
+      "topic": "system design",
+      "priority": "high",
+      "createdAt": "2026-05-28T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+- `evaluation`: `incorrect` | `incomplete` | `insufficient` (respostas `satisfactory` nunca aparecem aqui).
+- `priority`: `low` | `medium` | `high`, definida pela IA no momento da análise.
+- Ordenação: **prioridade** (`high` → `medium` → `low`), depois `createdAt` mais recente.
+- Um registro **por resposta fraca**, não agregado por tópico (diferente de `review-items`).
+- Sem itens: `{ "weakAnswers": [] }` (não usar `404`).
+
+### Remover uma resposta fraca (`DELETE /api/weak-answers/:id`)
+
+| Método | Path | Auth |
+|--------|------|------|
+| `DELETE` | `/api/weak-answers/:id` | Bearer |
+
+`204` sem corpo em caso de sucesso; `404` se o item não existir ou não pertencer ao usuário autenticado.
+
+---
+
 ## Erros HTTP
 
 | Status | Uso |
@@ -1005,6 +1054,8 @@ selecting_items → creating → in_progress (Q&A SSE)
 | `POST` | `/api/review-sessions/:id/stream` | Q&A adaptativo (SSE) |
 | `GET` | `/api/review-sessions/:id` | Relatório da sessão |
 | `POST` | `/api/review-sessions/:id/apply` | Aplicar decisões do relatório (bulk) |
+| `GET` | `/api/weak-answers` | Respostas fracas individuais do usuário |
+| `DELETE` | `/api/weak-answers/:id` | Remover uma resposta fraca |
 
 ---
 

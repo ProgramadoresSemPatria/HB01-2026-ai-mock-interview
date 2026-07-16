@@ -85,3 +85,13 @@ export const ReviewGenerationStatus = {
 } as const
 
 export type ReviewGenerationStatus = (typeof ReviewGenerationStatus)[keyof typeof ReviewGenerationStatus]
+
+
+export const AnswerEvaluation = {
+  incorrect: 'incorrect',
+  incomplete: 'incomplete',
+  insufficient: 'insufficient',
+  satisfactory: 'satisfactory'
+} as const
+
+export type AnswerEvaluation = (typeof AnswerEvaluation)[keyof typeof AnswerEvaluation]
