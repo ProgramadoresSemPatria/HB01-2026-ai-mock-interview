@@ -7,11 +7,10 @@ import type {
   InterviewGraphStreamToken,
 } from "@/modules/interview/protocols/interview-graph";
 import type { IReviewItemsGenerator } from "@/modules/interview/protocols/review-items-generator";
-import type { IWeakAnswersGenerator } from "@/modules/interview/protocols/weak-answers-generator";
+import type { IWeakAnswerQueue } from "@/modules/interview/protocols/weak-answer-queue";
 import type { MessageRepository } from "@/modules/interview/repository/message-repository";
 import type { SessionRepository } from "@/modules/interview/repository/session-repository";
 import type { ReviewMergeService } from "@/modules/interview/service/review-merge-service";
-import type { WeakAnswerService } from "@/modules/interview/service/weak-answer-service";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
 import type { TokenUsageService } from "@/modules/token-usage/service/token-usage-service";
 import { ConflictError, NotFoundError, TokenLimitExceededError } from "@/shared";
@@ -100,8 +99,7 @@ describe("InterviewStreamService", () => {
   let graph: IInterviewGraph;
   let reviewMergeService: ReviewMergeService;
   let reviewItemsGenerator: IReviewItemsGenerator;
-  let weakAnswersGenerator: IWeakAnswersGenerator;
-  let weakAnswerService: WeakAnswerService;
+  let weakAnswerQueue: IWeakAnswerQueue;
   let tokenUsageService: TokenUsageService;
   let service: InterviewStreamService;
 
@@ -134,13 +132,9 @@ describe("InterviewStreamService", () => {
       generate: vi.fn(),
     };
 
-    weakAnswersGenerator = {
-      generate: vi.fn().mockResolvedValue({ items: [] }),
+    weakAnswerQueue = {
+      add: vi.fn().mockResolvedValue(undefined),
     };
-
-    weakAnswerService = {
-      saveWeakAnswers: vi.fn(),
-    } as unknown as WeakAnswerService;
 
     tokenUsageService = {
       assertWithinLimit: vi.fn().mockResolvedValue(undefined),
@@ -155,8 +149,7 @@ describe("InterviewStreamService", () => {
       graph,
       reviewMergeService,
       reviewItemsGenerator,
-      weakAnswersGenerator,
-      weakAnswerService,
+      weakAnswerQueue,
       tokenUsageService,
     );
   });
@@ -319,18 +312,6 @@ describe("InterviewStreamService", () => {
         },
       ],
     });
-    vi.mocked(weakAnswersGenerator.generate).mockResolvedValue({
-      items: [
-        {
-          question: "Hello",
-          userAnswer: "Final answer",
-          evaluation: "insufficient",
-          feedback: "Give a more concrete example.",
-          topic: "Communication",
-          priority: "medium",
-        },
-      ],
-    });
     vi.mocked(messageRepository.createHuman).mockResolvedValue({} as never);
     vi.mocked(messageRepository.createAi).mockResolvedValue({} as never);
 
@@ -363,28 +344,10 @@ describe("InterviewStreamService", () => {
         },
       ],
     );
-    expect(weakAnswersGenerator.generate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userId: 1,
-        sessionId: baseSession.id,
-      }),
-      expect.objectContaining({ callbacks: expect.any(Array) }),
-    );
-    expect(weakAnswerService.saveWeakAnswers).toHaveBeenCalledWith(
-      1,
-      baseSession.id,
-      [
-        {
-          question: "Hello",
-          userAnswer: "Final answer",
-          evaluation: "insufficient",
-          feedback: "Give a more concrete example.",
-          topic: "Communication",
-          priority: "medium",
-        },
-      ],
-    );
     expect(sessionRepository.markFinished).toHaveBeenCalledWith(baseSession.id);
+    expect(weakAnswerQueue.add).toHaveBeenCalledWith({
+      sessionId: baseSession.id,
+    });
 
     const output = res.chunks.join("");
     expect(output).toContain('"isFinished":true');
