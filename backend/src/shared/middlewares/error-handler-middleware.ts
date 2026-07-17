@@ -4,9 +4,21 @@ import multer from "multer";
 import { BadRequestError, HttpError } from "../errors/http-errors";
 import { logger } from "../logger";
 
+function isHttpErrorLike(err: unknown): err is HttpError {
+  return (
+    err instanceof Error &&
+    "statusCode" in err &&
+    typeof (err as { statusCode: unknown }).statusCode === "number"
+  );
+}
+
 function toHttpError(err: unknown): HttpError | null {
-  if (err instanceof HttpError) {
-    return err;
+  // Route modules are loaded via a runtime dynamic import() (see config/routes.ts),
+  // which the bundler cannot inline. That gives them a separate module instance of
+  // HttpError than this bundled file, so `instanceof HttpError` fails even for real
+  // HttpError subclasses thrown from route handlers. Fall back to a structural check.
+  if (err instanceof HttpError || isHttpErrorLike(err)) {
+    return err as HttpError;
   }
 
   if (err instanceof multer.MulterError) {
