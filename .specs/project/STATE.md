@@ -1,11 +1,20 @@
 # State
 
-**Last Updated:** 2026-07-10  
-**Current Work:** Async Review Items Generation — automated validation passed; interactive UAT in progress; awaiting user commit
+**Last Updated:** 2026-07-21  
+**Current Work:** Interview Speech-to-Text — Execute complete (T1–T10); T3 infra verified; E2E needs Docker Desktop; commits deferred
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-012: Interview speech-to-text via AssemblyAI batch + port (2026-07-21)
+
+**Decision:** Mic on Practice + Review session composers; record ≤1 min → confirm Transcribe → `POST /api/transcribe` (Bearer + AI rate limit by userId) → append text to draft. Language detection only (`pt`/`en`). Sync poll in API (1.5s / 60s). AssemblyAI isolated behind `ISpeechToText` (or equivalent) port + adapter + factory.  
+**Reason:** Closer to real interview answers; keep FE free of provider secrets; swap provider later without route/contract churn.  
+**Trade-off:** Request held open during poll (acceptable for ≤1 min audio); no streaming partials; local EN/PT STT strings only (not full app i18n).  
+**Impact:** New backend module/route, env `ASSEMBLYAI_API_KEY`, FE MediaRecorder UX on shared composer.  
+**Spec:** `.specs/features/interview-speech-to-text/spec.md`  
+**Context:** `.specs/features/interview-speech-to-text/context.md`
 
 ### AD-011: Async review items via BullMQ (same worker) (2026-07-09)
 
@@ -47,6 +56,13 @@ _None_
 ---
 
 ## Lessons Learned
+
+### L-005: Parallel Execute agents racing git commit (2026-07-21)
+
+**Context:** Interview STT Phase 2 launched T3–T8 in parallel with each agent committing.  
+**Problem:** Contaminated atomic commits (T4+T7, T8+T6); hook/type races.  
+**Solution:** Orchestrator serializes commits (or defer end-of-feature commit); agents implement+verify only.  
+**Prevents:** Mixed task commits during parallel Execute.
 
 ### L-004: Parallel Execute without per-task commits still needs shared factory first (2026-07-10)
 
@@ -96,11 +112,19 @@ _None_
 - [ ] Webhook or push when review generation completes — Captured during: async-review-items-generation
 - [ ] Export interview transcript as PDF
 - [ ] Bull Board / admin UI for queue ops — Captured during: async-review-items-generation
+- [ ] Persist STT audio/transcripts; use language_code to suggest interviewLocale; streaming STT; auto-send after transcribe — Captured during: interview-speech-to-text
 
 ---
 
 ## Todos
 
+- [x] Grill-me + Specify interview-speech-to-text → `spec.md` + `context.md`
+- [x] Design phase for interview-speech-to-text (`design.md`) — approved
+- [x] Tasks breakdown for interview-speech-to-text (`tasks.md`) — draft, awaiting approval
+- [x] Execute interview-speech-to-text (T1–T10) — implemented; E2E blocked (Docker Desktop not running); commit deferred
+- [x] Verify T3 AssemblyAI adapter (`infrastructure/speech-to-text`) — lint/types/3 unit tests green (2026-07-21)
+- [ ] Run transcribe E2E with Docker Desktop + optional live AssemblyAI smoke
+- [ ] Interactive UAT for interview-speech-to-text (Practice + Review mic flow)
 - [x] Discuss gray areas for async-review-items-generation → `context.md`
 - [x] Design phase for async-review-items-generation (`design.md`) — approved
 - [x] Tasks breakdown for async-review-items-generation (`tasks.md`)
@@ -130,6 +154,8 @@ _None_
 
 ## Preferences
 
-- Grill-me used for disambiguation before Specify on interview-locale
+- Grill-me used for disambiguation before Specify on interview-locale and interview-speech-to-text
 - Spec-driven Specify used for async-review-items-generation (architecture pre-aligned in chat)
 - Prefer single end-of-feature commit over per-task commits when requested
+- External providers must stay behind ports/adapters (R2, mailer, LLM generators, STT)
+- Lightweight verify/validate tasks are fine on faster/cheaper models

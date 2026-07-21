@@ -11,12 +11,20 @@ vi.mock("@/infrastructure/queue/review-generation-queue", () => ({
   REVIEW_GENERATION_QUEUE_NAME: "review-generation",
 }));
 
+vi.mock("@/infrastructure/queue/weak-answer-queue", () => ({
+  WEAK_ANSWER_QUEUE_NAME: "weak-answer-generation",
+}));
+
 vi.mock("@/factories/resumes/resume-service-factory", () => ({
   makeResumeService: vi.fn(() => ({ process: vi.fn() })),
 }));
 
 vi.mock("@/factories/interview/review-generation-service-factory", () => ({
   makeReviewGenerationService: vi.fn(() => ({ process: vi.fn() })),
+}));
+
+vi.mock("@/factories/interview/weak-answer-generation-service-factory", () => ({
+  makeWeakAnswerGenerationService: vi.fn(() => ({ process: vi.fn() })),
 }));
 
 vi.mock("@/modules/interview/repository/session-repository", () => ({
@@ -33,8 +41,10 @@ import {
   handleReviewJobExhaustedFailure,
   logResumeJobResult,
   logReviewJobResult,
+  logWeakAnswerJobResult,
   processResumeJob,
   processReviewJob,
+  processWeakAnswerJob,
 } from "./worker";
 
 describe("processResumeJob", () => {
@@ -194,6 +204,55 @@ describe("handleReviewJobExhaustedFailure", () => {
     expect(markReviewGenerationFailed).toHaveBeenCalledWith(
       "session-4",
       "OpenAI timeout",
+    );
+  });
+});
+
+describe("processWeakAnswerJob", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("delegates to weakAnswerGenerationService.process and returns the result", async () => {
+    const ready = { status: "ready" as const, sessionId: "session-1" };
+    const process = vi.fn().mockResolvedValue(ready);
+
+    const result = await processWeakAnswerJob("session-1", { process });
+
+    expect(process).toHaveBeenCalledWith("session-1");
+    expect(result).toEqual(ready);
+  });
+});
+
+describe("logWeakAnswerJobResult", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("logs info when processing succeeds", () => {
+    const infoSpy = vi.spyOn(logger, "info");
+
+    logWeakAnswerJobResult("job-1", {
+      status: "ready",
+      sessionId: "session-1",
+    });
+
+    expect(infoSpy).toHaveBeenCalledWith(
+      "Weak answer job job-1 succeeded (session session-1)",
+    );
+  });
+
+  it("logs warn when skipped", () => {
+    const warnSpy = vi.spyOn(logger, "warn");
+
+    logWeakAnswerJobResult("job-2", {
+      status: "skipped",
+      sessionId: "session-2",
+      reason: "not_finished",
+    });
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      "Weak answer job job-2 skipped (session session-2): not_finished",
     );
   });
 });

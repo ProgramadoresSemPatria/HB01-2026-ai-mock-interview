@@ -474,6 +474,12 @@ function ReviewSessionChatContent({ sessionId }: ReviewSessionChatProps) {
           canSend={canSend}
           isStreaming={isStreaming}
           isFinished={false}
+          locale={locale}
+          getAccessToken={getAccessToken}
+          onTranscript={(text) =>
+            setDraft((prev) => (prev.trim() ? `${prev.trim()} ${text}` : text))
+          }
+          sttBlocked={isStreaming}
         />
       </div>
     </div>

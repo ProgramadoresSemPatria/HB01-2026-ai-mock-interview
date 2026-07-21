@@ -23,7 +23,7 @@ function toHttpError(err: unknown): HttpError | null {
 
   if (err instanceof multer.MulterError) {
     if (err.code === "LIMIT_FILE_SIZE") {
-      return new BadRequestError("PDF file exceeds maximum allowed size");
+      return new BadRequestError("File exceeds maximum allowed size");
     }
     return new BadRequestError(err.message);
   }

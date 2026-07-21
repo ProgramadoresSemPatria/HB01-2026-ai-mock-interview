@@ -5,6 +5,7 @@ import type { TokenUsageService } from "@/modules/token-usage/service/token-usag
 import type { LlmUsage } from "@/modules/token-usage/types/llm-usage";
 import type { IInterviewGraph } from "@/modules/interview/protocols/interview-graph";
 import type { IReviewGenerationQueue } from "@/modules/interview/protocols/review-generation-queue";
+import type { IWeakAnswerQueue } from "@/modules/interview/protocols/weak-answer-queue";
 import type { MessageRepository } from "@/modules/interview/repository/message-repository";
 import type { SessionRepository } from "@/modules/interview/repository/session-repository";
 import type { ResumeRepository } from "@/modules/resumes/repository/resume-repository";
@@ -30,6 +31,7 @@ export class InterviewStreamService {
     private readonly resumeRepository: ResumeRepository,
     private readonly graph: IInterviewGraph,
     private readonly reviewGenerationQueue: IReviewGenerationQueue,
+    private readonly weakAnswerQueue: IWeakAnswerQueue,
     private readonly tokenUsageService: TokenUsageService,
   ) {}
 
@@ -202,6 +204,17 @@ export class InterviewStreamService {
             message,
           );
           reviewGenerationStatus = "failed";
+        }
+
+        try {
+          await this.weakAnswerQueue.add({ sessionId });
+        } catch (enqueueErr) {
+          logStreamError({
+            flow: "interview",
+            userId,
+            sessionId,
+            err: enqueueErr,
+          });
         }
       }
 
