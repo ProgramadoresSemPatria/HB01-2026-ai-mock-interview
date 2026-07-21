@@ -46,7 +46,7 @@ describe("errorHandler", () => {
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
-      message: "PDF file exceeds maximum allowed size",
+      message: "File exceeds maximum allowed size",
     });
   });
 

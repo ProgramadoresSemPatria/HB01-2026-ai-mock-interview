@@ -18,6 +18,7 @@ const validEnv = {
   SMTP_PASS: "secret",
   MAIL_FROM: "user@example.com",
   OPENAI_API_KEY: "sk-test-openai-api-key",
+  ASSEMBLYAI_API_KEY: "test-assemblyai-api-key",
   R2_ACCOUNT_ID: "test-account-id",
   R2_ACCESS_KEY_ID: "test-access-key",
   R2_SECRET_ACCESS_KEY: "test-secret-key",
@@ -44,6 +45,7 @@ describe("serverEnvSchema", () => {
     expect(result.data.REVIEW_SESSION_QUESTION_COUNT).toBe(3);
     expect(result.data.REDIS_URL).toBe("redis://localhost:6379");
     expect(result.data.RESUME_MAX_BYTES).toBe(5_242_880);
+    expect(result.data.TRANSCRIBE_MAX_BYTES).toBe(5_242_880);
     expect(result.data.TOKEN_LIMIT_ENABLED).toBe(true);
     expect(result.data.TOKEN_LIMIT_MONTHLY_MAX).toBe(500_000);
     expect(result.data.R2_ENDPOINT).toBe(
