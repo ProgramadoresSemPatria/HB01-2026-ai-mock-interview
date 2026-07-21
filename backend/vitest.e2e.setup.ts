@@ -16,6 +16,7 @@ const e2eEnvDefaults: Record<string, string> = {
   RATE_LIMIT_AI_WINDOW_MS: "900000",
   RATE_LIMIT_AI_MAX: "500",
   OPENAI_API_KEY: "test-openai-key",
+  ASSEMBLYAI_API_KEY: "test-assemblyai-api-key",
   OPENAI_MODEL_INTERVIEW: "gpt-5",
   OPENAI_MODEL_EXTRACTION: "gpt-5-mini",
   OPENAI_MODEL_REVIEW: "gpt-5-mini",

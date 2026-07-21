@@ -19,6 +19,7 @@ export {
   NotFoundError,
   ConflictError,
   BadGatewayError,
+  GatewayTimeoutError,
   ServiceUnavailableError,
   TokenLimitExceededError,
 } from "./errors/http-errors";

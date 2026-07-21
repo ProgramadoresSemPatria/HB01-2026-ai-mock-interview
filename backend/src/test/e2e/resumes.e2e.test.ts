@@ -174,7 +174,7 @@ describe("Resumes API E2E", () => {
       expect(response.status).toBe(400);
       expect(response.body.message).toMatch(
         new RegExp(
-          `PDF file (must be at most ${env.RESUME_MAX_BYTES} bytes|exceeds maximum allowed size)`,
+          `PDF file must be at most ${env.RESUME_MAX_BYTES} bytes|File exceeds maximum allowed size`,
         ),
       );
       expect(storageMock.put).not.toHaveBeenCalled();

@@ -46,6 +46,9 @@ export const serverEnv = {
   OPENAI_MODEL_EXTRACTION: z.string().default("gpt-5-nano"),
   OPENAI_MODEL_REVIEW: z.string().default("gpt-5-nano"),
 
+  // AssemblyAI (speech-to-text)
+  ASSEMBLYAI_API_KEY: z.string().min(1),
+
   // Review sessions
   REVIEW_SESSION_QUESTION_COUNT: z.coerce.number().default(3),
 
@@ -61,6 +64,9 @@ export const serverEnv = {
 
   // Résumé uploads
   RESUME_MAX_BYTES: z.coerce.number().default(5_242_880), // 5 MB
+
+  // Transcription uploads
+  TRANSCRIBE_MAX_BYTES: z.coerce.number().default(5_242_880), // 5 MB
 } as const;
 
 export const serverEnvSchema = z.object(serverEnv).transform((data) => ({

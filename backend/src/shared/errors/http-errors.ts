@@ -38,6 +38,12 @@ export class BadGatewayError extends HttpError {
   }
 }
 
+export class GatewayTimeoutError extends HttpError {
+  constructor(message = "Gateway Timeout") {
+    super(message, 504);
+  }
+}
+
 export class ServiceUnavailableError extends HttpError {
   constructor(message = "Service Unavailable") {
     super(message, 503);
