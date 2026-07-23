@@ -394,6 +394,12 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
             canSend={canSend}
             isStreaming={isStreaming}
             isFinished={isCompleted}
+            locale={locale}
+            getAccessToken={getAccessToken}
+            onTranscript={(text) =>
+              setDraft((prev) => (prev.trim() ? `${prev.trim()} ${text}` : text))
+            }
+            sttBlocked={isStreaming}
           />
         </div>
       ) : (

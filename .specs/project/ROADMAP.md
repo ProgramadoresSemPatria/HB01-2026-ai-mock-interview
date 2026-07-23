@@ -7,6 +7,7 @@
 | P1 | Async Review Items Generation (BullMQ) | Implemented (awaiting commit) | [spec.md](../features/async-review-items-generation/spec.md) · [design.md](../features/async-review-items-generation/design.md) · [tasks.md](../features/async-review-items-generation/tasks.md) · [context.md](../features/async-review-items-generation/context.md) |
 | P2 | AI Mock Interview (frontend) | Pending | — |
 | P2 | Interview Human Feedback (frontend integration) | Specified | [spec.md](../../frontend/.specs/features/interview-human-feedback/spec.md) |
+| P2 | Interview Speech-to-Text (AssemblyAI batch) | Implemented (E2E/UAT/commit pending) | [spec.md](../features/interview-speech-to-text/spec.md) · [context.md](../features/interview-speech-to-text/context.md) · [design.md](../features/interview-speech-to-text/design.md) · [tasks.md](../features/interview-speech-to-text/tasks.md) |
 
 ## Milestones
 
