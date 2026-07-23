@@ -2,7 +2,6 @@ const e2eEnvDefaults: Record<string, string> = {
   CORS_ORIGIN: "http://localhost:3001",
   FRONTEND_URL: "http://localhost:3001",
   NODE_ENV: "test",
-  BORDERLESS_JWT_SECRET: "test-borderless-jwt-secret-at-least-32-chars",
   RATE_LIMIT_WINDOW_MS: "900000",
   RATE_LIMIT_MAX: "500",
   RATE_LIMIT_AI_WINDOW_MS: "900000",

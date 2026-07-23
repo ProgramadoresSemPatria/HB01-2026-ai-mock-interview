@@ -1,6 +1,8 @@
-import jwt from "jsonwebtoken";
-import { env } from "@/config/env";
+import jwt, { type SignOptions } from "jsonwebtoken";
 import prisma from "@/infrastructure/database";
+
+/** Test-only signing key — parser ignores signature and only decodes claims. */
+const AUTH_TEST_SIGNING_KEY = "test-only-signing-key-not-for-production";
 
 export type SeededAuthUser = {
   userId: number;
@@ -29,15 +31,11 @@ export async function seedAuthenticatedUser(overrides?: {
     },
   });
 
-  const accessToken = jwt.sign(
-    {
-      sub: externalId,
-      email,
-      name,
-    },
-    env.BORDERLESS_JWT_SECRET,
-    { expiresIn: "1h" },
-  );
+  const accessToken = signBorderlessAccessToken({
+    externalId,
+    email,
+    name,
+  });
 
   return {
     userId: user.id,
@@ -53,6 +51,7 @@ export function signBorderlessAccessToken(claims: {
   externalId: string;
   email: string;
   name?: string;
+  expiresIn?: SignOptions["expiresIn"];
 }): string {
   return jwt.sign(
     {
@@ -60,8 +59,8 @@ export function signBorderlessAccessToken(claims: {
       email: claims.email,
       name: claims.name ?? "Test User",
     },
-    env.BORDERLESS_JWT_SECRET,
-    { expiresIn: "1h" },
+    AUTH_TEST_SIGNING_KEY,
+    { expiresIn: claims.expiresIn ?? "1h" },
   );
 }
 

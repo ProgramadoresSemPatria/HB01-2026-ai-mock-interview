@@ -8,7 +8,7 @@
 
 ## Architecture Overview
 
-Next.js owns better-auth and proxies credentials to Borderless. Express never validates Borderless passwords; it only verifies the Borderless JWT Bearer, upserts a local user by `externalId`, and sets `req.userId` (Int).
+Next.js owns better-auth and proxies credentials to Borderless. Express never validates Borderless passwords; it decodes the Borderless Bearer JWT (no signature verify), upserts a local user by `externalId`, and sets `req.userId` (Int).
 
 ```mermaid
 flowchart LR
@@ -16,7 +16,7 @@ flowchart LR
   BetterAuth -->|POST /api/auth/signin| Borderless
   BetterAuth -->|session + accessToken| SessionFE
   SessionFE -->|Bearer accessToken| ExpressMW
-  ExpressMW -->|verify JWT| Verifier
+  ExpressMW -->|decode JWT no verify| Parser
   ExpressMW -->|upsert| UserRepo
   ExpressMW --> DomainAPIs
 ```
@@ -41,7 +41,7 @@ flowchart LR
 | Component | Location | Role |
 | --------- | -------- | ---- |
 | `IBorderlessTokenVerifier` | `backend/src/modules/auth/protocols/borderless-token-verifier.ts` | Port |
-| `BorderlessJwtVerifier` | `backend/src/shared/adapters/...` or `modules/auth/adapters/` | Verify JWT; extract claims |
+| `BorderlessAccessTokenParser` | `backend/src/modules/auth/adapters/borderless-access-token-parser.ts` | Decode Bearer JWT (no verify); extract claims; reject expired |
 | `UserSyncService` | `backend/src/modules/auth/service/user-sync-service.ts` | Upsert by externalId |
 | `makeCheckAuthMiddleware` | `backend/src/modules/auth/middlewares/check-auth-middleware.ts` | Bearer → verify → sync → `req.userId` |
 | `UserRepository` | `backend/src/modules/auth/repository/user-repository.ts` | `getByExternalId`, `upsertFromBorderless` |
@@ -83,8 +83,7 @@ JWT claims expected (flexible):
 
 **Frontend (server):** `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `BORDERLESS_API_BASE`  
 **Frontend (client):** `NEXT_PUBLIC_SERVER_URL` (unchanged)  
-**Backend:** `BORDERLESS_JWT_SECRET` (min 32) and/or `BORDERLESS_JWKS_URL`; optional issuer/audience later  
-**Removed from auth path:** reliance on `JWT_SECRET` for API auth (may remain temporarily for tests migration then drop)
+**Backend:** no Borderless JWT secret — decode-only Bearer claims (+ optional `exp`)
 
 ---
 

@@ -14,7 +14,7 @@ export {
 export type { PublicRoute } from "./middlewares/check-auth-middleware";
 export { UserRepository } from "./repository/user-repository";
 export { UserSyncService } from "./service/user-sync-service";
-export { BorderlessJwtVerifier } from "./adapters/borderless-jwt-verifier";
+export { BorderlessAccessTokenParser } from "./adapters/borderless-access-token-parser";
 export type {
   CreateUserParams,
   UpdateUserParams,

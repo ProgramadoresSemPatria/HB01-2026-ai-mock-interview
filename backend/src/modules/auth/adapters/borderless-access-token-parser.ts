@@ -4,10 +4,6 @@ import type {
 } from "@/modules/auth/protocols/borderless-token-verifier";
 import jwt from "jsonwebtoken";
 
-export type BorderlessJwtVerifierConfig = {
-  secret: string;
-};
-
 type JwtPayloadRecord = Record<string, unknown>;
 
 function asNonEmptyString(value: unknown): string | null {
@@ -40,17 +36,32 @@ function extractName(payload: JwtPayloadRecord, email: string): string {
   );
 }
 
-export class BorderlessJwtVerifier implements IBorderlessTokenVerifier {
-  constructor(private readonly config: BorderlessJwtVerifierConfig) {}
+function assertNotExpired(payload: JwtPayloadRecord): void {
+  const exp = payload.exp;
+  if (typeof exp !== "number") {
+    return;
+  }
 
+  if (Date.now() >= exp * 1000) {
+    throw new Error("Token expired");
+  }
+}
+
+/**
+ * Parses Borderless Bearer access tokens without signature verification.
+ * Borderless does not share a JWT secret; identity comes from decoded claims.
+ */
+export class BorderlessAccessTokenParser implements IBorderlessTokenVerifier {
   async verify(token: string): Promise<BorderlessTokenClaims> {
-    const decoded = jwt.verify(token, this.config.secret);
+    const decoded = jwt.decode(token);
 
     if (!decoded || typeof decoded === "string") {
       throw new Error("Invalid token payload");
     }
 
     const payload = decoded as JwtPayloadRecord;
+    assertNotExpired(payload);
+
     const externalId = extractExternalId(payload);
     const email = extractEmail(payload);
 

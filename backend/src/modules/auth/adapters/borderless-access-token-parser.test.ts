@@ -1,21 +1,21 @@
 import jwt from "jsonwebtoken";
 import { describe, expect, it } from "vitest";
 
-import { BorderlessJwtVerifier } from "./borderless-jwt-verifier";
+import { BorderlessAccessTokenParser } from "./borderless-access-token-parser";
 
-const SECRET = "test-borderless-jwt-secret-at-least-32-chars";
+const SIGNING_KEY = "test-only-signing-key-ignored-by-parser";
 
-describe("BorderlessJwtVerifier", () => {
-  const verifier = new BorderlessJwtVerifier({ secret: SECRET });
+describe("BorderlessAccessTokenParser", () => {
+  const parser = new BorderlessAccessTokenParser();
 
   it("extracts claims from a valid token using sub + email + name", async () => {
     const token = jwt.sign(
       { sub: "ext-1", email: "a@example.com", name: "Ada" },
-      SECRET,
+      SIGNING_KEY,
       { expiresIn: "1h" },
     );
 
-    await expect(verifier.verify(token)).resolves.toEqual({
+    await expect(parser.verify(token)).resolves.toEqual({
       externalId: "ext-1",
       email: "a@example.com",
       name: "Ada",
@@ -25,11 +25,11 @@ describe("BorderlessJwtVerifier", () => {
   it("falls back to id and username when sub/name are absent", async () => {
     const token = jwt.sign(
       { id: "ext-2", email: "b@example.com", username: "bob" },
-      SECRET,
+      SIGNING_KEY,
       { expiresIn: "1h" },
     );
 
-    await expect(verifier.verify(token)).resolves.toEqual({
+    await expect(parser.verify(token)).resolves.toEqual({
       externalId: "ext-2",
       email: "b@example.com",
       name: "bob",
@@ -39,11 +39,11 @@ describe("BorderlessJwtVerifier", () => {
   it("defaults name to email local-part when name/username missing", async () => {
     const token = jwt.sign(
       { sub: "ext-3", email: "carol@example.com" },
-      SECRET,
+      SIGNING_KEY,
       { expiresIn: "1h" },
     );
 
-    await expect(verifier.verify(token)).resolves.toMatchObject({
+    await expect(parser.verify(token)).resolves.toMatchObject({
       name: "carol",
     });
   });
@@ -51,38 +51,48 @@ describe("BorderlessJwtVerifier", () => {
   it("rejects expired tokens", async () => {
     const token = jwt.sign(
       { sub: "ext-4", email: "d@example.com" },
-      SECRET,
+      SIGNING_KEY,
       { expiresIn: "0s" },
     );
 
-    await expect(verifier.verify(token)).rejects.toThrow();
+    await expect(parser.verify(token)).rejects.toThrow(/expired/i);
   });
 
-  it("rejects tokens with wrong secret", async () => {
+  it("accepts tokens signed with any key (signature not verified)", async () => {
     const token = jwt.sign(
-      { sub: "ext-5", email: "e@example.com" },
-      "other-secret-at-least-32-characters!!",
+      { sub: "ext-5", email: "e@example.com", name: "Eve" },
+      "completely-different-key-does-not-matter",
       { expiresIn: "1h" },
     );
 
-    await expect(verifier.verify(token)).rejects.toThrow();
+    await expect(parser.verify(token)).resolves.toEqual({
+      externalId: "ext-5",
+      email: "e@example.com",
+      name: "Eve",
+    });
   });
 
   it("rejects tokens missing email", async () => {
-    const token = jwt.sign({ sub: "ext-6" }, SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ sub: "ext-6" }, SIGNING_KEY, { expiresIn: "1h" });
 
-    await expect(verifier.verify(token)).rejects.toThrow(
+    await expect(parser.verify(token)).rejects.toThrow(
       /missing required identity claims/i,
     );
   });
 
   it("rejects tokens missing external id", async () => {
-    const token = jwt.sign({ email: "f@example.com" }, SECRET, {
+    const token = jwt.sign({ email: "f@example.com" }, SIGNING_KEY, {
       expiresIn: "1h",
     });
 
-    await expect(verifier.verify(token)).rejects.toThrow(
+    await expect(parser.verify(token)).rejects.toThrow(
       /missing required identity claims/i,
+    );
+  });
+
+  it("rejects non-JWT strings", async () => {
+    await expect(parser.verify("not-a-jwt")).rejects.toThrow(
+      /invalid token payload/i,
     );
   });
 });

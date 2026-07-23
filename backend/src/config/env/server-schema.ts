@@ -14,9 +14,6 @@ export const serverEnv = {
     .enum(["development", "production", "test"])
     .default("development"),
 
-  // Borderless JWT (Bearer for protected APIs)
-  BORDERLESS_JWT_SECRET: z.string().min(32),
-
   // Rate Limiting
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(900000), // 15 minutes
   RATE_LIMIT_MAX: z.coerce.number().default(20),

@@ -8,7 +8,6 @@ const validEnv = {
   CORS_ORIGIN: "http://localhost:3001",
   FRONTEND_URL: "http://localhost:3001",
   NODE_ENV: "development",
-  BORDERLESS_JWT_SECRET: "your-super-secret-jwt-key-min-32-chars",
   OPENAI_API_KEY: "sk-test-openai-api-key",
   ASSEMBLYAI_API_KEY: "test-assemblyai-api-key",
   R2_ACCOUNT_ID: "test-account-id",
@@ -25,9 +24,6 @@ describe("serverEnvSchema", () => {
     if (!result.success) return;
 
     expect(result.data.PORT).toBe(3000);
-    expect(result.data.BORDERLESS_JWT_SECRET).toBe(
-      "your-super-secret-jwt-key-min-32-chars",
-    );
     expect(result.data.RATE_LIMIT_WINDOW_MS).toBe(900000);
     expect(result.data.RATE_LIMIT_MAX).toBe(20);
     expect(result.data.RATE_LIMIT_AI_WINDOW_MS).toBe(900000);
@@ -82,7 +78,6 @@ describe("serverEnvSchema", () => {
   it("rejects invalid environment with clear field errors", () => {
     const result = serverEnvSchema.safeParse({
       ...validEnv,
-      BORDERLESS_JWT_SECRET: "too-short",
       CORS_ORIGIN: "not-a-url",
     });
 
@@ -91,9 +86,6 @@ describe("serverEnvSchema", () => {
 
     const messages = result.error.issues.map((i) => i.message).join(" ");
     expect(messages.length).toBeGreaterThan(0);
-    expect(
-      result.error.issues.some((i) => i.path.includes("BORDERLESS_JWT_SECRET")),
-    ).toBe(true);
     expect(
       result.error.issues.some((i) => i.path.includes("CORS_ORIGIN")),
     ).toBe(true);

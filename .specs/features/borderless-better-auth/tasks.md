@@ -40,7 +40,7 @@ Phase 4 — Verify
 
 ### T2: Borderless token verifier port + JWT adapter
 
-**What:** `IBorderlessTokenVerifier` + JWT implementation reading `BORDERLESS_JWT_SECRET` / JWKS.  
+**What:** `IBorderlessTokenVerifier` + decode-only JWT parser (no `BORDERLESS_JWT_SECRET` / JWKS).  
 **Where:** `backend/src/modules/auth/protocols/`, adapter under auth or shared  
 **Depends on:** T1 (env may land with T3)  
 **Done when:** Unit tests cover valid/invalid/expired/missing-claim tokens  

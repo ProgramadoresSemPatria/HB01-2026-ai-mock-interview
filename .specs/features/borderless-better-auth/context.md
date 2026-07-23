@@ -22,7 +22,7 @@ Replace local JWT auth with better-auth (Next.js) that proxies email/password to
 | CTX-04 | Keep Prisma `User.id` Int for FKs; map Borderless string user id → `User.externalId` |
 | CTX-05 | Login-only UI; no in-app signup/reset |
 | CTX-06 | No local refresh; 401 → clear session → `/login` |
-| CTX-07 | Assume `accessToken` is a JWT verifiable via `BORDERLESS_JWT_SECRET` and/or `BORDERLESS_JWKS_URL`; opaque tokens block Execute |
+| CTX-07 | Borderless does **not** share `JWT_SECRET`. Express decodes Bearer JWT claims (`jwt.decode`) + checks `exp` if present; no signature verification until introspect/`me` exists |
 
 ---
 

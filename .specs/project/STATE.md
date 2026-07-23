@@ -1,18 +1,26 @@
 # State
 
 **Last Updated:** 2026-07-23  
-**Current Work:** Borderless Auth via better-auth — Execute complete (unit + FE/BE typecheck green); apply Prisma migration; set `BORDERLESS_JWT_SECRET` / better-auth env; E2E needs Docker
+**Current Work:** Borderless Auth — decode-only Bearer (no JWT_SECRET); apply Prisma migration; better-auth env; E2E needs Docker
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-014: Decode Borderless Bearer without signature verify (2026-07-23)
+
+**Decision:** Remove `BORDERLESS_JWT_SECRET`. Express uses `jwt.decode` on the Borderless `accessToken`, rejects missing identity claims / expired `exp`, then upserts local `User` by `externalId`.  
+**Reason:** Borderless confirmed they do not share a JWT secret; contract is only `POST /api/auth/signin` → use `accessToken` as Bearer.  
+**Trade-off:** Tokens are not cryptographically authenticated by this API until Borderless documents introspect/`me`.  
+**Impact:** `BorderlessAccessTokenParser`, env schema, test helpers.  
+**Spec:** `.specs/features/borderless-better-auth/`
 
 ### AD-013: Borderless Bearer + better-auth on Next (2026-07-23)
 
 **Decision:** Replace local JWT auth with better-auth on Next.js that calls Borderless `POST /api/auth/signin`. Express accepts only Borderless `accessToken` as Bearer; local `User` upserted by `externalId` (Int FKs preserved). Remove local signup/login/refresh/password-reset. Login-only UI.  
 **Reason:** Single identity source (Borderless); product is a Borderless Coding surface.  
 **Trade-off:** No in-app signup/reset until Borderless documents them; no refresh — expiry forces re-login; overturns “avoid migrating auth” spirit of AD-009 while keeping Int FKs.  
-**Impact:** FE better-auth + credentials plugin; BE JWT verifier + user sync; Prisma `externalId`, nullable `password`, drop `RefreshToken`.  
+**Impact:** FE better-auth + credentials plugin; BE decode-only Bearer parser + user sync; Prisma `externalId`, nullable `password`, drop `RefreshToken`.  
 **Spec:** `.specs/features/borderless-better-auth/spec.md`  
 **Context:** `.specs/features/borderless-better-auth/context.md`
 
