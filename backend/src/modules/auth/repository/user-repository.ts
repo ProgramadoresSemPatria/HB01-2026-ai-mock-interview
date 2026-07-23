@@ -1,22 +1,30 @@
 import type {
   CreateUserParams,
-  RefreshToken,
-  RefreshTokenWithUser,
-  SaveRefreshTokenParams,
   UpdateUserParams,
+  UpsertFromBorderlessParams,
   User,
 } from "@/modules/auth/types/user";
 import type { InterviewLocale } from "@/shared";
 import prisma from "@/infrastructure/database";
-import { env } from "@/config/env";
 
 export class UserRepository {
   async getByEmail(email: string): Promise<User | null> {
     return prisma.user.findUnique({ where: { email } });
   }
 
+  async getByExternalId(externalId: string): Promise<User | null> {
+    return prisma.user.findUnique({ where: { externalId } });
+  }
+
   async create(params: CreateUserParams): Promise<User> {
-    return prisma.user.create({ data: params });
+    return prisma.user.create({
+      data: {
+        name: params.name,
+        email: params.email,
+        password: params.password ?? null,
+        externalId: params.externalId ?? null,
+      },
+    });
   }
 
   async getById(id: number): Promise<User | null> {
@@ -40,34 +48,43 @@ export class UserRepository {
     });
   }
 
-  async saveRefreshToken(
-    params: SaveRefreshTokenParams,
-  ): Promise<RefreshToken> {
-    const { id, token, userId } = params;
-    return prisma.refreshToken.create({
+  /**
+   * Upsert by externalId. Preserves interviewLocale.
+   * If a row exists with the same email but no/different externalId, link and update.
+   */
+  async upsertFromBorderless(
+    params: UpsertFromBorderlessParams,
+  ): Promise<User> {
+    const byExternal = await this.getByExternalId(params.externalId);
+    if (byExternal) {
+      return prisma.user.update({
+        where: { id: byExternal.id },
+        data: {
+          email: params.email,
+          name: params.name,
+        },
+      });
+    }
+
+    const byEmail = await this.getByEmail(params.email);
+    if (byEmail) {
+      return prisma.user.update({
+        where: { id: byEmail.id },
+        data: {
+          externalId: params.externalId,
+          name: params.name,
+          email: params.email,
+        },
+      });
+    }
+
+    return prisma.user.create({
       data: {
-        id,
-        token,
-        userId,
-        expiresAt: new Date(Date.now() + env.REFRESH_EXPIRES * 1000),
+        externalId: params.externalId,
+        email: params.email,
+        name: params.name,
+        password: null,
       },
     });
-  }
-
-  async getRefreshTokenWithUser(
-    token: string,
-  ): Promise<RefreshTokenWithUser | null> {
-    return prisma.refreshToken.findFirst({
-      where: { token, expiresAt: { gt: new Date() } },
-      include: { user: true },
-    });
-  }
-
-  async deleteRefreshToken(token: string): Promise<void> {
-    await prisma.refreshToken.delete({ where: { token } });
-  }
-
-  async revokeAllUserRefreshTokens(userId: number): Promise<void> {
-    await prisma.refreshToken.deleteMany({ where: { userId } });
   }
 }

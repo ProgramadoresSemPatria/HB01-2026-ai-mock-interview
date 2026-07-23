@@ -1,57 +1,54 @@
-import type {
-  ITokenService,
-  SignTokenOptions,
-  TokenPayload,
-} from "../protocols/token-service";
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { describe, expect, it, vi } from "vitest";
 
-import { createJwtTokenService } from "@/shared/adapters/cryptography/jwt-token-service";
-import { makeCheckAuthMiddleware } from "./check-auth-middleware";
+import type {
+  BorderlessTokenClaims,
+  IBorderlessTokenVerifier,
+} from "../protocols/borderless-token-verifier";
+import type { UserSyncService } from "../service/user-sync-service";
+import type { User } from "../types/user";
 
-const jwtConfig = {
-  secret: "test-secret-key-at-least-32-characters-long",
-  defaultExpiresIn: "1h",
-} as const;
+import {
+  makeCheckAuthMiddleware,
+  PUBLIC_ROUTES,
+} from "./check-auth-middleware";
 
-class StubTokenService implements ITokenService {
-  verifyResult: TokenPayload = { userId: 42 };
-  verifyError: Error | null = null;
+class StubVerifier implements IBorderlessTokenVerifier {
+  claims: BorderlessTokenClaims | null = {
+    externalId: "ext-1",
+    email: "a@example.com",
+    name: "Ada",
+  };
+  error: Error | null = null;
 
-  sign(_payload: TokenPayload, _options?: SignTokenOptions): string {
-    return "stub-token";
-  }
-
-  verify<T extends TokenPayload = TokenPayload>(
-    _token: string,
-    _secret?: string,
-  ): T {
-    if (this.verifyError) {
-      throw this.verifyError;
+  async verify(_token: string): Promise<BorderlessTokenClaims> {
+    if (this.error) {
+      throw this.error;
     }
-
-    return this.verifyResult as T;
-  }
-
-  decode<T extends TokenPayload = TokenPayload>(_token: string): T | null {
-    return null;
+    if (!this.claims) {
+      throw new Error("no claims");
+    }
+    return this.claims;
   }
 }
 
-function runMiddleware(
-  middleware: ReturnType<typeof makeCheckAuthMiddleware>,
-  overrides: Partial<Request> = {},
-) {
-  const req = {
-    method: "GET",
-    path: "/protected",
-    headers: {},
-    ...overrides,
-  } as Request;
+function makeUser(): User {
+  return {
+    id: 42,
+    externalId: "ext-1",
+    name: "Ada",
+    email: "a@example.com",
+    password: null,
+    interviewLocale: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+}
 
+function createRes() {
   const res = {
     statusCode: 200,
-    body: undefined as unknown,
+    body: null as unknown,
     status(code: number) {
       this.statusCode = code;
       return this;
@@ -60,60 +57,101 @@ function runMiddleware(
       this.body = payload;
       return this;
     },
-  } as Response & { statusCode: number; body: unknown };
-
-  const next = vi.fn();
-
-  middleware(req, res, next);
-
-  return { req, res, next };
+  };
+  return res as unknown as Response & {
+    statusCode: number;
+    body: unknown;
+  };
 }
 
 describe("makeCheckAuthMiddleware", () => {
-  it("allows public routes without Authorization header", () => {
-    const middleware = makeCheckAuthMiddleware(new StubTokenService());
-    const { req, res, next } = runMiddleware(middleware, {
-      method: "POST",
-      path: "/api/auth/login",
-    });
+  it("exposes only health public routes", () => {
+    expect(PUBLIC_ROUTES.map((r) => `${r.method} ${r.path}`)).toEqual([
+      "GET /",
+      "GET /health",
+      "GET /health/ready",
+    ]);
+  });
+
+  it("allows public routes without auth", () => {
+    const verifier = new StubVerifier();
+    const userSync = {
+      resolveLocalUser: vi.fn(),
+    } as unknown as UserSyncService;
+    const middleware = makeCheckAuthMiddleware(verifier, userSync);
+    const req = { method: "GET", path: "/health", headers: {} } as Request;
+    const res = createRes();
+    const next = vi.fn() as NextFunction;
+
+    middleware(req, res, next);
 
     expect(next).toHaveBeenCalledOnce();
-    expect(res.statusCode).toBe(200);
-    expect(req.userId).toBeUndefined();
+    expect(userSync.resolveLocalUser).not.toHaveBeenCalled();
   });
 
-  it("returns 401 when Authorization header is missing on protected routes", () => {
-    const middleware = makeCheckAuthMiddleware(new StubTokenService());
-    const { res, next } = runMiddleware(middleware);
+  it("returns 401 when Authorization is missing", () => {
+    const verifier = new StubVerifier();
+    const userSync = {
+      resolveLocalUser: vi.fn(),
+    } as unknown as UserSyncService;
+    const middleware = makeCheckAuthMiddleware(verifier, userSync);
+    const req = {
+      method: "GET",
+      path: "/api/resumes",
+      headers: {},
+    } as Request;
+    const res = createRes();
+    const next = vi.fn() as NextFunction;
+
+    middleware(req, res, next);
+
+    expect(res.statusCode).toBe(401);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("sets req.userId when token is valid", async () => {
+    const verifier = new StubVerifier();
+    const resolveLocalUser = vi.fn().mockResolvedValue(makeUser());
+    const userSync = { resolveLocalUser } as unknown as UserSyncService;
+    const middleware = makeCheckAuthMiddleware(verifier, userSync);
+    const req = {
+      method: "GET",
+      path: "/api/resumes",
+      headers: { authorization: "Bearer valid-token" },
+    } as Request;
+    const res = createRes();
+    const next = vi.fn() as NextFunction;
+
+    middleware(req, res, next);
+    await vi.waitFor(() => expect(next).toHaveBeenCalledOnce());
+
+    expect(req.userId).toBe(42);
+    expect(resolveLocalUser).toHaveBeenCalledWith({
+      externalId: "ext-1",
+      email: "a@example.com",
+      name: "Ada",
+    });
+  });
+
+  it("returns 401 when verifier rejects the token", async () => {
+    const verifier = new StubVerifier();
+    verifier.error = new Error("expired");
+    const userSync = {
+      resolveLocalUser: vi.fn(),
+    } as unknown as UserSyncService;
+    const middleware = makeCheckAuthMiddleware(verifier, userSync);
+    const req = {
+      method: "GET",
+      path: "/api/resumes",
+      headers: { authorization: "Bearer bad" },
+    } as Request;
+    const res = createRes();
+    const next = vi.fn() as NextFunction;
+
+    middleware(req, res, next);
+    await vi.waitFor(() => expect(res.statusCode).toBe(401));
 
     expect(next).not.toHaveBeenCalled();
-    expect(res.statusCode).toBe(401);
-    expect(res.body).toEqual({ message: "Authentication required" });
-  });
-
-  it("sets req.userId when token is valid", () => {
-    const tokenService = createJwtTokenService(jwtConfig);
-    const token = tokenService.sign({ userId: 7 });
-    const middleware = makeCheckAuthMiddleware(tokenService);
-    const { req, res, next } = runMiddleware(middleware, {
-      headers: { authorization: `Bearer ${token}` },
-    });
-
-    expect(next).toHaveBeenCalledOnce();
-    expect(res.statusCode).toBe(200);
-    expect(req.userId).toBe(7);
-  });
-
-  it("returns 401 when token is expired", () => {
-    const tokenService = createJwtTokenService(jwtConfig);
-    const expiredToken = tokenService.sign({ userId: 1 }, { expiresIn: "0s" });
-    const middleware = makeCheckAuthMiddleware(tokenService);
-    const { res, next } = runMiddleware(middleware, {
-      headers: { authorization: `Bearer ${expiredToken}` },
-    });
-
-    expect(next).not.toHaveBeenCalled();
-    expect(res.statusCode).toBe(401);
     expect(res.body).toEqual({ message: "Invalid or expired token" });
   });
 });

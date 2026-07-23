@@ -9,22 +9,19 @@ import prisma from "@/infrastructure/database";
 import { ReviewPriority } from "../../../prisma/generated/client";
 import {
   authHeader,
-  createSignupPayload,
-  loginUser,
-  signUpUser,
+  seedAuthenticatedUser,
 } from "@/test/helpers/auth-helpers";
 import { seedReadyResume } from "@/test/helpers/interview-seed-helpers";
 import { truncateTables } from "@/test/containers/truncate-tables";
 
-async function authenticate(app: Express): Promise<{
+async function authenticate(): Promise<{
   token: string;
   userId: number;
 }> {
-  const { response: signUpResponse } = await signUpUser(app);
-  const loginResponse = await loginUser(app);
+  const auth = await seedAuthenticatedUser();
   return {
-    token: loginResponse.body.accessToken as string,
-    userId: signUpResponse.body.user.id as number,
+    token: auth.accessToken,
+    userId: auth.userId,
   };
 }
 
@@ -88,7 +85,7 @@ describe("Review Items API E2E", () => {
     });
 
     it("returns 200 with empty reviewItems when user has none", async () => {
-      const { token } = await authenticate(app);
+      const { token } = await authenticate();
 
       const response = await request(app)
         .get("/api/review-items/")
@@ -99,7 +96,7 @@ describe("Review Items API E2E", () => {
     });
 
     it("does not return review items belonging to another user", async () => {
-      const { userId } = await authenticate(app);
+      const { userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const session = await prisma.interviewSession.create({
@@ -122,27 +119,21 @@ describe("Review Items API E2E", () => {
         },
       });
 
-      await request(app)
-        .post("/api/auth/signup")
-        .send(
-          createSignupPayload({
-            email: "other@example.com",
-            name: "Other User",
-          }),
-        );
-      const otherLogin = await loginUser(app, { email: "other@example.com" });
-      const otherToken = otherLogin.body.accessToken as string;
+      const other = await seedAuthenticatedUser({
+        email: "other@example.com",
+        name: "Other User",
+      });
 
       const response = await request(app)
         .get("/api/review-items/")
-        .set(authHeader(otherToken));
+        .set(authHeader(other.accessToken));
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({ reviewItems: [] });
     });
 
     it("returns 200 with review items for the authenticated user", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const session = await prisma.interviewSession.create({
@@ -193,7 +184,7 @@ describe("Review Items API E2E", () => {
     });
 
     it("filters review items by status=active, learned, and all", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const learnedAt = new Date("2026-06-01T12:00:00.000Z");
 
       await seedReviewItem(userId, {
@@ -261,7 +252,7 @@ describe("Review Items API E2E", () => {
     });
 
     it("marks an active review item as learned", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const item = await seedReviewItem(userId, {
         topic: "System Design",
         description: "Practice scalability trade-offs.",
@@ -291,7 +282,7 @@ describe("Review Items API E2E", () => {
     });
 
     it("reactivates a learned review item", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const item = await seedReviewItem(userId, {
         topic: "TypeScript",
         description: "Review generics and utility types.",
@@ -322,7 +313,7 @@ describe("Review Items API E2E", () => {
     });
 
     it("returns 404 when review item does not exist", async () => {
-      const { token } = await authenticate(app);
+      const { token } = await authenticate();
 
       const response = await request(app)
         .patch(`/api/review-items/${randomUUID()}`)
@@ -334,27 +325,21 @@ describe("Review Items API E2E", () => {
     });
 
     it("returns 404 when review item belongs to another user", async () => {
-      const { userId } = await authenticate(app);
+      const { userId } = await authenticate();
       const item = await seedReviewItem(userId, {
         topic: "System Design",
         description: "Practice scalability trade-offs.",
         priority: ReviewPriority.high,
       });
 
-      await request(app)
-        .post("/api/auth/signup")
-        .send(
-          createSignupPayload({
-            email: "patch-other@example.com",
-            name: "Patch Other User",
-          }),
-        );
-      const otherLogin = await loginUser(app, { email: "patch-other@example.com" });
-      const otherToken = otherLogin.body.accessToken as string;
+      const other = await seedAuthenticatedUser({
+        email: "patch-other@example.com",
+        name: "Patch Other User",
+      });
 
       const response = await request(app)
         .patch(`/api/review-items/${item.id}`)
-        .set(authHeader(otherToken))
+        .set(authHeader(other.accessToken))
         .send({ status: "learned" });
 
       expect(response.status).toBe(404);
@@ -375,7 +360,7 @@ describe("Review Items API E2E", () => {
     });
 
     it("returns 204 and removes the item for the owner", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const session = await prisma.interviewSession.create({
@@ -419,7 +404,7 @@ describe("Review Items API E2E", () => {
     });
 
     it("returns 404 when review item does not exist", async () => {
-      const { token } = await authenticate(app);
+      const { token } = await authenticate();
 
       const response = await request(app)
         .delete(`/api/review-items/${randomUUID()}`)
@@ -430,7 +415,7 @@ describe("Review Items API E2E", () => {
     });
 
     it("returns 404 when review item belongs to another user", async () => {
-      const { userId } = await authenticate(app);
+      const { userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const session = await prisma.interviewSession.create({
@@ -453,20 +438,14 @@ describe("Review Items API E2E", () => {
         },
       });
 
-      await request(app)
-        .post("/api/auth/signup")
-        .send(
-          createSignupPayload({
-            email: "other@example.com",
-            name: "Other User",
-          }),
-        );
-      const otherLogin = await loginUser(app, { email: "other@example.com" });
-      const otherToken = otherLogin.body.accessToken as string;
+      const other = await seedAuthenticatedUser({
+        email: "other@example.com",
+        name: "Other User",
+      });
 
       const response = await request(app)
         .delete(`/api/review-items/${item.id}`)
-        .set(authHeader(otherToken));
+        .set(authHeader(other.accessToken));
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual({ message: "Review item not found" });

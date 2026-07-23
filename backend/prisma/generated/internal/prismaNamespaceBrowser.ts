@@ -60,8 +60,7 @@ export const ModelName = {
   WeakAnswer: 'WeakAnswer',
   InterviewFeedback: 'InterviewFeedback',
   User: 'User',
-  UserTokenUsage: 'UserTokenUsage',
-  RefreshToken: 'RefreshToken'
+  UserTokenUsage: 'UserTokenUsage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -207,6 +206,7 @@ export type InterviewFeedbackScalarFieldEnum = (typeof InterviewFeedbackScalarFi
 
 export const UserScalarFieldEnum = {
   id: 'id',
+  externalId: 'externalId',
   name: 'name',
   email: 'email',
   password: 'password',
@@ -227,17 +227,6 @@ export const UserTokenUsageScalarFieldEnum = {
 } as const
 
 export type UserTokenUsageScalarFieldEnum = (typeof UserTokenUsageScalarFieldEnum)[keyof typeof UserTokenUsageScalarFieldEnum]
-
-
-export const RefreshTokenScalarFieldEnum = {
-  id: 'id',
-  token: 'token',
-  userId: 'userId',
-  expiresAt: 'expiresAt',
-  createdAt: 'createdAt'
-} as const
-
-export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -40,9 +40,7 @@ import prisma from "@/infrastructure/database";
 import { ResumeStatus } from "../../../prisma/generated/client";
 import {
   authHeader,
-  createSignupPayload,
-  loginUser,
-  signUpUser,
+  seedAuthenticatedUser,
 } from "@/test/helpers/auth-helpers";
 import {
   sampleStructuredSummary,
@@ -54,15 +52,14 @@ const minimalPdfBuffer = Buffer.from(
   "%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF",
 );
 
-async function authenticate(app: Express): Promise<{
+async function authenticate(): Promise<{
   token: string;
   userId: number;
 }> {
-  const { response: signUpResponse } = await signUpUser(app);
-  const loginResponse = await loginUser(app);
+  const auth = await seedAuthenticatedUser();
   return {
-    token: loginResponse.body.accessToken as string,
-    userId: signUpResponse.body.user.id as number,
+    token: auth.accessToken,
+    userId: auth.userId,
   };
 }
 
@@ -99,7 +96,7 @@ describe("Resumes API E2E", () => {
     });
 
     it("returns 201 and uploads PDF with mocked storage and queue", async () => {
-      const { token } = await authenticate(app);
+      const { token } = await authenticate();
 
       const response = await request(app)
         .post("/api/resumes/")
@@ -123,7 +120,7 @@ describe("Resumes API E2E", () => {
     });
 
     it("returns 400 when no PDF file is attached", async () => {
-      const { token } = await authenticate(app);
+      const { token } = await authenticate();
 
       const response = await request(app)
         .post("/api/resumes/")
@@ -138,7 +135,7 @@ describe("Resumes API E2E", () => {
     });
 
     it("returns 400 when file is not a PDF", async () => {
-      const { token } = await authenticate(app);
+      const { token } = await authenticate();
 
       const response = await request(app)
         .post("/api/resumes/")
@@ -157,7 +154,7 @@ describe("Resumes API E2E", () => {
     });
 
     it("returns 400 when PDF exceeds maximum allowed size", async () => {
-      const { token } = await authenticate(app);
+      const { token } = await authenticate();
       const oversizedPdf = Buffer.concat([
         minimalPdfBuffer,
         Buffer.alloc(env.RESUME_MAX_BYTES),
@@ -183,7 +180,7 @@ describe("Resumes API E2E", () => {
 
     it("returns 502 when object storage upload fails", async () => {
       storageMock.put.mockRejectedValueOnce(new Error("R2 down"));
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
 
       const response = await request(app)
         .post("/api/resumes/")
@@ -207,7 +204,7 @@ describe("Resumes API E2E", () => {
 
     it("returns 503 when resume queue is unavailable", async () => {
       resumeQueueMock.add.mockRejectedValueOnce(new Error("Redis down"));
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
 
       const response = await request(app)
         .post("/api/resumes/")
@@ -243,7 +240,7 @@ describe("Resumes API E2E", () => {
     });
 
     it("returns 200 with resume detail for the owner", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const response = await request(app)
@@ -260,7 +257,7 @@ describe("Resumes API E2E", () => {
     });
 
     it("returns 404 when resume does not exist", async () => {
-      const { token } = await authenticate(app);
+      const { token } = await authenticate();
 
       const response = await request(app)
         .get(`/api/resumes/${randomUUID()}`)
@@ -271,23 +268,17 @@ describe("Resumes API E2E", () => {
     });
 
     it("returns 404 when resume belongs to another user", async () => {
-      const { userId } = await authenticate(app);
+      const { userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
-      await request(app)
-        .post("/api/auth/signup")
-        .send(
-          createSignupPayload({
-            email: "other@example.com",
-            name: "Other User",
-          }),
-        );
-      const otherLogin = await loginUser(app, { email: "other@example.com" });
-      const otherToken = otherLogin.body.accessToken as string;
+      const other = await seedAuthenticatedUser({
+        email: "other@example.com",
+        name: "Other User",
+      });
 
       const response = await request(app)
         .get(`/api/resumes/${resume.id}`)
-        .set(authHeader(otherToken));
+        .set(authHeader(other.accessToken));
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual({ message: "Resume not found" });
@@ -359,7 +350,7 @@ describe("Resumes API E2E", () => {
     });
 
     it("returns 429 when exceeding RATE_LIMIT_AI_MAX on upload", async () => {
-      const { token } = await authenticate(rateLimitedApp);
+      const { token } = await authenticate();
 
       await uploadResume(rateLimitedApp, token, "resume.pdf").expect(201);
 
@@ -376,7 +367,7 @@ describe("Resumes API E2E", () => {
     });
 
     it("allows two different users to reach RATE_LIMIT_AI_MAX independently on upload", async () => {
-      const { token: firstToken } = await authenticate(rateLimitedApp);
+      const { token: firstToken } = await authenticate();
 
       await uploadResume(rateLimitedApp, firstToken, "resume.pdf").expect(
         201,
@@ -385,20 +376,14 @@ describe("Resumes API E2E", () => {
         429,
       );
 
-      const { response: signUpOther } = await signUpUser(rateLimitedApp, {
+      const other = await seedAuthenticatedUser({
         email: "rate-limit-other@example.com",
         name: "Rate Limit Other User",
       });
-      const loginOther = await loginUser(rateLimitedApp, {
-        email: "rate-limit-other@example.com",
-      });
-      const otherToken = loginOther.body.accessToken as string;
-
-      expect(signUpOther.status).toBe(201);
 
       const response = await uploadResume(
         rateLimitedApp,
-        otherToken,
+        other.accessToken,
         "other-resume.pdf",
       );
 
@@ -406,7 +391,7 @@ describe("Resumes API E2E", () => {
     });
 
     it("returns 200 on GET /api/resumes after 429 on upload", async () => {
-      const { token } = await authenticate(rateLimitedApp);
+      const { token } = await authenticate();
 
       await uploadResume(rateLimitedApp, token, "resume.pdf").expect(201);
       await uploadResume(rateLimitedApp, token, "resume-2.pdf").expect(429);

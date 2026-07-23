@@ -8,15 +8,7 @@ const validEnv = {
   CORS_ORIGIN: "http://localhost:3001",
   FRONTEND_URL: "http://localhost:3001",
   NODE_ENV: "development",
-  JWT_SECRET: "your-super-secret-jwt-key-min-32-chars",
-  JWT_EXPIRE_IN: "15m",
-  REFRESH_EXPIRES: "604800",
-  RESET_PASSWORD_JWT_EXPIRE_IN: "1h",
-  SMTP_HOST: "smtp.gmail.com",
-  SMTP_PORT: "587",
-  SMTP_USER: "user@example.com",
-  SMTP_PASS: "secret",
-  MAIL_FROM: "user@example.com",
+  BORDERLESS_JWT_SECRET: "your-super-secret-jwt-key-min-32-chars",
   OPENAI_API_KEY: "sk-test-openai-api-key",
   ASSEMBLYAI_API_KEY: "test-assemblyai-api-key",
   R2_ACCOUNT_ID: "test-account-id",
@@ -33,8 +25,9 @@ describe("serverEnvSchema", () => {
     if (!result.success) return;
 
     expect(result.data.PORT).toBe(3000);
-    expect(result.data.REFRESH_EXPIRES).toBe(604800);
-    expect(result.data.SMTP_PORT).toBe(587);
+    expect(result.data.BORDERLESS_JWT_SECRET).toBe(
+      "your-super-secret-jwt-key-min-32-chars",
+    );
     expect(result.data.RATE_LIMIT_WINDOW_MS).toBe(900000);
     expect(result.data.RATE_LIMIT_MAX).toBe(20);
     expect(result.data.RATE_LIMIT_AI_WINDOW_MS).toBe(900000);
@@ -89,9 +82,8 @@ describe("serverEnvSchema", () => {
   it("rejects invalid environment with clear field errors", () => {
     const result = serverEnvSchema.safeParse({
       ...validEnv,
-      JWT_SECRET: "too-short",
+      BORDERLESS_JWT_SECRET: "too-short",
       CORS_ORIGIN: "not-a-url",
-      MAIL_FROM: "not-an-email",
     });
 
     expect(result.success).toBe(false);
@@ -99,14 +91,11 @@ describe("serverEnvSchema", () => {
 
     const messages = result.error.issues.map((i) => i.message).join(" ");
     expect(messages.length).toBeGreaterThan(0);
-    expect(result.error.issues.some((i) => i.path.includes("JWT_SECRET"))).toBe(
-      true,
-    );
+    expect(
+      result.error.issues.some((i) => i.path.includes("BORDERLESS_JWT_SECRET")),
+    ).toBe(true);
     expect(
       result.error.issues.some((i) => i.path.includes("CORS_ORIGIN")),
     ).toBe(true);
-    expect(result.error.issues.some((i) => i.path.includes("MAIL_FROM"))).toBe(
-      true,
-    );
   });
 });

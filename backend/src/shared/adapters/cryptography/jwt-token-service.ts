@@ -49,8 +49,7 @@ export class JwtTokenService implements ITokenService {
 
 type EnvServerModule = {
   env: {
-    JWT_SECRET: string;
-    JWT_EXPIRE_IN: string;
+    BORDERLESS_JWT_SECRET: string;
   };
 };
 
@@ -58,8 +57,8 @@ function readEnvConfig(): JwtTokenServiceConfig {
   const { env } = require("@/config/env") as EnvServerModule;
 
   return {
-    secret: env.JWT_SECRET,
-    defaultExpiresIn: env.JWT_EXPIRE_IN,
+    secret: env.BORDERLESS_JWT_SECRET,
+    defaultExpiresIn: "1h",
   };
 }
 

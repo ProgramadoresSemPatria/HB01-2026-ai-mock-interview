@@ -14,18 +14,8 @@ export const serverEnv = {
     .enum(["development", "production", "test"])
     .default("development"),
 
-  // JWT Auth
-  JWT_SECRET: z.string().min(32),
-  JWT_EXPIRE_IN: z.string().default("15m"),
-  REFRESH_EXPIRES: z.coerce.number().default(604800), // 7 days in seconds
-  RESET_PASSWORD_JWT_EXPIRE_IN: z.string().default("1h"),
-
-  // SMTP / Email
-  SMTP_HOST: z.string().min(1),
-  SMTP_PORT: z.coerce.number().default(587),
-  SMTP_USER: z.string().min(1),
-  SMTP_PASS: z.string().min(1),
-  MAIL_FROM: z.string().email(),
+  // Borderless JWT (Bearer for protected APIs)
+  BORDERLESS_JWT_SECRET: z.string().min(32),
 
   // Rate Limiting
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(900000), // 15 minutes

@@ -2,6 +2,7 @@
 
 | Priority | Feature | Status | Spec |
 |----------|---------|--------|------|
+| P1 | Borderless Auth via better-auth | Implemented (E2E needs Docker + real Borderless JWT secret) | [spec.md](../features/borderless-better-auth/spec.md) · [context.md](../features/borderless-better-auth/context.md) · [design.md](../features/borderless-better-auth/design.md) · [tasks.md](../features/borderless-better-auth/tasks.md) |
 | P1 | AI Mock Interview (backend) | Specified | [spec.md](../features/ai-mock-interview/spec.md) |
 | P1 | Interview Locale (EN \| PT) | Done | [spec.md](../features/interview-locale/spec.md) · [design.md](../features/interview-locale/design.md) · [tasks.md](../features/interview-locale/tasks.md) |
 | P1 | Async Review Items Generation (BullMQ) | Implemented (awaiting commit) | [spec.md](../features/async-review-items-generation/spec.md) · [design.md](../features/async-review-items-generation/design.md) · [tasks.md](../features/async-review-items-generation/tasks.md) · [context.md](../features/async-review-items-generation/context.md) |

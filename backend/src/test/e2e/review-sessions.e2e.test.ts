@@ -55,9 +55,7 @@ import prisma from "@/infrastructure/database";
 import { ReviewPriority } from "../../../prisma/generated/client";
 import {
   authHeader,
-  createSignupPayload,
-  loginUser,
-  signUpUser,
+  seedAuthenticatedUser,
 } from "@/test/helpers/auth-helpers";
 import { seedReadyResume } from "@/test/helpers/interview-seed-helpers";
 import { truncateTables } from "@/test/containers/truncate-tables";
@@ -68,31 +66,23 @@ type ReviewSessionQuestionInput = {
   turns: Array<{ question: string; answer: string }>;
 };
 
-async function authenticate(app: Express): Promise<{
+async function authenticate(): Promise<{
   token: string;
   userId: number;
 }> {
-  const { response: signUpResponse } = await signUpUser(app);
-  const loginResponse = await loginUser(app);
+  const auth = await seedAuthenticatedUser();
   return {
-    token: loginResponse.body.accessToken as string,
-    userId: signUpResponse.body.user.id as number,
+    token: auth.accessToken,
+    userId: auth.userId,
   };
 }
 
-async function createOtherUserToken(app: Express): Promise<string> {
-  await request(app)
-    .post("/api/auth/signup")
-    .send(
-      createSignupPayload({
-        email: "review-session-other@example.com",
-        name: "Review Session Other User",
-      }),
-    );
-  const otherLogin = await loginUser(app, {
+async function createOtherUserToken(): Promise<string> {
+  const other = await seedAuthenticatedUser({
     email: "review-session-other@example.com",
+    name: "Review Session Other User",
   });
-  return otherLogin.body.accessToken as string;
+  return other.accessToken;
 }
 
 async function seedReviewItem(
@@ -230,7 +220,7 @@ describe("Review Sessions API E2E", () => {
     });
 
     it("returns 422 when interviewLocale is omitted", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const item = await seedReviewItem(userId, {
         topic: "System Design",
         description: "Practice scalability trade-offs.",
@@ -248,7 +238,7 @@ describe("Review Sessions API E2E", () => {
     });
 
     it("returns 201 when creating a session with active owned review items", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const itemOne = await seedReviewItem(userId, {
         topic: "System Design",
         description: "Practice scalability trade-offs.",
@@ -293,7 +283,7 @@ describe("Review Sessions API E2E", () => {
     });
 
     it("returns 404 when any review item is missing, not owned, or not active", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const activeItem = await seedReviewItem(userId, {
         topic: "System Design",
         description: "Practice scalability trade-offs.",
@@ -329,7 +319,7 @@ describe("Review Sessions API E2E", () => {
       expect(learnedResponse.status).toBe(404);
       expect(learnedResponse.body).toEqual({ message: "Review item not found" });
 
-      const otherToken = await createOtherUserToken(app);
+      const otherToken = await createOtherUserToken();
       const crossUserResponse = await request(app)
         .post("/api/review-sessions/")
         .set(authHeader(otherToken))
@@ -356,7 +346,7 @@ describe("Review Sessions API E2E", () => {
     });
 
     it("returns 404 when session does not exist or belongs to another user", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const item = await seedReviewItem(userId, {
         topic: "System Design",
         description: "Practice scalability trade-offs.",
@@ -369,7 +359,7 @@ describe("Review Sessions API E2E", () => {
         .send({ reviewItemIds: [item.id], interviewLocale: "en" });
 
       const sessionId = createResponse.body.id as string;
-      const otherToken = await createOtherUserToken(app);
+      const otherToken = await createOtherUserToken();
 
       const missingResponse = await request(app)
         .get(`/api/review-sessions/${randomUUID()}`)
@@ -404,7 +394,7 @@ describe("Review Sessions API E2E", () => {
     });
 
     it("returns 422 when interviewLocale is omitted", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const item = await seedReviewItem(userId, {
         topic: "System Design",
         description: "Practice scalability trade-offs.",
@@ -430,7 +420,7 @@ describe("Review Sessions API E2E", () => {
     });
 
     it("returns 404 when session does not exist or belongs to another user", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const item = await seedReviewItem(userId, {
         topic: "System Design",
         description: "Practice scalability trade-offs.",
@@ -443,7 +433,7 @@ describe("Review Sessions API E2E", () => {
         .send({ reviewItemIds: [item.id], interviewLocale: "en" });
 
       const sessionId = createResponse.body.id as string;
-      const otherToken = await createOtherUserToken(app);
+      const otherToken = await createOtherUserToken();
 
       const missingResponse = await streamReviewSessionTurn(
         app,
@@ -470,7 +460,7 @@ describe("Review Sessions API E2E", () => {
     });
 
     it("returns 400 when answer is required but omitted", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const item = await seedReviewItem(userId, {
         topic: "System Design",
         description: "Practice scalability trade-offs.",
@@ -494,7 +484,7 @@ describe("Review Sessions API E2E", () => {
     });
 
     it("returns 409 when session is pending review or completed", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const itemOne = await seedReviewItem(userId, {
         topic: "System Design",
         description: "Practice scalability trade-offs.",
@@ -571,7 +561,7 @@ describe("Review Sessions API E2E", () => {
     });
 
     it("persists stream interviewLocale when session reaches pending_review", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const item = await seedReviewItem(userId, {
         topic: "System Design",
         description: "Practice scalability trade-offs.",
@@ -621,7 +611,7 @@ describe("Review Sessions API E2E", () => {
     });
 
     it("returns 404 when session does not belong to the user", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const item = await seedReviewItem(userId, {
         topic: "System Design",
         description: "Practice scalability trade-offs.",
@@ -641,7 +631,7 @@ describe("Review Sessions API E2E", () => {
         .set(authHeader(token));
 
       const sessionItemId = report.body.items[0].id as string;
-      const otherToken = await createOtherUserToken(app);
+      const otherToken = await createOtherUserToken();
 
       const missingSessionResponse = await request(app)
         .post(`/api/review-sessions/${randomUUID()}/apply`)
@@ -681,7 +671,7 @@ describe("Review Sessions API E2E", () => {
     });
 
     it("returns 400 when session is not pending review and 409 when applying twice", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const item = await seedReviewItem(userId, {
         topic: "System Design",
         description: "Practice scalability trade-offs.",
@@ -750,7 +740,7 @@ describe("Review Sessions API E2E", () => {
 
   describe("full review session lifecycle", () => {
     it("streams through all items, exposes suggestions in the report, and applies all changes in one bulk apply", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const itemOne = await seedReviewItem(userId, {
         topic: "System Design",
         description: "Practice scalability trade-offs.",

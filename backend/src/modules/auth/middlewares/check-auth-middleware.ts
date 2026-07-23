@@ -1,4 +1,5 @@
-import type { ITokenService } from "../protocols/token-service";
+import type { IBorderlessTokenVerifier } from "../protocols/borderless-token-verifier";
+import type { UserSyncService } from "../service/user-sync-service";
 import type { RequestHandler } from "express";
 
 export type PublicRoute = {
@@ -10,11 +11,6 @@ export const PUBLIC_ROUTES: PublicRoute[] = [
   { method: "GET", path: "/" },
   { method: "GET", path: "/health" },
   { method: "GET", path: "/health/ready" },
-  { method: "POST", path: "/api/auth/signup" },
-  { method: "POST", path: "/api/auth/login" },
-  { method: "POST", path: "/api/auth/refresh" },
-  { method: "POST", path: "/api/auth/request-password-reset" },
-  { method: "POST", path: "/api/auth/reset-password" },
 ];
 
 function isPublicRoute(method: string, path: string): boolean {
@@ -40,7 +36,8 @@ function extractBearerToken(
 }
 
 export function makeCheckAuthMiddleware(
-  tokenService: ITokenService,
+  verifier: IBorderlessTokenVerifier,
+  userSync: UserSyncService,
 ): RequestHandler {
   return (req, res, next) => {
     if (isPublicRoute(req.method, req.path)) {
@@ -55,18 +52,15 @@ export function makeCheckAuthMiddleware(
       return;
     }
 
-    try {
-      const payload = tokenService.verify<{ userId?: number }>(token);
-
-      if (!payload.userId) {
-        res.status(401).json({ message: "Invalid token" });
-        return;
+    void (async () => {
+      try {
+        const claims = await verifier.verify(token);
+        const user = await userSync.resolveLocalUser(claims);
+        req.userId = user.id;
+        next();
+      } catch {
+        res.status(401).json({ message: "Invalid or expired token" });
       }
-
-      req.userId = payload.userId;
-      next();
-    } catch {
-      res.status(401).json({ message: "Invalid or expired token" });
-    }
+    })();
   };
 }

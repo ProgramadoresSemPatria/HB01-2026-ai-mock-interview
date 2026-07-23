@@ -6,17 +6,15 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/features/auth/session-provider";
-import { ApiError } from "@/lib/api/client";
+import {
+  extractErrorMessage,
+  useAuth,
+} from "@/features/auth/session-provider";
 
 const authInputClassName =
   "manrope h-12 rounded-[var(--radius-inputs)] border-[var(--color-border-hairline)] bg-[var(--color-paper-white)] text-sm text-[var(--color-ink-black)] shadow-none placeholder:text-[var(--text-base)] focus-visible:border-[var(--color-jade-deep)] focus-visible:ring-[var(--color-jade-deep)] disabled:bg-[var(--color-mist-gray)] disabled:text-[var(--color-ink-black)] disabled:opacity-100";
 
-export default function SignInForm({
-  onSwitchToSignUp,
-}: {
-  onSwitchToSignUp: () => void;
-}) {
+export default function SignInForm() {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,9 +31,7 @@ export default function SignInForm({
     try {
       await login(email, password);
     } catch (err) {
-      const message =
-        err instanceof ApiError ? err.message : "Failed to sign in";
-      toast.error(message);
+      toast.error(extractErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -57,7 +53,7 @@ export default function SignInForm({
             Welcome back
           </h1>
           <p className="manrope max-w-md text-[15px] leading-6 text-[var(--text-base)]">
-            Sign in to continue your mock interview practice.
+            Sign in with your Borderless Coding account to continue practice.
           </p>
         </div>
 
@@ -72,7 +68,7 @@ export default function SignInForm({
             <Input
               id="signin-email"
               type="email"
-              placeholder="candidate@hone.ai"
+              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -115,14 +111,6 @@ export default function SignInForm({
             disabled={isSubmitting}
           >
             {isSubmitting ? "Signing in…" : "Continue"}
-          </Button>
-          <Button
-            type="button"
-            variant="link"
-            onClick={onSwitchToSignUp}
-            className="self-center text-sm font-normal text-[var(--color-ink-black)] hover:text-[var(--color-jade-deep)] focus-visible:ring-[var(--color-jade-deep)]"
-          >
-            Need an account? Sign up
           </Button>
         </div>
       </form>

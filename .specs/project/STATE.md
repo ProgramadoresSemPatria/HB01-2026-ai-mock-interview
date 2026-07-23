@@ -1,11 +1,20 @@
 # State
 
-**Last Updated:** 2026-07-21  
-**Current Work:** Interview Speech-to-Text — Execute complete (T1–T10); T3 infra verified; E2E needs Docker Desktop; commits deferred
+**Last Updated:** 2026-07-23  
+**Current Work:** Borderless Auth via better-auth — Execute complete (unit + FE/BE typecheck green); apply Prisma migration; set `BORDERLESS_JWT_SECRET` / better-auth env; E2E needs Docker
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-013: Borderless Bearer + better-auth on Next (2026-07-23)
+
+**Decision:** Replace local JWT auth with better-auth on Next.js that calls Borderless `POST /api/auth/signin`. Express accepts only Borderless `accessToken` as Bearer; local `User` upserted by `externalId` (Int FKs preserved). Remove local signup/login/refresh/password-reset. Login-only UI.  
+**Reason:** Single identity source (Borderless); product is a Borderless Coding surface.  
+**Trade-off:** No in-app signup/reset until Borderless documents them; no refresh — expiry forces re-login; overturns “avoid migrating auth” spirit of AD-009 while keeping Int FKs.  
+**Impact:** FE better-auth + credentials plugin; BE JWT verifier + user sync; Prisma `externalId`, nullable `password`, drop `RefreshToken`.  
+**Spec:** `.specs/features/borderless-better-auth/spec.md`  
+**Context:** `.specs/features/borderless-better-auth/context.md`
 
 ### AD-012: Interview speech-to-text via AssemblyAI batch + port (2026-07-21)
 
