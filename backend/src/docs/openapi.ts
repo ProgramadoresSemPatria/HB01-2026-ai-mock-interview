@@ -1,9 +1,6 @@
 import { OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
 
-import { registerAuthOpenApi } from "./auth-openapi";
 import { openApiRegistry } from "./openapi-common";
-
-registerAuthOpenApi(openApiRegistry);
 
 export function createOpenApiDocument() {
   const generator = new OpenApiGeneratorV3(openApiRegistry.definitions);
@@ -13,18 +10,14 @@ export function createOpenApiDocument() {
     info: {
       title: "Hackathon2026 API",
       version: "1.0.0",
-      description: "Auth API documentation",
+      description:
+        "Mock interview API. Authenticate with a Borderless Bearer access token.",
     },
     servers: [
       {
         url: "http://localhost:3000",
       },
     ],
-    tags: [
-      {
-        name: "Auth",
-        description: "Authentication and password recovery endpoints",
-      },
-    ],
+    tags: [],
   });
 }

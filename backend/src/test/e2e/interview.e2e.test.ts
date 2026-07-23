@@ -55,9 +55,7 @@ import prisma from "@/infrastructure/database";
 import { MessageRole, ResumeStatus } from "../../../prisma/generated/client";
 import {
   authHeader,
-  createSignupPayload,
-  loginUser,
-  signUpUser,
+  seedAuthenticatedUser,
 } from "@/test/helpers/auth-helpers";
 import {
   buildCreateSessionPayload,
@@ -69,15 +67,14 @@ import {
 } from "@/test/helpers/interview-seed-helpers";
 import { truncateTables } from "@/test/containers/truncate-tables";
 
-async function authenticate(app: Express): Promise<{
+async function authenticate(): Promise<{
   token: string;
   userId: number;
 }> {
-  const { response: signUpResponse } = await signUpUser(app);
-  const loginResponse = await loginUser(app);
+  const auth = await seedAuthenticatedUser();
   return {
-    token: loginResponse.body.accessToken as string,
-    userId: signUpResponse.body.user.id as number,
+    token: auth.accessToken,
+    userId: auth.userId,
   };
 }
 
@@ -116,7 +113,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 422 when payload is invalid", async () => {
-      const { token } = await authenticate(app);
+      const { token } = await authenticate();
 
       const response = await request(app)
         .post("/api/interview/sessions")
@@ -133,7 +130,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 422 when interviewLocale is omitted", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const response = await request(app)
@@ -147,7 +144,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 201 when session is created for a ready resume", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const response = await request(app)
@@ -171,7 +168,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 400 when resume is still processing", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedProcessingResume(userId);
 
       const reloaded = await prisma.resume.findUnique({
@@ -196,7 +193,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 400 when resume processing failed", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedFailedResume(userId);
 
       const reloaded = await prisma.resume.findUnique({
@@ -220,7 +217,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 404 when resume does not exist or belongs to another user", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
 
       const missingResumeResponse = await request(app)
         .post("/api/interview/sessions")
@@ -237,22 +234,14 @@ describe("Interview API E2E", () => {
 
       const resume = await seedReadyResume(userId);
 
-      await request(app)
-        .post("/api/auth/signup")
-        .send(
-          createSignupPayload({
-            email: "other-resume@example.com",
-            name: "Other Resume User",
-          }),
-        );
-      const otherLogin = await loginUser(app, {
+      const other = await seedAuthenticatedUser({
         email: "other-resume@example.com",
+        name: "Other Resume User",
       });
-      const otherToken = otherLogin.body.accessToken as string;
 
       const otherUserResumeResponse = await request(app)
         .post("/api/interview/sessions")
-        .set(authHeader(otherToken))
+        .set(authHeader(other.accessToken))
         .send(
           buildCreateSessionPayload({
             resumeId: resume.id,
@@ -265,7 +254,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 201 when session is created with an optional job description", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const response = await request(app)
@@ -293,7 +282,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 422 when job description exceeds max length", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const response = await request(app)
@@ -323,7 +312,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 200 with the user's sessions", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -359,7 +348,7 @@ describe("Interview API E2E", () => {
 
   describe("GET /api/interview/sessions/:sessionId", () => {
     it("returns 200 with session summary including review generation status", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -394,7 +383,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 404 for a session that does not belong to the user", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -409,22 +398,14 @@ describe("Interview API E2E", () => {
 
       const sessionId = createResponse.body.id as string;
 
-      await request(app)
-        .post("/api/auth/signup")
-        .send(
-          createSignupPayload({
-            email: "get-session-other@example.com",
-            name: "Get Session Other",
-          }),
-        );
-      const otherLogin = await loginUser(app, {
+      const other = await seedAuthenticatedUser({
         email: "get-session-other@example.com",
+        name: "Get Session Other",
       });
-      const otherToken = otherLogin.body.accessToken as string;
 
       const response = await request(app)
         .get(`/api/interview/sessions/${sessionId}`)
-        .set(authHeader(otherToken));
+        .set(authHeader(other.accessToken));
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual({ message: "Not Found" });
@@ -444,7 +425,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 200 with session messages", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -493,7 +474,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 404 for a session that does not belong to the user", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -508,27 +489,21 @@ describe("Interview API E2E", () => {
 
       const sessionId = createResponse.body.id as string;
 
-      await request(app)
-        .post("/api/auth/signup")
-        .send(
-          createSignupPayload({
-            email: "other@example.com",
-            name: "Other User",
-          }),
-        );
-      const otherLogin = await loginUser(app, { email: "other@example.com" });
-      const otherToken = otherLogin.body.accessToken as string;
+      const other = await seedAuthenticatedUser({
+        email: "other@example.com",
+        name: "Other User",
+      });
 
       const response = await request(app)
         .get(`/api/interview/sessions/${sessionId}/messages`)
-        .set(authHeader(otherToken));
+        .set(authHeader(other.accessToken));
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual({ message: "Not Found" });
     });
 
     it("returns 404 when session does not exist", async () => {
-      const { token } = await authenticate(app);
+      const { token } = await authenticate();
 
       const response = await request(app)
         .get(`/api/interview/sessions/${randomUUID()}/messages`)
@@ -552,7 +527,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 409 when interview session is finished", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -585,7 +560,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns SSE headers and streams mocked graph tokens", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -628,7 +603,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 422 when interviewLocale is omitted", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -655,7 +630,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 404 when session does not exist or belongs to another user", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -678,22 +653,14 @@ describe("Interview API E2E", () => {
       expect(missingSessionResponse.status).toBe(404);
       expect(missingSessionResponse.body).toEqual({ message: "Not Found" });
 
-      await request(app)
-        .post("/api/auth/signup")
-        .send(
-          createSignupPayload({
-            email: "stream-other@example.com",
-            name: "Stream Other User",
-          }),
-        );
-      const otherLogin = await loginUser(app, {
+      const other = await seedAuthenticatedUser({
         email: "stream-other@example.com",
+        name: "Stream Other User",
       });
-      const otherToken = otherLogin.body.accessToken as string;
 
       const otherUserResponse = await request(app)
         .post(`/api/interview/sessions/${sessionId}/stream`)
-        .set(authHeader(otherToken))
+        .set(authHeader(other.accessToken))
         .send(buildStreamMessagePayload());
 
       expect(otherUserResponse.status).toBe(404);
@@ -702,7 +669,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 422 when stream payload is invalid", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -729,7 +696,7 @@ describe("Interview API E2E", () => {
     });
 
     it("marks session finished with pending review generation without invoking generator", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -775,7 +742,7 @@ describe("Interview API E2E", () => {
     });
 
     it("marks review generation ready after process runs", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -850,7 +817,7 @@ describe("Interview API E2E", () => {
     });
 
     it("retries from failed and returns pending status", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -894,7 +861,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 409 when review generation is ready", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -929,7 +896,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 409 when review generation is pending or idle", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -1043,7 +1010,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 429 when exceeding RATE_LIMIT_AI_MAX", async () => {
-      const { token, userId } = await authenticate(rateLimitedApp);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
       const sessionId = await createSessionAndGetId(
         rateLimitedApp,
@@ -1064,7 +1031,7 @@ describe("Interview API E2E", () => {
 
     it("isolates rate limits per authenticated user", async () => {
       const { token: tokenA, userId: userIdA } =
-        await authenticate(rateLimitedApp);
+        await authenticate();
       const resumeA = await seedReadyResume(userIdA);
       const sessionIdA = await createSessionAndGetId(
         rateLimitedApp,
@@ -1076,32 +1043,31 @@ describe("Interview API E2E", () => {
       await streamTurn(rateLimitedApp, tokenA, sessionIdA).expect(200);
       await streamTurn(rateLimitedApp, tokenA, sessionIdA).expect(429);
 
-      const { response: signUpB } = await signUpUser(rateLimitedApp, {
+      const other = await seedAuthenticatedUser({
         email: "rate-limit-user-b@example.com",
         name: "Rate Limit User B",
       });
-      const userIdB = signUpB.body.user.id as number;
-      const loginB = await loginUser(rateLimitedApp, {
-        email: "rate-limit-user-b@example.com",
-      });
-      const tokenB = loginB.body.accessToken as string;
-      const resumeB = await seedReadyResume(userIdB);
+      const resumeB = await seedReadyResume(other.userId);
       const sessionIdB = await createSessionAndGetId(
         rateLimitedApp,
-        tokenB,
+        other.accessToken,
         resumeB.id,
       );
 
-      await streamTurn(rateLimitedApp, tokenB, sessionIdB).expect(200);
-      await streamTurn(rateLimitedApp, tokenB, sessionIdB).expect(200);
+      await streamTurn(rateLimitedApp, other.accessToken, sessionIdB).expect(200);
+      await streamTurn(rateLimitedApp, other.accessToken, sessionIdB).expect(200);
 
-      const response = await streamTurn(rateLimitedApp, tokenB, sessionIdB);
+      const response = await streamTurn(
+        rateLimitedApp,
+        other.accessToken,
+        sessionIdB,
+      );
 
       expect(response.status).toBe(429);
     });
 
     it("does not rate limit GET /sessions after AI route returns 429", async () => {
-      const { token, userId } = await authenticate(rateLimitedApp);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
       const sessionId = await createSessionAndGetId(
         rateLimitedApp,
@@ -1124,7 +1090,7 @@ describe("Interview API E2E", () => {
 
   describe("POST /api/interview/sessions/:sessionId/feedback", () => {
     it("returns 201 when submitting feedback for own session", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -1154,7 +1120,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 404 when submitting feedback for another user's session", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)
@@ -1169,22 +1135,14 @@ describe("Interview API E2E", () => {
 
       const sessionId = createResponse.body.id as string;
 
-      await request(app)
-        .post("/api/auth/signup")
-        .send(
-          createSignupPayload({
-            email: "feedback-other@example.com",
-            name: "Feedback Other User",
-          }),
-        );
-      const otherLogin = await loginUser(app, {
+      const other = await seedAuthenticatedUser({
         email: "feedback-other@example.com",
+        name: "Feedback Other User",
       });
-      const otherToken = otherLogin.body.accessToken as string;
 
       const response = await request(app)
         .post(`/api/interview/sessions/${sessionId}/feedback`)
-        .set(authHeader(otherToken))
+        .set(authHeader(other.accessToken))
         .send({ rating: "down" });
 
       expect(response.status).toBe(404);
@@ -1192,7 +1150,7 @@ describe("Interview API E2E", () => {
     });
 
     it("returns 422 for invalid feedback body", async () => {
-      const { token, userId } = await authenticate(app);
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const createResponse = await request(app)

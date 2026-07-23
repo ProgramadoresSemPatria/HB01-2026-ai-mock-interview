@@ -1,13 +1,13 @@
 model User {
   id              Int              @id @default(autoincrement())
+  externalId      String?          @unique @map("external_id")
   name            String
   email           String           @unique
-  password        String
+  password        String?
   interviewLocale InterviewLocale? @map("interview_locale")
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
-  refreshTokens     RefreshToken[]
   resumes           Resume[]
   interviewSessions InterviewSession[]
   reviewItems        ReviewItem[]
@@ -29,16 +29,4 @@ model UserTokenUsage {
 
   @@id([userId, periodKey])
   @@map("user_token_usage")
-}
-
-model RefreshToken {
-  id        String   @id
-  token     String   @unique
-  userId    Int
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("refresh_tokens")
-  @@index([userId])
 }

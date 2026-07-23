@@ -4,9 +4,6 @@ import type {
   TokenPayload,
 } from "@/modules/auth/protocols/token-service";
 import jwt, { type SignOptions } from "jsonwebtoken";
-import { createRequire } from "node:module";
-
-const require = createRequire(import.meta.url);
 
 export type JwtTokenServiceConfig = {
   secret: string;
@@ -47,32 +44,9 @@ export class JwtTokenService implements ITokenService {
   }
 }
 
-type EnvServerModule = {
-  env: {
-    JWT_SECRET: string;
-    JWT_EXPIRE_IN: string;
-  };
-};
-
-function readEnvConfig(): JwtTokenServiceConfig {
-  const { env } = require("@/config/env") as EnvServerModule;
-
-  return {
-    secret: env.JWT_SECRET,
-    defaultExpiresIn: env.JWT_EXPIRE_IN,
-  };
-}
-
+/** Requires explicit config — no production JWT secret env (Borderless tokens are decoded only). */
 export function createJwtTokenService(
-  overrides?: Partial<JwtTokenServiceConfig>,
+  config: JwtTokenServiceConfig,
 ): ITokenService {
-  const fromEnv =
-    overrides?.secret !== undefined && overrides?.defaultExpiresIn !== undefined
-      ? null
-      : readEnvConfig();
-
-  return new JwtTokenService({
-    secret: overrides?.secret ?? fromEnv!.secret,
-    defaultExpiresIn: overrides?.defaultExpiresIn ?? fromEnv!.defaultExpiresIn,
-  });
+  return new JwtTokenService(config);
 }

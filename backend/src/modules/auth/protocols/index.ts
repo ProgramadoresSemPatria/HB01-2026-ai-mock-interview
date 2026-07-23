@@ -1,3 +1,7 @@
+export type {
+  BorderlessTokenClaims,
+  IBorderlessTokenVerifier,
+} from "./borderless-token-verifier";
 export type { IMailer } from "./mailer";
 export type { IPasswordHasher } from "./password-hasher";
 export type {

@@ -9,17 +9,20 @@ import prisma from "@/infrastructure/database";
 import { AnswerEvaluation, ReviewPriority } from "../../../prisma/generated/client";
 import {
   authHeader,
-  createSignupPayload,
-  loginUser,
-  signUpUser,
+  seedAuthenticatedUser,
 } from "@/test/helpers/auth-helpers";
 import { seedReadyResume } from "@/test/helpers/interview-seed-helpers";
 import { truncateTables } from "@/test/containers/truncate-tables";
 
-async function authenticate(app: Express): Promise<string> {
-  await signUpUser(app);
-  const loginResponse = await loginUser(app);
-  return loginResponse.body.accessToken as string;
+async function authenticate(): Promise<{
+  token: string;
+  userId: number;
+}> {
+  const auth = await seedAuthenticatedUser();
+  return {
+    token: auth.accessToken,
+    userId: auth.userId,
+  };
 }
 
 describe("Weak Answers API E2E", () => {
@@ -48,7 +51,7 @@ describe("Weak Answers API E2E", () => {
     });
 
     it("returns 200 with empty weakAnswers when user has none", async () => {
-      const token = await authenticate(app);
+      const { token } = await authenticate();
 
       const response = await request(app)
         .get("/api/weak-answers/")
@@ -59,9 +62,7 @@ describe("Weak Answers API E2E", () => {
     });
 
     it("does not return weak answers belonging to another user", async () => {
-      await authenticate(app);
-      const loginResponse = await loginUser(app);
-      const userId = loginResponse.body.user.id as number;
+      const { userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const session = await prisma.interviewSession.create({
@@ -86,29 +87,21 @@ describe("Weak Answers API E2E", () => {
         },
       });
 
-      await request(app)
-        .post("/api/auth/signup")
-        .send(
-          createSignupPayload({
-            email: "other@example.com",
-            name: "Other User",
-          }),
-        );
-      const otherLogin = await loginUser(app, { email: "other@example.com" });
-      const otherToken = otherLogin.body.accessToken as string;
+      const other = await seedAuthenticatedUser({
+        email: "other@example.com",
+        name: "Other User",
+      });
 
       const response = await request(app)
         .get("/api/weak-answers/")
-        .set(authHeader(otherToken));
+        .set(authHeader(other.accessToken));
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({ weakAnswers: [] });
     });
 
     it("returns 200 with weak answers for the authenticated user", async () => {
-      const token = await authenticate(app);
-      const loginResponse = await loginUser(app);
-      const userId = loginResponse.body.user.id as number;
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const session = await prisma.interviewSession.create({
@@ -179,9 +172,7 @@ describe("Weak Answers API E2E", () => {
     });
 
     it("returns 204 and removes the item for the owner", async () => {
-      const token = await authenticate(app);
-      const loginResponse = await loginUser(app);
-      const userId = loginResponse.body.user.id as number;
+      const { token, userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const session = await prisma.interviewSession.create({
@@ -227,7 +218,7 @@ describe("Weak Answers API E2E", () => {
     });
 
     it("returns 404 when weak answer does not exist", async () => {
-      const token = await authenticate(app);
+      const { token } = await authenticate();
 
       const response = await request(app)
         .delete(`/api/weak-answers/${randomUUID()}`)
@@ -238,9 +229,7 @@ describe("Weak Answers API E2E", () => {
     });
 
     it("returns 404 when weak answer belongs to another user", async () => {
-      await authenticate(app);
-      const loginResponse = await loginUser(app);
-      const userId = loginResponse.body.user.id as number;
+      const { userId } = await authenticate();
       const resume = await seedReadyResume(userId);
 
       const session = await prisma.interviewSession.create({
@@ -265,20 +254,14 @@ describe("Weak Answers API E2E", () => {
         },
       });
 
-      await request(app)
-        .post("/api/auth/signup")
-        .send(
-          createSignupPayload({
-            email: "other@example.com",
-            name: "Other User",
-          }),
-        );
-      const otherLogin = await loginUser(app, { email: "other@example.com" });
-      const otherToken = otherLogin.body.accessToken as string;
+      const other = await seedAuthenticatedUser({
+        email: "other@example.com",
+        name: "Other User",
+      });
 
       const response = await request(app)
         .delete(`/api/weak-answers/${item.id}`)
-        .set(authHeader(otherToken));
+        .set(authHeader(other.accessToken));
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual({ message: "Weak answer not found" });

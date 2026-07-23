@@ -33,8 +33,7 @@ import prisma from "@/infrastructure/database";
 import { getCurrentPeriodKey } from "@/modules/token-usage/utils/period-key";
 import {
   authHeader,
-  loginUser,
-  signUpUser,
+  seedAuthenticatedUser,
 } from "@/test/helpers/auth-helpers";
 import { seedReadyResume } from "@/test/helpers/interview-seed-helpers";
 import { truncateTables } from "@/test/containers/truncate-tables";
@@ -67,11 +66,10 @@ describe("Token usage limits E2E", () => {
   });
 
   async function authenticate(): Promise<{ token: string; userId: number }> {
-    const { response: signUpResponse } = await signUpUser(app);
-    const loginResponse = await loginUser(app);
+    const auth = await seedAuthenticatedUser();
     return {
-      token: loginResponse.body.accessToken as string,
-      userId: signUpResponse.body.user.id as number,
+      token: auth.accessToken,
+      userId: auth.userId,
     };
   }
 

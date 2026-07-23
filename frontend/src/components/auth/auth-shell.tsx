@@ -6,12 +6,13 @@ import { DashboardPreview } from "@/components/product-previews/dashboard-previe
 
 const shellCopy = {
   signin: {
-    eyebrow: "Your progress, preserved",
-    title: "Resume with every insight intact.",
+    eyebrow: "Borderless account required",
+    title: "Sign in with Borderless to continue.",
     description:
-      "Return to previous sessions, revisit focused feedback, and keep building on the work you have already done.",
+      "Hone uses your Borderless credentials. The same email and password unlock your mock interviews, feedback, and progress.",
     points: [
-      "Continue recent mock interviews without losing context.",
+      "One Borderless account for Hone and the broader platform.",
+      "Pick up recent practice sessions without losing context.",
       "Review strengths and growth areas before your next round.",
     ],
   },
