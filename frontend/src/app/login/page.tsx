@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import SignInForm from "@/components/auth/sign-in-form";
-import SignUpForm from "@/components/auth/sign-up-form";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { useAuth } from "@/features/auth/session-provider";
 
 export default function LoginPage() {
-  const [showSignIn, setShowSignIn] = useState(false);
   const { isAuthenticated, isReady } = useAuth();
   const router = useRouter();
 
@@ -21,12 +19,8 @@ export default function LoginPage() {
 
   return (
     <div className="app-canvas">
-      <AuthShell mode={showSignIn ? "signin" : "signup"}>
-        {showSignIn ? (
-          <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-        ) : (
-          <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
-        )}
+      <AuthShell mode="signin">
+        <SignInForm />
       </AuthShell>
     </div>
   );

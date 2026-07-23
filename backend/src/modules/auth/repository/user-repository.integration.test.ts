@@ -1,6 +1,4 @@
-import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
-import prisma from "@/infrastructure/database";
-import { env } from "@/config/env";
+import { afterAll, afterEach, describe, expect, it } from "vitest";
 import { disconnectDatabase, resetDatabase } from "@/test/integration/helpers";
 import { UserRepository } from "./user-repository";
 
@@ -14,7 +12,6 @@ describe("UserRepository (integration)", () => {
   });
 
   afterEach(async () => {
-    vi.useRealTimers();
     await resetDatabase();
   });
 
@@ -29,6 +26,7 @@ describe("UserRepository (integration)", () => {
       name: params.name,
       email: params.email,
       password: params.password,
+      externalId: null,
     });
     expect(created.id).toBeGreaterThan(0);
     expect(created.createdAt).toBeInstanceOf(Date);
@@ -109,110 +107,43 @@ describe("UserRepository (integration)", () => {
     expect(byEmail?.interviewLocale).toBe("pt");
   });
 
-  it("saveRefreshToken persists expiresAt from REFRESH_EXPIRES", async () => {
-    const now = new Date("2026-05-26T12:00:00.000Z");
-    vi.useFakeTimers();
-    vi.setSystemTime(now);
-
-    const user = await repository.create(createUserParams());
-    const params = {
-      id: "refresh-id",
-      token: "refresh-token-value",
-      userId: user.id,
-    };
-
-    const saved = await repository.saveRefreshToken(params);
-    const expectedExpiresAt = new Date(
-      now.getTime() + env.REFRESH_EXPIRES * 1000,
-    );
-
-    expect(saved).toMatchObject({
-      id: params.id,
-      token: params.token,
-      userId: user.id,
+  it("upsertFromBorderless creates a user and preserves interviewLocale on update", async () => {
+    const created = await repository.upsertFromBorderless({
+      externalId: "ext-100",
+      email: "borderless@example.com",
+      name: "Borderless User",
     });
-    expect(saved.expiresAt).toEqual(expectedExpiresAt);
+
+    expect(created.externalId).toBe("ext-100");
+    expect(created.password).toBeNull();
+
+    await repository.updateInterviewLocale(created.id, "pt");
+
+    const updated = await repository.upsertFromBorderless({
+      externalId: "ext-100",
+      email: "borderless@example.com",
+      name: "Updated Name",
+    });
+
+    expect(updated.name).toBe("Updated Name");
+    expect(updated.interviewLocale).toBe("pt");
   });
 
-  it("getRefreshTokenWithUser returns token with user when not expired", async () => {
-    const user = await repository.create(createUserParams());
-    const tokenValue = "valid-refresh-token";
-
-    await repository.saveRefreshToken({
-      id: "refresh-valid",
-      token: tokenValue,
-      userId: user.id,
+  it("upsertFromBorderless links existing email row to externalId", async () => {
+    const existing = await repository.create({
+      name: "Local",
+      email: "link@example.com",
+      password: null,
     });
 
-    const result = await repository.getRefreshTokenWithUser(tokenValue);
-
-    expect(result).toMatchObject({
-      token: tokenValue,
-      userId: user.id,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-      },
-    });
-  });
-
-  it("getRefreshTokenWithUser filters out expired tokens", async () => {
-    const user = await repository.create(createUserParams());
-    const tokenValue = "expired-refresh-token";
-
-    await prisma.refreshToken.create({
-      data: {
-        id: "refresh-expired",
-        token: tokenValue,
-        userId: user.id,
-        expiresAt: new Date(Date.now() - 60_000),
-      },
+    const linked = await repository.upsertFromBorderless({
+      externalId: "ext-link",
+      email: "link@example.com",
+      name: "Linked",
     });
 
-    const result = await repository.getRefreshTokenWithUser(tokenValue);
-
-    expect(result).toBeNull();
-  });
-
-  it("deleteRefreshToken removes token by value", async () => {
-    const user = await repository.create(createUserParams());
-    const tokenValue = "token-to-delete";
-
-    await repository.saveRefreshToken({
-      id: "refresh-delete",
-      token: tokenValue,
-      userId: user.id,
-    });
-
-    await repository.deleteRefreshToken(tokenValue);
-
-    const result = await repository.getRefreshTokenWithUser(tokenValue);
-    expect(result).toBeNull();
-  });
-
-  it("revokeAllUserRefreshTokens deletes all tokens for a user", async () => {
-    const user = await repository.create(createUserParams());
-
-    await repository.saveRefreshToken({
-      id: "refresh-a",
-      token: "token-a",
-      userId: user.id,
-    });
-    await repository.saveRefreshToken({
-      id: "refresh-b",
-      token: "token-b",
-      userId: user.id,
-    });
-
-    await repository.revokeAllUserRefreshTokens(user.id);
-
-    expect(await repository.getRefreshTokenWithUser("token-a")).toBeNull();
-    expect(await repository.getRefreshTokenWithUser("token-b")).toBeNull();
-
-    const remaining = await prisma.refreshToken.count({
-      where: { userId: user.id },
-    });
-    expect(remaining).toBe(0);
+    expect(linked.id).toBe(existing.id);
+    expect(linked.externalId).toBe("ext-link");
+    expect(linked.name).toBe("Linked");
   });
 });

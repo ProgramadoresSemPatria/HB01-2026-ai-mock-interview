@@ -1,53 +1,67 @@
-import request from "supertest";
-import type { Express } from "express";
-import type { Response } from "supertest";
+import jwt, { type SignOptions } from "jsonwebtoken";
+import prisma from "@/infrastructure/database";
 
-export function createSignupPayload(
-  overrides?: Partial<{
-    name: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-  }>,
-) {
+/** Test-only signing key — parser ignores signature and only decodes claims. */
+const AUTH_TEST_SIGNING_KEY = "test-only-signing-key-not-for-production";
+
+export type SeededAuthUser = {
+  userId: number;
+  externalId: string;
+  email: string;
+  name: string;
+  accessToken: string;
+};
+
+export async function seedAuthenticatedUser(overrides?: {
+  externalId?: string;
+  email?: string;
+  name?: string;
+}): Promise<SeededAuthUser> {
+  const externalId = overrides?.externalId ?? `ext-${crypto.randomUUID()}`;
+  const email =
+    overrides?.email ?? `user-${crypto.randomUUID()}@example.com`;
+  const name = overrides?.name ?? "Jane Doe";
+
+  const user = await prisma.user.create({
+    data: {
+      externalId,
+      email,
+      name,
+      password: null,
+    },
+  });
+
+  const accessToken = signBorderlessAccessToken({
+    externalId,
+    email,
+    name,
+  });
+
   return {
-    name: "Jane Doe",
-    email: "jane@example.com",
-    password: "secret123",
-    confirmPassword: "secret123",
-    ...overrides,
+    userId: user.id,
+    externalId,
+    email,
+    name,
+    accessToken,
   };
 }
 
-export async function signUpUser(
-  app: Express,
-  overrides?: Partial<{
-    name: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-  }>,
-) {
-  const payload = createSignupPayload(overrides);
-  const response = await request(app).post("/api/auth/signup").send(payload);
-
-  return { payload, response };
-}
-
-export async function loginUser(
-  app: Express,
-  overrides?: Partial<{
-    email: string;
-    password: string;
-  }>,
-): Promise<Response> {
-  return request(app)
-    .post("/api/auth/login")
-    .send({
-      email: "jane@example.com",
-      password: "secret123",
-      ...overrides,
-    });
+/** Sign a Borderless-shaped JWT without persisting a user (middleware will upsert). */
+export function signBorderlessAccessToken(claims: {
+  externalId: string;
+  email: string;
+  name?: string;
+  expiresIn?: SignOptions["expiresIn"];
+}): string {
+  return jwt.sign(
+    {
+      sub: claims.externalId,
+      email: claims.email,
+      name: claims.name ?? "Test User",
+    },
+    AUTH_TEST_SIGNING_KEY,
+    { expiresIn: claims.expiresIn ?? "1h" },
+  );
 }
 
 export function authHeader(accessToken: string): { Authorization: string } {

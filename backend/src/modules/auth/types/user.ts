@@ -3,9 +3,10 @@ import type { InterviewLocale } from "@/shared";
 /** Domain user entity (mirrors Prisma `User` model). */
 export type User = {
   id: number;
+  externalId: string | null;
   name: string;
   email: string;
-  password: string;
+  password: string | null;
   interviewLocale: InterviewLocale | null;
   createdAt: Date;
   updatedAt: Date;
@@ -14,38 +15,23 @@ export type User = {
 /** User fields safe to return from service/controller layers. */
 export type UserWithoutPassword = Omit<User, "password">;
 
-/** Persist signup payload — `confirmPassword` is validated at the HTTP/Zod boundary only. */
 export type CreateUserParams = {
   name: string;
   email: string;
-  password: string;
+  password?: string | null;
+  externalId?: string | null;
 };
 
-export type LoginParams = {
+export type UpsertFromBorderlessParams = {
+  externalId: string;
   email: string;
-  password: string;
+  name: string;
 };
 
 export type UpdateUserParams = {
-  password: string;
-};
-
-export type RefreshToken = {
-  id: string;
-  token: string;
-  userId: number;
-  expiresAt: Date;
-  createdAt: Date;
-};
-
-export type SaveRefreshTokenParams = {
-  id: string;
-  token: string;
-  userId: number;
-};
-
-export type RefreshTokenWithUser = RefreshToken & {
-  user: User;
+  password?: string | null;
+  name?: string;
+  email?: string;
 };
 
 export function toUserWithoutPassword(user: User): UserWithoutPassword {

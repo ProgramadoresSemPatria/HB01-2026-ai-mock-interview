@@ -1,4 +1,6 @@
 export type {
+  BorderlessTokenClaims,
+  IBorderlessTokenVerifier,
   IMailer,
   IPasswordHasher,
   ITokenService,
@@ -11,21 +13,13 @@ export {
 } from "./middlewares/check-auth-middleware";
 export type { PublicRoute } from "./middlewares/check-auth-middleware";
 export { UserRepository } from "./repository/user-repository";
-export {
-  AuthService,
-  type LoginResult,
-  type RefreshResult,
-} from "./service/auth-service";
-export {
-  loginSchema,
-  passwordResetSchema,
-  refreshSchema,
-  requestPasswordResetSchema,
-  signupSchema,
-  type LoginInput,
-  type PasswordResetInput,
-  type RefreshInput,
-  type RequestPasswordResetInput,
-  type SignupInput,
-  type SignupOutput,
-} from "./validations";
+export { UserSyncService } from "./service/user-sync-service";
+export { BorderlessAccessTokenParser } from "./adapters/borderless-access-token-parser";
+export type {
+  CreateUserParams,
+  UpdateUserParams,
+  UpsertFromBorderlessParams,
+  User,
+  UserWithoutPassword,
+} from "./types/user";
+export { toUserWithoutPassword } from "./types/user";

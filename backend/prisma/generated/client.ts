@@ -91,8 +91,3 @@ export type User = Prisma.UserModel
  * 
  */
 export type UserTokenUsage = Prisma.UserTokenUsageModel
-/**
- * Model RefreshToken
- * 
- */
-export type RefreshToken = Prisma.RefreshTokenModel

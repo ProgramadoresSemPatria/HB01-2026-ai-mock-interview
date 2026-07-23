@@ -28,17 +28,15 @@ import { env } from "@/config/env";
 import prisma from "@/infrastructure/database";
 import {
   authHeader,
-  loginUser,
-  signUpUser,
+  seedAuthenticatedUser,
 } from "@/test/helpers/auth-helpers";
 import { truncateTables } from "@/test/containers/truncate-tables";
 
 const smallAudioBuffer = Buffer.from("small audio fixture");
 
-async function authenticate(app: Express): Promise<string> {
-  await signUpUser(app);
-  const loginResponse = await loginUser(app);
-  return loginResponse.body.accessToken as string;
+async function authenticate(): Promise<string> {
+  const auth = await seedAuthenticatedUser();
+  return auth.accessToken;
 }
 
 describe("Transcribe API E2E", () => {
@@ -74,7 +72,7 @@ describe("Transcribe API E2E", () => {
     });
 
     it("returns a snake_case transcription response for audio", async () => {
-      const token = await authenticate(app);
+      const token = await authenticate();
 
       const response = await request(app)
         .post("/api/transcribe/")
@@ -97,7 +95,7 @@ describe("Transcribe API E2E", () => {
     });
 
     it("returns 400 when no audio file is attached", async () => {
-      const token = await authenticate(app);
+      const token = await authenticate();
 
       const response = await request(app)
         .post("/api/transcribe/")
@@ -111,7 +109,7 @@ describe("Transcribe API E2E", () => {
     });
 
     it("returns 400 when audio exceeds the maximum allowed size", async () => {
-      const token = await authenticate(app);
+      const token = await authenticate();
       const oversizedAudio = Buffer.alloc(env.TRANSCRIBE_MAX_BYTES + 1);
 
       const response = await request(app)

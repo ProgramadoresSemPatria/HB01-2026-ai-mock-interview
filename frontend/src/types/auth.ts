@@ -1,23 +1,9 @@
 export type UserWithoutPassword = {
-  id: number;
+  /** Borderless user id (string). */
+  id: string;
   name: string;
   email: string;
   interviewLocale: "en" | "pt" | null;
-};
-
-export type LoginResponse = {
-  user: UserWithoutPassword;
-  accessToken: string;
-  refreshToken: string;
-};
-
-export type SignupResponse = {
-  user: UserWithoutPassword;
-};
-
-export type RefreshResponse = {
-  accessToken: string;
-  refreshToken: string;
 };
 
 export type MessageResponse = {
