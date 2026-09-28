@@ -31,29 +31,22 @@ export class SessionQuotaService {
     private readonly config: SessionQuotaServiceConfig,
   ) {}
 
+  // Read-only hint, so no interactive transaction: it only added BEGIN/COMMIT
+  // round trips and could fail to start under pool pressure (P2028 → 500).
+  // Enforcement stays transactional and locked in runWithSlot.
   async getSnapshot(userId: number): Promise<SessionQuotaSnapshot> {
-    return prisma.$transaction(async (tx) => {
-      const now = Date.now();
-      const windowStart = new Date(now - this.config.windowMs);
+    const now = Date.now();
+    const windowStart = new Date(now - this.config.windowMs);
 
-      const practiceEvents = await this.repository.listInWindow(
-        tx,
-        userId,
-        "practice",
-        windowStart,
-      );
-      const studyEvents = await this.repository.listInWindow(
-        tx,
-        userId,
-        "study",
-        windowStart,
-      );
+    const [practiceEvents, studyEvents] = await Promise.all([
+      this.repository.listInWindow(prisma, userId, "practice", windowStart),
+      this.repository.listInWindow(prisma, userId, "study", windowStart),
+    ]);
 
-      return {
-        practice: this.toBucket(practiceEvents, this.config.practiceMax, now),
-        study: this.toBucket(studyEvents, this.config.studyMax, now),
-      };
-    });
+    return {
+      practice: this.toBucket(practiceEvents, this.config.practiceMax, now),
+      study: this.toBucket(studyEvents, this.config.studyMax, now),
+    };
   }
 
   async runWithSlot<T>(

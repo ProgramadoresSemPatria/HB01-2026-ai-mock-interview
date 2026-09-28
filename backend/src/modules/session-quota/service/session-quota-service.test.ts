@@ -15,6 +15,7 @@ vi.mock("@/infrastructure/database", () => {
   return { default: prisma, prisma };
 });
 
+import prisma from "@/infrastructure/database";
 import { SessionQuotaService } from "@/modules/session-quota/service/session-quota-service";
 
 const USER_ID = 1;
@@ -94,6 +95,14 @@ describe("SessionQuotaService", () => {
     expect(repository.lockBucket).not.toHaveBeenCalled();
   });
 
+  it("reads the snapshot without opening a transaction", async () => {
+    mockWindows({ practice: [], study: [] });
+
+    await service.getSnapshot(USER_ID);
+
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
   it("sets retryAfterSeconds to null when remaining is greater than 0", async () => {
     mockWindows({
       practice: [quotaEvent(new Date()), quotaEvent(new Date())],
@@ -133,13 +142,13 @@ describe("SessionQuotaService", () => {
 
     const windowStart = new Date(now - WINDOW_MS);
     expect(repository.listInWindow).toHaveBeenCalledWith(
-      fakeTx,
+      prisma,
       USER_ID,
       "practice",
       windowStart,
     );
     expect(repository.listInWindow).toHaveBeenCalledWith(
-      fakeTx,
+      prisma,
       USER_ID,
       "study",
       windowStart,
