@@ -181,6 +181,7 @@ describe("ReviewGenerationService", () => {
           transcript: "human: Hello\nai: Hi there",
           structuredSummary,
           interviewLocale: "en",
+          level: "entry",
           jobDescription: baseSession.jobDescription,
         }),
         expect.objectContaining({ callbacks: expect.any(Array) }),

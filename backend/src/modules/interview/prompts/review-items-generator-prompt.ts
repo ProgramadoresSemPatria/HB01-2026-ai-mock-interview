@@ -1,4 +1,7 @@
-import type { ReviewPriority } from "@/modules/interview/validations/interview-schemas";
+import type {
+  InterviewLevel,
+  ReviewPriority,
+} from "@/modules/interview/validations/interview-schemas";
 import { buildJobDescriptionBlock } from "@/modules/interview/prompts/interviewer-system-prompt";
 import { resumeToMarkdown } from "@/modules/resumes/format/resume-to-markdown";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
@@ -12,6 +15,17 @@ export const TRANSCRIPT_SECTION_HEADER = "## Interview transcript";
 export const EXISTING_ITEMS_SECTION_HEADER = "## Existing review items";
 export const CANDIDATE_RESUME_SECTION_HEADER = "## Candidate résumé";
 export const INSTRUCTIONS_SECTION_HEADER = "## Instructions";
+export const LEVEL_SECTION_HEADER = "## Interview level";
+
+// Priority is relative to the bar of the level the candidate chose, so the
+// same gap can be high for a senior and only a stretch goal for an entry-level.
+export const REVIEW_LEVEL_BAR: Record<InterviewLevel, string> = {
+  entry:
+    "Entry-level bar: core fundamentals, correct concepts and clear reasoning through simple problems. Advanced design topics (distributed systems, concurrency at scale, idempotency strategies, observability pipelines, deep trade-off analysis) are stretch goals at this level, not expectations.",
+  mid: "Mid-level bar: concrete, real experience; decisions backed by reasons and trade-offs; solid grasp of the common production concerns of the stack they work with.",
+  senior:
+    "Senior-level bar: proactively surfacing trade-offs and risks, reasoning about scale, failure modes and organizational impact without being prompted.",
+};
 
 export type ExistingReviewItemForPrompt = {
   topic: string;
@@ -25,8 +39,14 @@ export type BuildReviewItemsGeneratorPromptParams = {
   existingItems: ExistingReviewItemForPrompt[];
   structuredSummary: StructuredSummary;
   interviewLocale?: InterviewLocale;
+  level: InterviewLevel;
   jobDescription?: string | null;
 };
+
+function buildLevelBlock(level: InterviewLevel): string {
+  return `${LEVEL_SECTION_HEADER}
+${level} — ${REVIEW_LEVEL_BAR[level]}`;
+}
 
 function buildExistingItemsBlock(
   existingItems: ExistingReviewItemForPrompt[],
@@ -58,7 +78,12 @@ Identify gaps and weaknesses from the interview. Emit one item per distinct (top
 - angle: the specific interview probe/facet that exposed the gap (2–8 words), e.g. "write-path invalidation".
   Do not use vague angles like "general" or "basics" for new items.
 - description: coaching narrative — what to practice and why.
-- New (topic, angle) not in existing list: create with an appropriate priority.
+- New (topic, angle) not in existing list: create with a priority calibrated to the interview level bar above:
+  - high: a gap in something this level is expected to master — it would likely fail a real interview at this level.
+  - medium: expected at this level but only partially demonstrated, or shown with noticeable imprecision.
+  - low: above this level's bar (a stretch goal), or a minor polish point.
+  Judge the gap, not the question: an advanced probe the candidate could not answer is not automatically high.
+  Reserve high for real gaps against the bar; do not mark every item high.
 - Existing (topic, angle) match (exact or clearly the same gap): omit it — do not re-emit or change its priority.
   Priority changes happen only in study/review sessions, not here.
 - Same topic with a meaningfully different angle is a new item.
@@ -84,6 +109,7 @@ ${resumeToMarkdown(params.structuredSummary)}`,
   }
 
   sections.push(
+    buildLevelBlock(params.level),
     buildInstructionsBlock(hasJobDescription),
     buildInterviewLocalePromptBlock(interviewLocale),
   );

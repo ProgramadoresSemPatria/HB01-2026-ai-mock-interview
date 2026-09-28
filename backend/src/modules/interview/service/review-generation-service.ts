@@ -142,6 +142,7 @@ export class ReviewGenerationService {
         transcript,
         structuredSummary,
         interviewLocale: session.interviewLocale,
+        level: session.level,
         jobDescription: session.jobDescription,
       },
       { callbacks: [usageCapture.callback] },

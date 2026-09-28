@@ -12,9 +12,14 @@ import { ThemeProvider } from "./theme-provider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
+    // The app has no dark UI (canvases are always white), so the theme is
+    // forced. Otherwise a "theme" key left in localStorage by another app on
+    // the shared labs.borderlesscoding.com origin applies `.dark` and turns
+    // the text-text-* tokens near-white on white.
     <ThemeProvider
       attribute="class"
-      defaultTheme="light"
+      forcedTheme="light"
+      storageKey="hone-theme"
       enableSystem={false}
       disableTransitionOnChange
     >

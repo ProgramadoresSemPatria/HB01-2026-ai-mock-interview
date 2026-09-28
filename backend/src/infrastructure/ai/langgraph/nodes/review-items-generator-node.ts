@@ -9,6 +9,7 @@ import {
 } from "@/modules/interview/prompts/review-items-generator-prompt";
 import {
   reviewItemsGeneratorOutputSchema,
+  type InterviewLevel,
   type ReviewItemsGeneratorOutput,
 } from "@/modules/interview/validations/interview-schemas";
 import type { StructuredSummary } from "@/modules/resumes/validations/resume-schemas";
@@ -19,6 +20,7 @@ export type ReviewItemsGeneratorInput = {
   existingItems: ExistingReviewItemForPrompt[];
   structuredSummary: StructuredSummary;
   interviewLocale: InterviewLocale;
+  level: InterviewLevel;
   jobDescription?: string | null;
 };
 
@@ -49,6 +51,7 @@ export function createReviewItemsGeneratorNode(
       existingItems: input.existingItems,
       structuredSummary: input.structuredSummary,
       interviewLocale: input.interviewLocale,
+      level: input.level,
       jobDescription: input.jobDescription,
     });
 
