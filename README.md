@@ -81,9 +81,10 @@ Frontend runs on **http://localhost:3001**, API on **http://localhost:3000**.
 
 | Name | Role |
 | --- | --- |
-| Pablo Cruz | Frontend & Integration |
-| Vini Nathan | Backend & AI Orchestration |
+| Pablo Cruz | Frontend, Backend, Integration, Bug Fixing & QA |
+| Vini Nathan | Frontend, Backend & AI Orchestration |
 | Guilherme | Backend & AI Orchestration |
+
 
 ---
 
