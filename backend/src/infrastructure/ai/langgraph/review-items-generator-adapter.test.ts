@@ -21,6 +21,7 @@ const baseParams: ReviewItemsGeneratorParams = {
   transcript: "Q: Tell me about yourself.\nA: I build APIs.",
   structuredSummary,
   interviewLocale: "en",
+  level: "entry",
 };
 
 describe("ReviewItemsGeneratorAdapter", () => {
@@ -75,6 +76,7 @@ describe("ReviewItemsGeneratorAdapter", () => {
         transcript: baseParams.transcript,
         structuredSummary: baseParams.structuredSummary,
         interviewLocale: "en",
+        level: "entry",
         existingItems: [
           {
             topic: "Communication",
@@ -103,6 +105,7 @@ describe("ReviewItemsGeneratorAdapter", () => {
         transcript: baseParams.transcript,
         structuredSummary: baseParams.structuredSummary,
         interviewLocale: "en",
+        level: "entry",
         existingItems: [],
       },
       undefined,

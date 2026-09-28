@@ -249,6 +249,7 @@ Gera/atualiza itens de revisão (`topic`, `description`, `priority`) a partir do
 - `transcript`: `role: content` por linha (`user`/`assistant` do DB)
 - `existingItems`: JSON ou `(none)`
 - `structuredSummary`: Markdown via `resumeToMarkdown`
+- `level`: nível da sessão (`entry` | `mid` | `senior`) → bloco `## Interview level` com `REVIEW_LEVEL_BAR[level]`. A `priority` é calibrada contra a régua do nível (high = lacuna esperada no nível; low = acima do nível/stretch), para que entry não receba tudo como high.
 
 ### Modelo e saída
 
@@ -271,14 +272,23 @@ Focus on what the candidate demonstrated — and what they did not — relative 
 ## Candidate résumé
 {{RESUME_MARKDOWN}}
 
-## Instructions
-Identify gaps and weaknesses from the interview. Emit one item per distinct topic.
+## Interview level
+{{level}} — {{REVIEW_LEVEL_BAR}}
 
-- New topic (not in existing list): create with an appropriate priority.
-- Existing topic match: reuse the exact topic string, update the description, and raise priority
-  if the interview reinforces the gap (low to medium or high; medium to high; never lower an existing priority).
-- No duplicate topics in a single response.
+## Instructions
+Identify gaps and weaknesses from the interview. Emit one item per distinct (topic, angle) pair.
+
+- New (topic, angle) not in existing list: create with a priority calibrated to the interview level bar above:
+  - high: a gap in something this level is expected to master — it would likely fail a real interview at this level.
+  - medium: expected at this level but only partially demonstrated, or shown with noticeable imprecision.
+  - low: above this level's bar (a stretch goal), or a minor polish point.
+  Judge the gap, not the question: an advanced probe the candidate could not answer is not automatically high.
+  Reserve high for real gaps against the bar; do not mark every item high.
+- Existing (topic, angle) match: omit it — priority changes happen only in study/review sessions.
+- No duplicate (topic, angle) pairs in a single response.
 ```
+
+Texto exato de cada nível: `REVIEW_LEVEL_BAR` em `review-items-generator-prompt.ts`.
 
 ---
 
