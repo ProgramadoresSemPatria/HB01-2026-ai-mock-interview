@@ -67,8 +67,12 @@ export function AppShell({
         </div>
 
         {header}
+        {/* `relative` makes main the containing block for absolutely
+            positioned content (e.g. sr-only captions). Without it they escape
+            the shell's overflow clip and stretch the document, letting the
+            page scroll past the shell into blank space. */}
         <main
-          className={`min-h-0 flex-1 bg-paper-white ${
+          className={`relative min-h-0 flex-1 bg-paper-white ${
             noPadding
               ? "flex flex-col overflow-hidden *:min-h-0 *:flex-1"
               : "overflow-y-auto px-6 py-6 md:px-10 md:py-8"
