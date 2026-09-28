@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildReviewItemsGeneratorPrompt,
   INSTRUCTIONS_SECTION_HEADER,
+  LEVEL_SECTION_HEADER,
+  REVIEW_LEVEL_BAR,
 } from "@/modules/interview/prompts/review-items-generator-prompt";
 import {
   buildInterviewLocalePromptBlock,
@@ -22,6 +24,7 @@ describe("buildReviewItemsGeneratorPrompt interviewLocale", () => {
     transcript: "Human: Tell me about caching.\nAI: How would you invalidate?",
     existingItems: [] as const,
     structuredSummary: sampleResumeSummary,
+    level: "entry" as const,
   };
 
   it.each(["en", "pt"] as const)(
@@ -51,4 +54,24 @@ describe("buildReviewItemsGeneratorPrompt interviewLocale", () => {
 
     expect(prompt.endsWith(buildInterviewLocalePromptBlock("en"))).toBe(true);
   });
+});
+
+describe("buildReviewItemsGeneratorPrompt level calibration", () => {
+  it.each(["entry", "mid", "senior"] as const)(
+    "includes the %s level bar before the instructions",
+    (level) => {
+      const prompt = buildReviewItemsGeneratorPrompt({
+        transcript: "Human: Hi\nAI: Hello",
+        existingItems: [],
+        structuredSummary: sampleResumeSummary,
+        level,
+      });
+
+      expect(prompt).toContain(`${LEVEL_SECTION_HEADER}\n${level} — `);
+      expect(prompt).toContain(REVIEW_LEVEL_BAR[level]);
+      expect(prompt.indexOf(LEVEL_SECTION_HEADER)).toBeLessThan(
+        prompt.indexOf(INSTRUCTIONS_SECTION_HEADER),
+      );
+    },
+  );
 });

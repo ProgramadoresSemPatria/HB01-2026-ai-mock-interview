@@ -27,6 +27,7 @@ const baseInput: ReviewItemsGeneratorInput = {
   existingItems: [],
   structuredSummary,
   interviewLocale: "en",
+  level: "entry",
 };
 
 function humanMessageContentFromInvokeArg(input: unknown): string {
