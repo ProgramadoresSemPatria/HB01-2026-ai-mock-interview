@@ -21,7 +21,7 @@ export function InterviewChatMessages({ messages }: InterviewChatMessagesProps) 
   return (
     <div
       ref={scrollRef}
-      className="interview-chat-demo__messages space-y-5 p-4 md:p-6"
+      className="interview-chat-demo__messages space-y-5 p-4 md:space-y-6 md:p-6 lg:p-8"
     >
       {messages.map((msg) => (
         <InterviewChatMessage

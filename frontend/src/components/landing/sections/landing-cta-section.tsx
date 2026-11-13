@@ -13,7 +13,7 @@ export default function LandingCtaSection() {
   return (
     <section
       ref={sectionRef}
-      className="landing-section relative overflow-hidden bg-paper-white px-6"
+      className="landing-section landing-section--compact relative overflow-hidden bg-paper-white px-6"
     >
       <div
         className="landing-jade-wash pointer-events-none absolute inset-0 opacity-60"
@@ -31,10 +31,10 @@ export default function LandingCtaSection() {
         }
         transition={{ duration: 0.7, ease: "easeOut" }}
       >
-        <h2 className="landing-heading-lg max-w-3xl">
+        <h2 className="landing-heading-lg landing-heading-lg--compact max-w-3xl">
           Try Hone free. First interview in under a minute.
         </h2>
-        <p className="landing-body mt-5 max-w-lg">
+        <p className="landing-body landing-body--compact mt-5 max-w-lg">
           Connect your resume or explore in demo mode. No credit card.
         </p>
         <div className="mt-10 flex items-center justify-center">

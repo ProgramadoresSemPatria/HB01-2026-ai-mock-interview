@@ -27,21 +27,21 @@ export default function LandingFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-[var(--color-border-hairline)] bg-[var(--color-paper-white)] px-6 py-16 md:py-20">
-      <div className="mx-auto max-w-[1200px]">
-        <div className="grid gap-12 md:grid-cols-[2fr_1fr_1fr_1fr]">
-          <div>
+    <footer className="border-t border-[var(--color-border-hairline)] bg-[var(--color-paper-white)] px-6 py-16 md:px-10 md:py-24">
+      <div className="mx-auto max-w-[1280px]">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-12 md:grid-cols-[2fr_1fr_1fr_1fr]">
+          <div className="col-span-2 md:col-span-1">
             <Link
               href="/"
-              className="instrument-serif text-2xl font-normal text-[var(--color-ink-black)]"
+              className="instrument-serif text-[30px] font-normal text-[var(--color-ink-black)]"
               aria-label="Hone home"
             >
               Hone
             </Link>
-            <p className="manrope mt-4 max-w-sm text-sm leading-relaxed text-[var(--color-slate-gray)]">
+            <p className="manrope mt-4 max-w-sm text-base leading-relaxed text-[var(--color-slate-gray)]">
               Sharpen the thinking that interviews actually test.
             </p>
-            <div className="mt-6 flex items-center gap-4">
+            <div className="mt-6 flex items-center gap-5">
               {SOCIALS.map(({ label, href, Icon }) => (
                 <a
                   key={label}
@@ -51,7 +51,7 @@ export default function LandingFooter() {
                   aria-label={label}
                   className="text-[var(--color-ash-gray)] transition-colors hover:text-[var(--color-ink-black)]"
                 >
-                  <Icon size={18} strokeWidth={1.5} />
+                  <Icon size={20} strokeWidth={1.5} />
                 </a>
               ))}
             </div>
@@ -59,13 +59,13 @@ export default function LandingFooter() {
 
           {Object.entries(LINKS).map(([group, links]) => (
             <div key={group}>
-              <p className="landing-tag mb-4">{group}</p>
+              <p className="landing-eyebrow mb-5">{group}</p>
               <ul className="space-y-3">
                 {links.map(({ label, href }) => (
                   <li key={label}>
                     <Link
                       href={href}
-                      className="manrope text-sm text-[var(--color-slate-gray)] transition-colors hover:text-[var(--color-ink-black)]"
+                      className="manrope text-[15px] text-[var(--color-slate-gray)] transition-colors md:text-base hover:text-[var(--color-ink-black)]"
                     >
                       {label}
                     </Link>
@@ -77,10 +77,10 @@ export default function LandingFooter() {
         </div>
 
         <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-[var(--color-border-hairline)] pt-8 md:flex-row">
-          <p className="manrope text-xs text-[var(--color-ash-gray)]">
+          <p className="manrope text-sm text-[var(--color-ash-gray)]">
             © {year} Hone. All rights reserved.
           </p>
-          <p className="manrope text-xs text-[var(--color-smoke-gray)]">
+          <p className="manrope text-sm text-[var(--color-smoke-gray)]">
             Built for engineers who take their craft seriously.
           </p>
         </div>

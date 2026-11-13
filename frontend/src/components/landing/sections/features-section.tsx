@@ -5,6 +5,8 @@ import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+import { LandingVideo } from "@/components/landing/landing-video";
+
 gsap.registerPlugin(ScrollTrigger);
 
 const PILLARS = [
@@ -37,93 +39,29 @@ const PILLARS = [
   },
 ];
 
-function ResumeVisual() {
-  return (
-    <div className="landing-artifact p-6">
-      <p className="landing-tag mb-4">Gap analysis</p>
-      <ul className="space-y-3">
-        {[
-          { label: "System Design depth", pct: 62 },
-          { label: "API design language", pct: 84 },
-          { label: "Trade-off framing", pct: 41 },
-        ].map((row) => (
-          <li key={row.label}>
-            <div className="mb-1 flex justify-between">
-              <span className="manrope text-sm text-ink-black">{row.label}</span>
-              <span className="manrope text-sm text-ash-gray">{row.pct}%</span>
-            </div>
-            <div className="h-[3px] w-full rounded-full bg-mist-gray">
-              <div
-                className="h-full rounded-full bg-jade"
-                style={{ width: `${row.pct}%` }}
-              />
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function SessionVisual() {
-  return (
-    <div className="landing-artifact space-y-3 p-5">
-      <div className="rounded-[16px] bg-mist-gray p-3">
-        <p className="landing-tag mb-1">AI Interviewer</p>
-        <p className="manrope text-sm text-ink-black">
-          How would you shard user feeds without hot partitions?
-        </p>
-      </div>
-      <div className="rounded-[16px] bg-ink-black p-3">
-        <p className="landing-tag mb-1 !text-white/50">Candidate</p>
-        <p className="manrope text-sm text-paper-white">
-          Start with consistent hashing, then isolate celebrity keys…
-        </p>
-      </div>
-      <div className="flex items-center gap-2 rounded-[16px] border border-border-hairline px-3 py-2">
-        <span className="manrope flex-1 text-sm text-smoke-gray">Ask anything…</span>
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-jade text-xs text-paper-white">
-          →
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function ReviewVisual() {
-  return (
-    <div className="landing-artifact p-6">
-      <div className="mb-5 flex items-end justify-between">
-        <div>
-          <p className="landing-tag">Session score</p>
-          <p className="manrope text-[28px] font-medium text-ink-black">73</p>
-        </div>
-        <p className="manrope text-sm text-slate-gray">↑ 12 pts</p>
-      </div>
-      <p className="landing-tag mb-2">Strengths</p>
-      <ul className="mb-4 space-y-1">
-        {["Trade-offs without prompting", "Bottleneck identified early"].map((s) => (
-          <li key={s} className="manrope text-sm text-ink-black">
-            + {s}
-          </li>
-        ))}
-      </ul>
-      <p className="landing-tag mb-2">Growth</p>
-      <ul className="space-y-1">
-        {["CAP in edge cases", "Latency vs throughput"].map((g) => (
-          <li key={g} className="manrope text-sm text-ink-black">
-            → {g}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
+const VISUAL_CLIPS = {
+  resume: {
+    name: "resume-upload",
+    label: "Uploading a resume PDF in Hone and watching it finish processing",
+    width: 1000,
+    height: 750,
+  },
+  session: {
+    name: "interview-setup",
+    label: "Choosing Entry level and 5 turns, then starting a live AI interview",
+    width: 1200,
+    height: 900,
+  },
+  review: {
+    name: "interview-review",
+    label: "Closing feedback and prioritized topics to review after a session",
+    width: 880,
+    height: 900,
+  },
+} as const;
 
 function Visual({ kind }: { kind: (typeof PILLARS)[number]["visual"] }) {
-  if (kind === "resume") return <ResumeVisual />;
-  if (kind === "session") return <SessionVisual />;
-  return <ReviewVisual />;
+  return <LandingVideo {...VISUAL_CLIPS[kind]} />;
 }
 
 export default function FeaturesSection() {
@@ -159,34 +97,34 @@ export default function FeaturesSection() {
     <section
       ref={ref}
       id="features"
-      className="landing-section scroll-mt-24 bg-paper-white px-6"
+      className="landing-section scroll-mt-24 bg-paper-white px-6 md:px-10"
     >
-      <div className="mx-auto max-w-[1200px]">
-        <div className="mx-auto max-w-2xl text-center">
+      <div className="mx-auto max-w-[1280px]">
+        <div className="mx-auto max-w-3xl text-center">
           <h2 className="landing-heading-lg">Sharpen engineering thinking</h2>
-          <p className="landing-body mt-5">
+          <p className="landing-body mx-auto mt-6 max-w-xl text-balance">
             through AI mock interviews built for modern software engineers.
           </p>
         </div>
 
-        <div className="mt-20 space-y-24 md:space-y-32">
+        <div className="mt-16 space-y-20 md:mt-24 md:space-y-32 lg:space-y-40">
           {PILLARS.map((pillar, i) => {
             const reverse = i % 2 === 1;
             return (
               <article
                 key={pillar.title}
                 data-feature-row
-                className="grid items-center gap-10 md:grid-cols-2 md:gap-16"
+                className="grid items-center gap-10 md:grid-cols-2 md:gap-14 lg:gap-24"
               >
                 <div data-feature-part className={reverse ? "md:order-2" : undefined}>
-                  <p className="landing-tag">{pillar.tag}</p>
-                  <h3 className="instrument-serif mt-4 text-[44px] font-normal leading-[1.2] tracking-[-0.66px] text-ink-black text-balance">
+                  <p className="landing-eyebrow">{pillar.tag}</p>
+                  <h3 className="landing-heading mt-4">
                     {pillar.title}
                   </h3>
-                  <p className="manrope mt-5 max-w-md text-[17px] leading-[1.35] text-slate-gray">
+                  <p className="manrope mt-5 max-w-lg text-[17px] leading-[1.6] text-slate-gray md:mt-6 lg:text-lg">
                     {pillar.description}
                   </p>
-                  <Link href={pillar.href} className="landing-link-arrow mt-2 inline-block">
+                  <Link href={pillar.href} className="landing-link-arrow mt-3 inline-block">
                     {pillar.cta}
                   </Link>
                 </div>

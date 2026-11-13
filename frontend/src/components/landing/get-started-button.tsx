@@ -7,16 +7,23 @@ type LandingCtaProps = {
   className?: string;
   label?: string;
   variant?: "solid" | "outline";
+  /** `md` for compact chrome (navbar), `lg` for in-page calls to action. */
+  size?: "md" | "lg";
 };
+
+const SIZE_CLASSES = {
+  md: "h-11 px-5 text-base",
+  lg: "h-12 px-7 text-[17px] md:h-14 md:px-9 md:text-lg",
+} as const;
 
 function LandingCta({
   href = "/login",
   className,
   label = "Get Started",
   variant = "solid",
+  size = "md",
 }: LandingCtaProps) {
-  const base =
-    "manrope inline-flex h-11 items-center justify-center rounded-[9999px] px-5 text-base font-normal transition-opacity hover:opacity-80";
+  const base = `manrope inline-flex items-center justify-center rounded-[9999px] font-normal transition-opacity hover:opacity-80 ${SIZE_CLASSES[size]}`;
 
   if (variant === "outline") {
     return (

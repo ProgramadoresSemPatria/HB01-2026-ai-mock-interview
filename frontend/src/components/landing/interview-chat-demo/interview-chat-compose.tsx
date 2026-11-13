@@ -16,7 +16,7 @@ export function InterviewChatCompose({
   return (
     <form
       onSubmit={onSubmit}
-      className="shrink-0 border-t border-[var(--color-border-hairline)] p-4 md:p-6"
+      className="shrink-0 border-t border-[var(--color-border-hairline)] p-4 md:p-6 lg:px-8"
     >
       <div className="flex items-center gap-3 rounded-[16px] border border-[var(--color-border-hairline)] bg-white px-4 py-3">
         <input
@@ -25,9 +25,9 @@ export function InterviewChatCompose({
           onChange={(e) => onDraftChange(e.target.value)}
           placeholder="Type your response…"
           disabled={disabled}
-          className="manrope min-w-0 flex-1 bg-transparent text-sm text-[var(--color-ink-black)] placeholder:text-[var(--color-smoke-gray)] focus:outline-none disabled:opacity-50"
+          className="manrope min-w-0 flex-1 bg-transparent text-base text-[var(--color-ink-black)] placeholder:text-[var(--color-smoke-gray)] focus:outline-none disabled:opacity-50"
         />
-        <span className="manrope hidden shrink-0 text-[10px] text-[var(--color-ash-gray)] sm:inline">
+        <span className="manrope hidden shrink-0 text-xs text-[var(--color-ash-gray)] sm:inline">
           Press Enter to send
         </span>
         <button

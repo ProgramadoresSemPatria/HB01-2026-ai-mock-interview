@@ -36,11 +36,11 @@ export function InterviewChatMessage({
     >
       {!isHuman && (
         <div
-          className="hidden size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-mist-gray)] md:flex"
+          className="hidden size-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-mist-gray)] md:flex"
           aria-hidden
         >
           <Sparkle
-            className="size-3.5 text-[var(--color-ink-black)]"
+            className="size-4 text-[var(--color-ink-black)]"
             strokeWidth={1.5}
           />
         </div>
@@ -48,7 +48,7 @@ export function InterviewChatMessage({
 
       <div
         className={cn(
-          "max-w-[85%] rounded-[16px] p-4",
+          "max-w-[88%] rounded-[16px] p-4 md:max-w-[78%] md:px-5",
           isHuman
             ? "bg-[var(--color-ink-black)] text-right"
             : "bg-[var(--color-mist-gray)] text-left",
@@ -68,7 +68,7 @@ export function InterviewChatMessage({
           )}
           <span
             className={cn(
-              "manrope text-[10px] font-medium uppercase tracking-widest",
+              "manrope text-[11px] font-medium uppercase tracking-widest",
               isHuman ? "text-white/70" : "text-[var(--color-ash-gray)]",
             )}
           >
@@ -88,7 +88,7 @@ export function InterviewChatMessage({
         ) : (
           <p
             className={cn(
-              "manrope text-sm leading-relaxed whitespace-pre-wrap",
+              "manrope text-[15px] leading-relaxed whitespace-pre-wrap md:text-base",
               isHuman ? "text-white" : "text-[var(--color-ink-black)]",
             )}
           >
@@ -104,7 +104,7 @@ export function InterviewChatMessage({
         >
           <span
             className={cn(
-              "manrope text-[10px]",
+              "manrope text-[11px]",
               isHuman ? "text-white/50" : "text-[var(--color-ash-gray)]",
             )}
           >

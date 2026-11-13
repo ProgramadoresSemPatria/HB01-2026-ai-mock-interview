@@ -13,12 +13,15 @@ type DashboardPreviewProps = {
   className?: string;
   labelClassName?: string;
   mutedTextClassName?: string;
+  /** Size classes for topic rows; defaults to the compact `text-xs`. */
+  rowTextClassName?: string;
 };
 
 export function DashboardPreview({
   className,
   labelClassName,
   mutedTextClassName,
+  rowTextClassName = "text-xs",
 }: DashboardPreviewProps) {
   return (
     <div className={cn("landing-artifact p-6", className)}>
@@ -50,12 +53,13 @@ export function DashboardPreview({
         {TOPIC_BARS.map((topic) => (
           <div key={topic.label}>
             <div className="mb-1 flex justify-between">
-              <span className="manrope text-xs text-[var(--color-ink-black)]">
+              <span className={cn("manrope text-[var(--color-ink-black)]", rowTextClassName)}>
                 {topic.label}
               </span>
               <span
                 className={cn(
-                  "manrope text-xs text-[var(--color-ash-gray)]",
+                  "manrope text-[var(--color-ash-gray)]",
+                  rowTextClassName,
                   mutedTextClassName,
                 )}
               >

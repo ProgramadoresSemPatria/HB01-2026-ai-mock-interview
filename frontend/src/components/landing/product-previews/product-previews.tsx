@@ -14,9 +14,9 @@ const GROWTH_AREAS = [
 
 function FeedbackPreview() {
   return (
-    <div className="landing-artifact p-6">
+    <div className="landing-artifact !p-6 md:!p-8">
       <p className="landing-tag mb-1">Session report</p>
-      <h4 className="manrope mb-6 text-xl font-medium text-[var(--color-ink-black)]">
+      <h4 className="manrope mb-6 text-xl font-medium md:text-[22px] text-[var(--color-ink-black)]">
         System Design — Ride Share App
       </h4>
 
@@ -37,13 +37,13 @@ function FeedbackPreview() {
 
       <div className="mb-4">
         <p className="landing-tag mb-2">Strengths</p>
-        <ul className="space-y-1">
+        <ul className="space-y-1.5">
           {STRENGTHS.map((s) => (
             <li
               key={s}
-              className="manrope flex items-start gap-2 text-xs text-[var(--color-ink-black)]"
+              className="manrope flex items-start gap-2 text-sm text-[var(--color-ink-black)] md:text-[15px]"
             >
-              <span className="mt-1 text-[var(--color-ash-gray)]" aria-hidden>
+              <span className="text-[var(--color-ash-gray)]" aria-hidden>
                 +
               </span>
               {s}
@@ -54,13 +54,13 @@ function FeedbackPreview() {
 
       <div>
         <p className="landing-tag mb-2">Growth areas</p>
-        <ul className="space-y-1">
+        <ul className="space-y-1.5">
           {GROWTH_AREAS.map((g) => (
             <li
               key={g}
-              className="manrope flex items-start gap-2 text-xs text-[var(--color-ink-black)]"
+              className="manrope flex items-start gap-2 text-sm text-[var(--color-ink-black)] md:text-[15px]"
             >
-              <span className="mt-1 text-[var(--color-ash-gray)]" aria-hidden>
+              <span className="text-[var(--color-ash-gray)]" aria-hidden>
                 →
               </span>
               {g}
@@ -74,18 +74,21 @@ function FeedbackPreview() {
 
 export default function ProductPreviews() {
   return (
-    <div className="mt-16">
-      <div className="mb-8 text-center">
-        <p className="landing-tag">After every session</p>
-        <h3 className="landing-heading mt-3">
+    <div className="mt-24 md:mt-32">
+      <div className="mx-auto mb-10 max-w-3xl text-center md:mb-14">
+        <p className="landing-eyebrow">After every session</p>
+        <h3 className="landing-heading mt-4">
           You answer. It measures exactly where you stand.
         </h3>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-8 md:grid-cols-2 lg:gap-10">
         <div>
           <p className="landing-tag mb-3">Progress dashboard</p>
-          <DashboardPreview />
+          <DashboardPreview
+            className="!p-6 md:!p-8"
+            rowTextClassName="text-sm md:text-[15px]"
+          />
         </div>
         <div>
           <p className="landing-tag mb-3">Feedback report</p>

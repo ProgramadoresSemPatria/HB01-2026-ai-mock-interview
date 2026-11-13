@@ -9,7 +9,7 @@ export default function QuoteSection() {
   const isInView = useInView(ref, { once: true, amount: 0.3 });
 
   return (
-    <section ref={ref} className="landing-section bg-paper-white px-6">
+    <section ref={ref} className="landing-section landing-section--compact bg-paper-white px-6">
       <motion.div
         className="mx-auto max-w-[960px]"
         initial={

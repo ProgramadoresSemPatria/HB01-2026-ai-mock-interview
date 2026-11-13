@@ -11,8 +11,8 @@
 
 @media (min-width: 768px) {
   .interview-chat-demo {
-    height: 70vh;
-    max-height: 70vh;
+    height: clamp(560px, 72vh, 780px);
+    max-height: 780px;
   }
 }
 

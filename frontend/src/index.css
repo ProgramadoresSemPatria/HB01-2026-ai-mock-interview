@@ -327,6 +327,17 @@ html:has(.app-canvas) body {
   font-family: var(--font-manrope), system-ui, sans-serif;
 }
 
+/* Long unbroken strings (URLs, file names, identifiers) wrap instead of
+   pushing cards and chat bubbles past narrow viewports; code blocks scroll. */
+.app-canvas {
+  overflow-wrap: break-word;
+}
+
+.app-canvas pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 html:has(.landing-canvas) {
   scrollbar-width: thin;
   scrollbar-color: var(--landing-scrollbar-thumb) transparent;
@@ -386,8 +397,9 @@ html:has(:where(.landing-canvas, .app-canvas)) body::before {
 .landing-heading-lg {
   font-family: var(--font-instrument-serif), Georgia, serif;
   font-weight: 400;
-  font-size: clamp(2.25rem, 5vw, var(--text-heading-lg));
-  line-height: 1.3;
+  /* 40px @375 → ~65px @1024 → 80px @1440+ */
+  font-size: clamp(2.5rem, 1.5rem + 4vw, 5rem);
+  line-height: 1.08;
   letter-spacing: var(--tracking-heading-lg);
   color: var(--color-ink-black);
   text-wrap: balance;
@@ -396,8 +408,9 @@ html:has(:where(.landing-canvas, .app-canvas)) body::before {
 .landing-heading {
   font-family: var(--font-instrument-serif), Georgia, serif;
   font-weight: 400;
-  font-size: clamp(1.75rem, 4vw, var(--text-heading));
-  line-height: 1.3;
+  /* 32px @375 → ~47px @1024 → 56px @1440+ */
+  font-size: clamp(2rem, 1.25rem + 2.6vw, 3.5rem);
+  line-height: 1.12;
   letter-spacing: var(--tracking-heading);
   color: var(--color-ink-black);
   text-wrap: balance;
@@ -415,9 +428,25 @@ html:has(:where(.landing-canvas, .app-canvas)) body::before {
 .landing-body {
   font-family: var(--font-manrope), system-ui, sans-serif;
   font-weight: 400;
-  font-size: 17px;
-  line-height: 1.35;
+  /* 17px mobile → ~19px @1024 → 20px @1440+ */
+  font-size: clamp(1.0625rem, 0.95rem + 0.35vw, 1.25rem);
+  line-height: 1.55;
   color: var(--color-slate-gray);
+}
+
+/* Section-level eyebrow: same voice as .landing-tag, sized for page hierarchy */
+.landing-eyebrow {
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--color-ash-gray);
+}
+
+@media (min-width: 768px) {
+  .landing-eyebrow {
+    font-size: 16px;
+  }
 }
 
 .landing-tag {
@@ -456,13 +485,29 @@ html:has(:where(.landing-canvas, .app-canvas)) body::before {
 }
 
 .landing-section {
+  /* 80px mobile → ~110px @1024 → 144px @1600+ */
+  padding-block: clamp(var(--section-gap), 3rem + 6vw, 9rem);
+}
+
+/* Original (main) sizing, kept for the quote and final CTA sections */
+.landing-section.landing-section--compact {
   padding-block: var(--section-gap);
+}
+
+.landing-heading-lg.landing-heading-lg--compact {
+  font-size: clamp(2.25rem, 5vw, var(--text-heading-lg));
+  line-height: 1.3;
+}
+
+.landing-body.landing-body--compact {
+  font-size: 17px;
+  line-height: 1.35;
 }
 
 .landing-link-arrow {
   font-family: var(--font-manrope), system-ui, sans-serif;
-  font-size: 16px;
-  font-weight: 400;
+  font-size: 17px;
+  font-weight: 500;
   color: var(--color-ink-black);
   text-decoration: none;
   padding-block: 20px;
