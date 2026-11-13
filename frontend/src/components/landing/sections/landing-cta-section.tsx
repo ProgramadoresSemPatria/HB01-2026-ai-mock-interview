@@ -4,9 +4,11 @@ import { useRef } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 
 import LandingCta from "@/components/landing/get-started-button";
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
 
 export default function LandingCtaSection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const { t } = useSiteLocale();
   const prefersReducedMotion = useReducedMotion();
   const isInView = useInView(sectionRef, { once: true, amount: 0.35 });
 
@@ -32,13 +34,13 @@ export default function LandingCtaSection() {
         transition={{ duration: 0.7, ease: "easeOut" }}
       >
         <h2 className="landing-heading-lg landing-heading-lg--compact max-w-3xl">
-          Try Hone free. First interview in under a minute.
+          {t.cta.title}
         </h2>
         <p className="landing-body landing-body--compact mt-5 max-w-lg">
-          Connect your resume or explore in demo mode. No credit card.
+          {t.cta.body}
         </p>
         <div className="mt-10 flex items-center justify-center">
-          <LandingCta label="Get started" variant="solid" href="/login" />
+          <LandingCta label={t.common.getStarted} variant="solid" href="/login" />
         </div>
       </motion.div>
     </section>

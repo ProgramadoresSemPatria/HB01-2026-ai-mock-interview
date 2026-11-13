@@ -5,18 +5,22 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 
 import LandingCta from "@/components/landing/get-started-button";
+import { ComingSoonBadge } from "@/components/coming-soon-badge";
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
+import { SiteLocaleSwitcher } from "@/features/site-locale/site-locale-switcher";
 
 const NAV_LINKS = [
-  { label: "Product", href: "/#features" },
-  { label: "How it works", href: "/#demo" },
-  { label: "Get the app", href: "/download" },
-];
+  { key: "product", href: "/#features" },
+  { key: "howItWorks", href: "/#demo" },
+  { key: "getTheApp", href: "/download", soon: true },
+] as const;
 
 const SCROLL_THRESHOLD = 24;
 
 export default function LandingNavbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { t } = useSiteLocale();
 
   useEffect(() => {
     const onScroll = () => {
@@ -38,30 +42,32 @@ export default function LandingNavbar() {
     >
       <nav
         className="mx-auto flex h-16 w-full max-w-[1360px] items-center justify-between px-6 md:h-20 md:px-10"
-        aria-label="Main navigation"
+        aria-label={t.nav.ariaLabel}
       >
         <Link
           href="/"
           className="instrument-serif text-[26px] font-normal tracking-tight text-[var(--color-ink-black)] md:text-[30px]"
-          aria-label="Hone home"
+          aria-label={t.common.homeAriaLabel}
         >
           Hone
         </Link>
 
-        <div className="hidden items-center gap-10 md:flex">
+        <div className="hidden items-center gap-6 md:flex lg:gap-10">
           {NAV_LINKS.map((link) => (
             <Link
-              key={link.label}
+              key={link.key}
               href={link.href}
-              className="manrope text-base font-normal text-[var(--color-ink-black)] transition-opacity hover:opacity-60 lg:text-[17px]"
+              className="manrope inline-flex items-center gap-2 text-base font-normal text-[var(--color-ink-black)] transition-opacity hover:opacity-60 lg:text-[17px]"
             >
-              {link.label}
+              {t.nav[link.key]}
+              {"soon" in link ? <ComingSoonBadge /> : null}
             </Link>
           ))}
         </div>
 
-        <div className="hidden items-center md:flex">
-          <LandingCta label="Get started" variant="solid" href="/login" />
+        <div className="hidden items-center gap-3 md:flex lg:gap-5">
+          <SiteLocaleSwitcher />
+          <LandingCta label={t.common.getStarted} variant="solid" href="/login" />
         </div>
 
         <button
@@ -69,7 +75,7 @@ export default function LandingNavbar() {
           className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-ink-black)] md:hidden"
           aria-expanded={open}
           aria-controls="mobile-nav"
-          aria-label={open ? "Close menu" : "Open menu"}
+          aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
           onClick={() => setOpen((v) => !v)}
         >
           {open ? (
@@ -88,16 +94,23 @@ export default function LandingNavbar() {
           <div className="flex flex-col gap-4">
             {NAV_LINKS.map((link) => (
               <Link
-                key={link.label}
+                key={link.key}
                 href={link.href}
-                className="manrope py-1 text-lg text-[var(--color-ink-black)]"
+                className="manrope inline-flex items-center gap-2 py-1 text-lg text-[var(--color-ink-black)]"
                 onClick={() => setOpen(false)}
               >
-                {link.label}
+                {t.nav[link.key]}
+                {"soon" in link ? <ComingSoonBadge /> : null}
               </Link>
             ))}
+            <div className="mt-2 flex items-center justify-between gap-4 border-t border-[var(--color-border-hairline)] pt-5">
+              <span className="manrope text-base text-[var(--color-slate-gray)]">
+                {t.common.language}
+              </span>
+              <SiteLocaleSwitcher />
+            </div>
             <LandingCta
-              label="Get started"
+              label={t.common.getStarted}
               variant="solid"
               href="/login"
               className="mt-2 w-full"

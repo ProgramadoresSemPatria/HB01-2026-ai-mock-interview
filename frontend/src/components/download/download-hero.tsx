@@ -1,12 +1,18 @@
+"use client";
+
 import Image from "next/image";
 
 import InstallCta from "@/components/download/install-cta";
 import PhoneMockup from "@/components/download/phone-mockup";
+import { ComingSoonBadge } from "@/components/coming-soon-badge";
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
 
 // Same basePath source the PWA install banner uses for public/ assets.
 const BASE_PATH = process.env.__NEXT_ROUTER_BASEPATH ?? "";
 
 export default function DownloadHero() {
+  const { t } = useSiteLocale();
+  const copy = t.download.hero;
   return (
     <section
       aria-labelledby="download-hero-title"
@@ -28,20 +34,23 @@ export default function DownloadHero() {
               unoptimized
               className="size-6 rounded-full"
             />
-            Hone for iPhone, Android & desktop
+            {copy.platforms}
+          </p>
+
+          <p className="manrope mb-6 inline-flex flex-wrap items-center gap-2 rounded-xl border border-jade/20 bg-jade-mist/60 px-3 py-2 text-[13px] text-jade-deep">
+            <ComingSoonBadge />
+            {copy.launchNotice}
           </p>
 
           <h1
             id="download-hero-title"
             className="instrument-serif text-[clamp(2.6rem,6.4vw,76px)] font-normal leading-[1.08] tracking-[-0.025em] text-ink-black text-balance"
           >
-            Practice interviews <em className="italic">anywhere</em>
+            {copy.titleStart} <em className="italic">{copy.titleEmphasis}</em>
           </h1>
 
           <p className="manrope mt-6 max-w-[520px] text-[17px] leading-[1.45] text-slate-gray">
-            Put Hone on your home screen. Resume-aware mock interviews, instant
-            feedback and your study backlog — one tap away, full screen, no app
-            store.
+            {copy.subtitle}
           </p>
 
           <div className="mt-9 w-full">

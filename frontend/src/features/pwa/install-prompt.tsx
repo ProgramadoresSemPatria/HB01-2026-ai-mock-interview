@@ -8,6 +8,12 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { Surface } from "@/components/ui/surface";
+import { ComingSoonBadge } from "@/components/coming-soon-badge";
+import { ComingSoonDialog } from "@/components/coming-soon-dialog";
+import {
+  SiteLocaleProvider,
+  useSiteLocale,
+} from "@/features/site-locale/site-locale-provider";
 
 import { usePwaInstall } from "./use-pwa-install";
 
@@ -19,6 +25,8 @@ const SHOW_DELAY_MS = 3000;
 // Only on "home" screens: never over an interview/study session, and not on
 // /download, which renders its own install UI.
 const ALLOWED_PATHS = new Set(["/", "/dashboard"]);
+// Public pages whose UI follows the site-locale cookie (EN/PT).
+const PUBLIC_PATHS = new Set(["/"]);
 
 function wasDismissedRecently() {
   try {
@@ -38,13 +46,12 @@ function rememberDismissal() {
 }
 
 /**
- * Small dismissible install banner: the native prompt on Chromium
+ * Small dismissible install banner: an install button on Chromium
  * (Android/desktop), an "Add to Home Screen" hint on iOS Safari.
  */
 export function InstallPrompt() {
   const pathname = usePathname();
-  const { canPrompt, isInstalled, isIOSSafari, promptInstall } =
-    usePwaInstall();
+  const { canPrompt, isInstalled, isIOSSafari } = usePwaInstall();
   const [ready, setReady] = useState(false);
   const [closed, setClosed] = useState(false);
 
@@ -64,16 +71,34 @@ export function InstallPrompt() {
     setClosed(true);
   };
 
-  const install = async () => {
-    const outcome = await promptInstall();
-    if (outcome === "dismissed") rememberDismissal();
-    setClosed(true);
-  };
+  const banner = (
+    <InstallBanner canPrompt={canPrompt} onDismiss={dismiss} />
+  );
+
+  // The banner mounts after hydration, so the provider reads the cookie
+  // directly; the logged-in app keeps the English default.
+  return PUBLIC_PATHS.has(pathname) ? (
+    <SiteLocaleProvider initialLocale="en">{banner}</SiteLocaleProvider>
+  ) : (
+    banner
+  );
+}
+
+function InstallBanner({
+  canPrompt,
+  onDismiss,
+}: {
+  canPrompt: boolean;
+  onDismiss: () => void;
+}) {
+  const { t } = useSiteLocale();
+  const copy = t.installBanner;
+  const [comingSoonOpen, setComingSoonOpen] = useState(false);
 
   return (
     <div
       role="region"
-      aria-label="Install Hone"
+      aria-label={copy.title}
       className="fixed inset-x-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-50 animate-in fade-in slide-in-from-bottom-4 duration-300 sm:left-auto sm:right-6 sm:bottom-6 sm:w-[22rem]"
     >
       <Surface
@@ -91,26 +116,41 @@ export function InstallPrompt() {
           className="size-11 shrink-0"
         />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-text-strong">Install Hone</p>
+          <p className="flex items-center gap-2 text-sm font-semibold text-text-strong">
+            {copy.title}
+            <ComingSoonBadge />
+          </p>
           {canPrompt ? (
             <>
               <p className="mt-0.5 text-xs leading-relaxed text-text-muted">
-                Open your practice sessions in one tap, full screen.
+                {copy.body}
               </p>
-              <Button size="sm" className="mt-3" onClick={install}>
-                Install app
+              {/* The app is still in development: show the coming-soon dialog
+                  instead of the native prompt (usePwaInstall().promptInstall
+                  stays available to re-enable this at launch). */}
+              <Button
+                size="sm"
+                className="mt-3"
+                aria-haspopup="dialog"
+                onClick={() => setComingSoonOpen(true)}
+              >
+                {copy.installApp}
               </Button>
+              <ComingSoonDialog
+                open={comingSoonOpen}
+                onOpenChange={setComingSoonOpen}
+              />
             </>
           ) : (
             <p className="mt-0.5 text-xs leading-relaxed text-text-muted">
-              Tap{" "}
+              {copy.iosTap}{" "}
               <Share
-                aria-label="Share"
+                aria-label={copy.iosShare}
                 className="inline size-3.5 -translate-y-px text-text-strong"
               />{" "}
-              in Safari, then{" "}
+              {copy.iosThen}{" "}
               <span className="whitespace-nowrap font-medium text-text-strong">
-                Add to Home Screen{" "}
+                {copy.iosAddToHomeScreen}{" "}
                 <SquarePlus
                   aria-hidden="true"
                   className="inline size-3.5 -translate-y-px"
@@ -123,9 +163,9 @@ export function InstallPrompt() {
         <IconButton
           variant="ghost"
           size="icon-sm"
-          aria-label="Dismiss install prompt"
+          aria-label={copy.dismiss}
           className="-mr-1 -mt-1"
-          onClick={dismiss}
+          onClick={onDismiss}
         >
           <X />
         </IconButton>

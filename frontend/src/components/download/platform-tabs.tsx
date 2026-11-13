@@ -4,46 +4,27 @@ import { useRef, useState, type KeyboardEvent } from "react";
 import { Laptop, Smartphone, TabletSmartphone } from "lucide-react";
 
 import {
-  STEPS_BY_PLATFORM,
   StepList,
+  useInstallSteps,
   type PlatformKey,
 } from "@/components/download/install-steps";
 import { usePwaInstall } from "@/features/pwa/use-pwa-install";
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
 
-const TABS: {
-  key: PlatformKey;
-  label: string;
-  hint: string;
-  Icon: typeof Smartphone;
-  note: string;
-}[] = [
-  {
-    key: "ios",
-    label: "iPhone & iPad",
-    hint: "Safari",
-    Icon: Smartphone,
-    note: "Using Chrome or another browser on iPhone? Open this page in Safari first for the most reliable install.",
-  },
-  {
-    key: "android",
-    label: "Android",
-    hint: "Chrome",
-    Icon: TabletSmartphone,
-    note: "Samsung Internet works too: open the menu, then Add page to → Home screen.",
-  },
-  {
-    key: "desktop",
-    label: "Desktop",
-    hint: "Chrome, Edge, Safari",
-    Icon: Laptop,
-    note: "Installed Hone opens in its own window and can be pinned to your dock or taskbar.",
-  },
+// Labels, hints and notes live in the site-locale messages.
+const TABS: { key: PlatformKey; Icon: typeof Smartphone }[] = [
+  { key: "ios", Icon: Smartphone },
+  { key: "android", Icon: TabletSmartphone },
+  { key: "desktop", Icon: Laptop },
 ];
 
 export default function PlatformTabs() {
   const { platform } = usePwaInstall();
   const [selected, setSelected] = useState<PlatformKey | null>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const { t } = useSiteLocale();
+  const copy = t.download.platforms;
+  const steps = useInstallSteps();
 
   const detected: PlatformKey | null = platform === "other" ? null : platform;
   const active: PlatformKey = selected ?? detected ?? "ios";
@@ -71,20 +52,19 @@ export default function PlatformTabs() {
     >
       <div className="mx-auto grid max-w-[1200px] gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
         <div>
-          <p className="landing-tag mb-3">How to install</p>
+          <p className="landing-tag mb-3">{copy.eyebrow}</p>
           <h2 id="download-install-title" className="landing-heading">
-            Three steps on any device
+            {copy.title}
           </h2>
           <p className="landing-body mt-5 max-w-md">
-            Hone installs from your browser in under a minute. Pick your device
-            {detected ? " — we've preselected the one you're on" : ""}.
+            {detected ? copy.introDetected : copy.intro}
           </p>
         </div>
 
         <div>
           <div
             role="tablist"
-            aria-label="Choose your device"
+            aria-label={copy.tablistLabel}
             className="grid grid-cols-3 gap-1 rounded-full bg-mist-gray p-1"
             onKeyDown={onKeyDown}
           >
@@ -115,7 +95,7 @@ export default function PlatformTabs() {
                     className="hidden shrink-0 sm:block"
                     aria-hidden
                   />
-                  <span className="truncate">{tab.label}</span>
+                  <span className="truncate">{copy.tabs[tab.key].label}</span>
                 </button>
               );
             })}
@@ -132,11 +112,11 @@ export default function PlatformTabs() {
               className="landing-artifact mt-5 !p-6 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-jade/30 md:!p-8"
             >
               <p className="landing-tag mb-6">
-                {tab.label} · {tab.hint}
+                {copy.tabs[tab.key].label} · {copy.tabs[tab.key].hint}
               </p>
-              <StepList steps={STEPS_BY_PLATFORM[tab.key]} />
+              <StepList steps={steps[tab.key]} />
               <p className="manrope mt-7 border-t border-border-hairline pt-5 text-[13px] leading-relaxed text-slate-gray">
-                {tab.note}
+                {copy.tabs[tab.key].note}
               </p>
             </div>
           ))}

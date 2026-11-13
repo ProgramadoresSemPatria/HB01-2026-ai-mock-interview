@@ -1,13 +1,10 @@
-import { cn } from "@/lib/utils";
+"use client";
 
-const TOPIC_BARS = [
-  { label: "System Design", pct: 82 },
-  { label: "Algorithms", pct: 71 },
-  { label: "Distributed Systems", pct: 60 },
-  { label: "APIs & REST", pct: 90 },
-  { label: "Data Modeling", pct: 55 },
-  { label: "Scalability", pct: 67 },
-];
+import { cn } from "@/lib/utils";
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
+
+// Labels come from the site-locale messages (English without a provider).
+const TOPIC_PCTS = [82, 71, 60, 90, 55, 67];
 
 type DashboardPreviewProps = {
   className?: string;
@@ -23,11 +20,13 @@ export function DashboardPreview({
   mutedTextClassName,
   rowTextClassName = "text-xs",
 }: DashboardPreviewProps) {
+  const { t } = useSiteLocale();
+  const copy = t.previews.dashboard;
   return (
     <div className={cn("landing-artifact p-6", className)}>
       <div className="mb-6 flex items-end justify-between">
         <div>
-          <p className={cn("landing-tag", labelClassName)}>Performance score</p>
+          <p className={cn("landing-tag", labelClassName)}>{copy.performanceScore}</p>
           <span className="manrope text-[20px] font-medium text-[var(--color-ink-black)]">
             73
             <span
@@ -41,20 +40,20 @@ export function DashboardPreview({
           </span>
         </div>
         <div className="text-right">
-          <p className={cn("landing-tag", labelClassName)}>Sessions</p>
+          <p className={cn("landing-tag", labelClassName)}>{copy.sessions}</p>
           <span className="manrope text-xl font-medium text-[var(--color-ink-black)]">
             5
           </span>
         </div>
       </div>
 
-      <p className={cn("landing-tag mb-3", labelClassName)}>Topic coverage</p>
+      <p className={cn("landing-tag mb-3", labelClassName)}>{copy.topicCoverage}</p>
       <div className="space-y-2">
-        {TOPIC_BARS.map((topic) => (
-          <div key={topic.label}>
+        {TOPIC_PCTS.map((pct, index) => (
+          <div key={index}>
             <div className="mb-1 flex justify-between">
               <span className={cn("manrope text-[var(--color-ink-black)]", rowTextClassName)}>
-                {topic.label}
+                {copy.topics[index]}
               </span>
               <span
                 className={cn(
@@ -63,13 +62,13 @@ export function DashboardPreview({
                   mutedTextClassName,
                 )}
               >
-                {topic.pct}%
+                {pct}%
               </span>
             </div>
             <div className="h-[2px] w-full bg-[var(--color-mist-gray)]">
               <div
                 className="h-full bg-jade"
-                style={{ width: `${topic.pct}%` }}
+                style={{ width: `${pct}%` }}
               />
             </div>
           </div>

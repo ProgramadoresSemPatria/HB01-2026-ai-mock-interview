@@ -1,21 +1,27 @@
+"use client";
+
 import Link from "next/link";
 import { Github, Twitter, Linkedin } from "lucide-react";
 
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
+
 const LINKS = {
-  Product: [
-    { label: "Features", href: "/#features" },
-    { label: "Demo", href: "/#demo" },
+  product: [
+    { key: "features", href: "/#features" },
+    { key: "demo", href: "/#demo" },
   ],
-  Company: [
-    { label: "About", href: "/about" },
-    { label: "Blog", href: "/blog" },
-    { label: "Contact", href: "mailto:hello@honeyourcraft.com" },
+  company: [
+    { key: "about", href: "/about" },
+    { key: "blog", href: "/blog" },
+    { key: "contact", href: "mailto:hello@honeyourcraft.com" },
   ],
-  Legal: [
-    { label: "Terms", href: "/terms" },
-    { label: "Privacy", href: "/privacy" },
+  legal: [
+    { key: "terms", href: "/terms" },
+    { key: "privacy", href: "/privacy" },
   ],
-};
+} as const;
+
+type LinkGroup = keyof typeof LINKS;
 
 const SOCIALS = [
   { label: "GitHub", href: "https://github.com", Icon: Github },
@@ -25,6 +31,7 @@ const SOCIALS = [
 
 export default function LandingFooter() {
   const year = new Date().getFullYear();
+  const { t } = useSiteLocale();
 
   return (
     <footer className="border-t border-[var(--color-border-hairline)] bg-[var(--color-paper-white)] px-6 py-16 md:px-10 md:py-24">
@@ -34,12 +41,12 @@ export default function LandingFooter() {
             <Link
               href="/"
               className="instrument-serif text-[30px] font-normal text-[var(--color-ink-black)]"
-              aria-label="Hone home"
+              aria-label={t.common.homeAriaLabel}
             >
               Hone
             </Link>
             <p className="manrope mt-4 max-w-sm text-base leading-relaxed text-[var(--color-slate-gray)]">
-              Sharpen the thinking that interviews actually test.
+              {t.footer.tagline}
             </p>
             <div className="mt-6 flex items-center gap-5">
               {SOCIALS.map(({ label, href, Icon }) => (
@@ -57,17 +64,17 @@ export default function LandingFooter() {
             </div>
           </div>
 
-          {Object.entries(LINKS).map(([group, links]) => (
+          {(Object.keys(LINKS) as LinkGroup[]).map((group) => (
             <div key={group}>
-              <p className="landing-eyebrow mb-5">{group}</p>
+              <p className="landing-eyebrow mb-5">{t.footer.groups[group]}</p>
               <ul className="space-y-3">
-                {links.map(({ label, href }) => (
-                  <li key={label}>
+                {LINKS[group].map(({ key, href }) => (
+                  <li key={key}>
                     <Link
                       href={href}
                       className="manrope text-[15px] text-[var(--color-slate-gray)] transition-colors md:text-base hover:text-[var(--color-ink-black)]"
                     >
-                      {label}
+                      {t.footer.links[key]}
                     </Link>
                   </li>
                 ))}
@@ -78,10 +85,10 @@ export default function LandingFooter() {
 
         <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-[var(--color-border-hairline)] pt-8 md:flex-row">
           <p className="manrope text-sm text-[var(--color-ash-gray)]">
-            © {year} Hone. All rights reserved.
+            © {year} {t.footer.rights}
           </p>
           <p className="manrope text-sm text-[var(--color-smoke-gray)]">
-            Built for engineers who take their craft seriously.
+            {t.footer.builtFor}
           </p>
         </div>
       </div>

@@ -5,17 +5,19 @@ import gsap from "gsap";
 
 import BackedByBadge from "@/components/landing/backed-by-badge";
 import LandingCta from "@/components/landing/get-started-button";
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
 
 function ScoreArtifact({ className }: { className?: string }) {
+  const { t } = useSiteLocale();
   return (
     <div className={`landing-artifact ${className ?? ""}`}>
-      <p className="landing-tag mb-1">Interview score</p>
+      <p className="landing-tag mb-1">{t.hero.score.tag}</p>
       <p className="manrope text-[20px] font-medium leading-[1.35] text-ink-black">
         73
         <span className="text-slate-gray"> /100</span>
       </p>
       <p className="manrope mt-1 text-sm text-slate-gray">
-        ↑ 12 pts vs last session
+        {t.hero.score.delta}
       </p>
       <svg
         viewBox="0 0 120 36"
@@ -35,17 +37,12 @@ function ScoreArtifact({ className }: { className?: string }) {
 }
 
 function TopicsArtifact({ className }: { className?: string }) {
-  const rows = [
-    { topic: "System Design", level: "Strong" },
-    { topic: "APIs", level: "Strong" },
-    { topic: "Algorithms", level: "Review" },
-    { topic: "Trade-offs", level: "Growing" },
-    { topic: "Scalability", level: "Strong" },
-  ];
+  const { t } = useSiteLocale();
+  const rows = t.hero.topics.rows;
 
   return (
     <div className={`landing-artifact ${className ?? ""}`}>
-      <p className="landing-tag mb-3">Topic coverage</p>
+      <p className="landing-tag mb-3">{t.hero.topics.tag}</p>
       <ul className="space-y-2.5">
         {rows.map((row) => (
           <li
@@ -62,6 +59,7 @@ function TopicsArtifact({ className }: { className?: string }) {
 }
 
 function FeedbackArtifact({ className }: { className?: string }) {
+  const { t } = useSiteLocale();
   return (
     <div className={`landing-artifact relative ${className ?? ""}`}>
       <div className="mb-3 flex items-center gap-2">
@@ -75,25 +73,27 @@ function FeedbackArtifact({ className }: { className?: string }) {
           </span>
         </span>
         <div>
-          <p className="manrope text-sm font-medium text-ink-black">Feedback</p>
-          <p className="landing-tag">System Design · Ride share</p>
+          <p className="manrope text-sm font-medium text-ink-black">
+            {t.hero.feedback.title}
+          </p>
+          <p className="landing-tag">{t.hero.feedback.tag}</p>
         </div>
       </div>
       <p className="manrope text-sm leading-relaxed text-ink-black">
-        You framed the bottleneck clearly. Push deeper on consistency trade-offs
-        before proposing shards.
+        {t.hero.feedback.body}
       </p>
     </div>
   );
 }
 
 function ComposerArtifact({ className }: { className?: string }) {
+  const { t } = useSiteLocale();
   return (
     <div
       className={`landing-artifact flex items-center gap-3 !rounded-[16px] !py-4 !pl-4 !pr-3 ${className ?? ""}`}
     >
       <span className="manrope flex-1 text-base text-smoke-gray">
-        Ask anything…
+        {t.hero.composerPlaceholder}
       </span>
       <span
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-jade text-paper-white"
@@ -106,12 +106,13 @@ function ComposerArtifact({ className }: { className?: string }) {
 }
 
 function ActivationArtifact({ className }: { className?: string }) {
+  const { t } = useSiteLocale();
   return (
     <div className={`landing-artifact ${className ?? ""}`}>
-      <p className="landing-tag mb-1">Activation</p>
+      <p className="landing-tag mb-1">{t.hero.activation.tag}</p>
       <p className="manrope text-[20px] font-medium text-ink-black">46.2%</p>
       <p className="manrope mt-1 text-sm text-slate-gray">
-        ↑ 5.5× vs last week
+        {t.hero.activation.delta}
       </p>
       <svg viewBox="0 0 80 80" className="mx-auto mt-3 h-16 w-16" aria-hidden>
         <circle
@@ -162,6 +163,7 @@ function attachArtifactFloat(el: Element, index: number) {
 
 export default function HeroSection() {
   const rootRef = useRef<HTMLElement>(null);
+  const { t } = useSiteLocale();
 
   useEffect(() => {
     const root = rootRef.current;
@@ -275,23 +277,22 @@ export default function HeroSection() {
             data-hero-copy
             className="instrument-serif text-[clamp(2.75rem,7.5vw,90px)] font-normal leading-[1.15] tracking-[-0.025em] text-ink-black text-balance"
           >
-            Practice the interview that{" "}
-            <em className="italic">decides your career</em>
+            {t.hero.titleStart}{" "}
+            <em className="italic">{t.hero.titleEmphasis}</em>
           </h1>
 
           <p
             data-hero-copy
             className="manrope mt-6 max-w-lg text-[17px] leading-[1.35] text-slate-gray"
           >
-            Resume-aware AI mock interviews for software engineers — structured
-            feedback, topic coverage, and the reps that stick.
+            {t.hero.subtitle}
           </p>
 
           <div
             data-hero-copy
             className="mt-10 flex items-center justify-center"
           >
-            <LandingCta label="Get started" variant="solid" href="/login" />
+            <LandingCta label={t.common.getStarted} variant="solid" href="/login" />
           </div>
         </div>
 

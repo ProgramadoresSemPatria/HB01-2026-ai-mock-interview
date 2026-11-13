@@ -1,19 +1,23 @@
+"use client";
+
 import Image from "next/image";
 
 import borderlessIcon from "@/assets/borderless-icon.png";
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
 
 const BORDERLESS_URL = "https://www.borderlesscoding.com/en";
 
 export default function BackedByBadge({ className }: { className?: string }) {
+  const { t } = useSiteLocale();
   return (
     <a
       href={BORDERLESS_URL}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="Backed by Borderless — opens borderlesscoding.com in a new tab"
+      aria-label={t.backedBy.ariaLabel}
       className={`manrope inline-flex items-center gap-2 rounded-full bg-ink-black px-4 py-2 shadow-[0_8px_20px_rgba(0,0,0,0.18)] transition-opacity hover:opacity-80 ${className ?? ""}`}
     >
-      <span className="text-xs text-white/55">Backed by</span>
+      <span className="text-xs text-white/55">{t.backedBy.label}</span>
       <Image
         src={borderlessIcon}
         alt=""

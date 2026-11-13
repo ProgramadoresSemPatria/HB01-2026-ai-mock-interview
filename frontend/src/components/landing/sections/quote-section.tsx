@@ -3,8 +3,11 @@
 import { useRef } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
+
 export default function QuoteSection() {
   const ref = useRef<HTMLElement>(null);
+  const { t } = useSiteLocale();
   const prefersReducedMotion = useReducedMotion();
   const isInView = useInView(ref, { once: true, amount: 0.3 });
 
@@ -24,14 +27,13 @@ export default function QuoteSection() {
       >
         <div className="landing-jade-card md:p-16">
           <p className="manrope text-[26px] font-medium leading-[1.18] tracking-[-0.23px] text-jade-deep">
-            Why candidates switch to Hone
+            {t.quote.title}
           </p>
           <blockquote className="manrope mt-8 text-[18px] leading-[1.45] text-jade-deep md:text-[22px] md:leading-[1.5]">
-            “You don&apos;t rise to the level of the interview. You fall to the
-            level of your preparation.”
+            {t.quote.quote}
           </blockquote>
           <p className="manrope mt-8 text-sm text-jade-deep">
-            — The philosophy behind Hone
+            {t.quote.attribution}
           </p>
         </div>
       </motion.div>

@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Maximize2,
   MonitorSmartphone,
@@ -7,40 +9,25 @@ import {
   Zap,
 } from "lucide-react";
 
-const BENEFITS = [
-  {
-    Icon: Maximize2,
-    title: "Full-screen focus",
-    body: "No tabs, no address bar. Just you and the interviewer, like a native app.",
-  },
-  {
-    Icon: Smartphone,
-    title: "One tap from your home screen",
-    body: "Squeeze in a round on the commute or between meetings without hunting for a tab.",
-  },
-  {
-    Icon: Zap,
-    title: "Light and fast",
-    body: "A few taps to install, nothing heavy to download. Opens straight into your sessions.",
-  },
-  {
-    Icon: MonitorSmartphone,
-    title: "Works on every device",
-    body: "iPhone, Android, Mac, Windows or Linux. Same account, same progress everywhere.",
-  },
-  {
-    Icon: Store,
-    title: "No app store",
-    body: "Install straight from your browser. No store account, no review queue.",
-  },
-  {
-    Icon: RefreshCw,
-    title: "Always up to date",
-    body: "Improvements land the next time you open it. Nothing to update by hand.",
-  },
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
+
+// One icon per benefit, in the same order as the site-locale copy.
+const BENEFIT_ICONS = [
+  Maximize2,
+  Smartphone,
+  Zap,
+  MonitorSmartphone,
+  Store,
+  RefreshCw,
 ];
 
 export default function DownloadBenefits() {
+  const { t } = useSiteLocale();
+  const copy = t.download.benefits;
+  const benefits = copy.items.map((item, index) => ({
+    ...item,
+    Icon: BENEFIT_ICONS[index] ?? Maximize2,
+  }));
   return (
     <section
       aria-labelledby="download-benefits-title"
@@ -48,14 +35,14 @@ export default function DownloadBenefits() {
     >
       <div className="mx-auto max-w-[1200px]">
         <div className="max-w-2xl">
-          <p className="landing-tag mb-3">Why install</p>
+          <p className="landing-tag mb-3">{copy.eyebrow}</p>
           <h2 id="download-benefits-title" className="landing-heading">
-            The same Hone, built for the moments you actually have
+            {copy.title}
           </h2>
         </div>
 
         <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {BENEFITS.map(({ Icon, title, body }) => (
+          {benefits.map(({ Icon, title, body }) => (
             <li
               key={title}
               className="landing-mist-card flex gap-4 !p-5 sm:block sm:!p-7"

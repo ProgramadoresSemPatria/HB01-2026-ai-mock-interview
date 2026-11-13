@@ -1,5 +1,9 @@
+"use client";
+
 import type { ReactNode } from "react";
 import { EllipsisVertical, MonitorDown, Share, SquarePlus } from "lucide-react";
+
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
 
 export type InstallStep = {
   title: ReactNode;
@@ -29,76 +33,43 @@ export function UiGlyph({
 
 const ICON = { size: 14, strokeWidth: 1.75, "aria-hidden": true } as const;
 
-export const IOS_STEPS: InstallStep[] = [
-  {
-    title: (
-      <>
-        Tap <UiGlyph label="Share">{<Share {...ICON} />}</UiGlyph> Share
-      </>
-    ),
-    detail: "In Safari, it sits in the toolbar at the bottom (or top on iPad).",
-  },
-  {
-    title: (
-      <>
-        Choose <UiGlyph label="Add">{<SquarePlus {...ICON} />}</UiGlyph> Add to
-        Home Screen
-      </>
-    ),
-    detail: "Scroll the share sheet down if you don't see it right away.",
-  },
-  {
-    title: "Tap Add",
-    detail: "Hone lands on your home screen and opens full screen.",
-  },
-];
-
-export const ANDROID_STEPS: InstallStep[] = [
-  {
-    title: (
-      <>
-        Open the{" "}
-        <UiGlyph label="Menu">{<EllipsisVertical {...ICON} />}</UiGlyph> menu in
-        Chrome
-      </>
-    ),
-    detail: "Or tap the Install button on this page when it shows up.",
-  },
-  {
-    title: "Tap Install app",
-    detail: "Some versions call it Add to Home screen.",
-  },
-  {
-    title: "Confirm Install",
-    detail: "Hone appears in your app drawer and on your home screen.",
-  },
-];
-
-export const DESKTOP_STEPS: InstallStep[] = [
-  {
-    title: "Open Hone in Chrome or Edge",
-    detail: "On a Mac with Safari, use File → Add to Dock instead.",
-  },
-  {
-    title: (
-      <>
-        Click <UiGlyph label="Install">{<MonitorDown {...ICON} />}</UiGlyph> in
-        the address bar
-      </>
-    ),
-    detail: "No icon? Open the browser menu and look for Install Hone.",
-  },
-  {
-    title: "Click Install",
-    detail: "Hone gets its own window, dock or taskbar icon, and shortcut.",
-  },
-];
-
-export const STEPS_BY_PLATFORM: Record<PlatformKey, InstallStep[]> = {
-  ios: IOS_STEPS,
-  android: ANDROID_STEPS,
-  desktop: DESKTOP_STEPS,
+/** Glyph shown in each step's `{icon}` slot (copy in site-locale messages). */
+const STEP_ICONS: Record<PlatformKey, (ReactNode | null)[]> = {
+  ios: [<Share key="share" {...ICON} />, <SquarePlus key="add" {...ICON} />, null],
+  android: [<EllipsisVertical key="menu" {...ICON} />, null, null],
+  desktop: [null, <MonitorDown key="install" {...ICON} />, null],
 };
+
+function renderTitle(title: string, glyphLabel: string, icon: ReactNode) {
+  const [before, after] = title.split("{icon}");
+  if (after === undefined || !icon) return title;
+  return (
+    <>
+      {before}
+      <UiGlyph label={glyphLabel}>{icon}</UiGlyph>
+      {after}
+    </>
+  );
+}
+
+/** Install steps per platform in the current site language. */
+export function useInstallSteps(): Record<PlatformKey, InstallStep[]> {
+  const { t } = useSiteLocale();
+  const build = (platform: PlatformKey): InstallStep[] =>
+    t.download.steps[platform].map((step, index) => ({
+      title: renderTitle(
+        step.title,
+        step.glyphLabel,
+        STEP_ICONS[platform][index] ?? null,
+      ),
+      detail: step.detail,
+    }));
+  return {
+    ios: build("ios"),
+    android: build("android"),
+    desktop: build("desktop"),
+  };
+}
 
 export function StepList({
   steps,

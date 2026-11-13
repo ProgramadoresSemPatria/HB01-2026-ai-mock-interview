@@ -3,10 +3,13 @@
 import { useRef } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
+
 const LOGO_MARKS = ["Acme Corp", "Vertex AI", "Northwind", "Prism Tech", "Helion", "Cobalt"];
 
 export default function SocialProofSection() {
   const ref = useRef<HTMLElement>(null);
+  const { t } = useSiteLocale();
   const prefersReducedMotion = useReducedMotion();
   const isInView = useInView(ref, { once: true, amount: 0.3 });
 
@@ -22,7 +25,7 @@ export default function SocialProofSection() {
         }
         transition={{ duration: 0.7, ease: "easeOut" }}
       >
-        <p className="landing-eyebrow mb-8 md:mb-10">Trusted by engineers at</p>
+        <p className="landing-eyebrow mb-8 md:mb-10">{t.socialProof.eyebrow}</p>
         <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-5 md:gap-x-16">
           {LOGO_MARKS.map((name) => (
             <span

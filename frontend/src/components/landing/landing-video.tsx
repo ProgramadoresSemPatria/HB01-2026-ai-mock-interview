@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
+
 /**
  * Public assets are not rewritten by Next's `basePath`, so prefix them the
  * same way `auth-client.ts` does (Cloudflare builds serve under a subpath).
@@ -30,6 +32,7 @@ export function LandingVideo({
   height,
   className,
 }: LandingVideoProps) {
+  const { t } = useSiteLocale();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isNear, setIsNear] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -71,7 +74,18 @@ export function LandingVideo({
     <div
       className={`landing-artifact overflow-hidden !p-2 md:!p-3 ${className ?? ""}`}
     >
-      <div className="overflow-hidden rounded-[16px] border border-border-hairline bg-paper-white">
+      <div className="relative overflow-hidden rounded-[16px] border border-border-hairline bg-paper-white">
+        <span
+          className="manrope pointer-events-none absolute bottom-2.5 right-2.5 z-10 inline-flex items-center gap-1.5 rounded-full bg-ink-black/75 py-1 pl-1.5 pr-2.5 text-[11px] font-medium leading-none text-white shadow-sm backdrop-blur-sm md:bottom-3 md:right-3"
+          aria-hidden
+        >
+          <span className="landing-playing flex h-4 w-4 items-end justify-center gap-[2px] rounded-full bg-jade pb-[4px]">
+            <span />
+            <span />
+            <span />
+          </span>
+          {t.video.playing}
+        </span>
         {reducedMotion ? (
           // eslint-disable-next-line @next/next/no-img-element -- static poster from /public, sized by width/height
           <img

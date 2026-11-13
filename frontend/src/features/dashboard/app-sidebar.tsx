@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/session-provider";
 import { usePwaInstall } from "@/features/pwa/use-pwa-install";
+import { ComingSoonBadge } from "@/components/coming-soon-badge";
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard", tour: undefined },
@@ -173,6 +174,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           >
             <Smartphone className="h-4 w-4 shrink-0 text-jade-deep" aria-hidden="true" />
             Install the app
+            <ComingSoonBadge className="ml-auto" />
           </Link>
         )}
         <Link

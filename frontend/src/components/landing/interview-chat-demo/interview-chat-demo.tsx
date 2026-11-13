@@ -3,26 +3,31 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
+
 import { InterviewChatCompose } from "./interview-chat-compose";
 import { InterviewChatMessages } from "./interview-chat-messages";
 import { InterviewSessionSidebar } from "./interview-session-sidebar";
 import {
-  CONTEXT_BY_STATE,
-  INITIAL_MESSAGES,
-  SCRIPTED_TURNS,
-  SESSION_META,
+  buildScriptedConversation,
   TYPING_DELAY_MS,
 } from "./scripted-conversation";
 import type { DemoMessage } from "./types";
 import "./interview-chat-demo.css";
 import { useScrollPassthrough } from "./use-scroll-passthrough";
 
+/**
+ * Scripted interview chat. The parent remounts it (`key={locale}`) when the
+ * site language changes, so initial state is read once per language.
+ */
 export function InterviewChatDemo() {
   const prefersReducedMotion = useReducedMotion();
-  const [messages, setMessages] = useState<DemoMessage[]>(INITIAL_MESSAGES);
+  const { t } = useSiteLocale();
+  const script = buildScriptedConversation(t.interviewDemo);
+  const [messages, setMessages] = useState<DemoMessage[]>(script.initialMessages);
   const [draft, setDraft] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [contextText, setContextText] = useState<string>(CONTEXT_BY_STATE.idle);
+  const [contextText, setContextText] = useState<string>(script.contextByState.idle);
   const [scriptIndex, setScriptIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -67,9 +72,9 @@ export function InterviewChatDemo() {
     setMessages((prev) => [...prev, humanMessage]);
     setDraft("");
     setIsTyping(true);
-    setContextText(CONTEXT_BY_STATE.typing);
+    setContextText(script.contextByState.typing);
 
-    const turn = SCRIPTED_TURNS[scriptIndex];
+    const turn = script.scriptedTurns[scriptIndex];
     const delay = prefersReducedMotion ? 0 : TYPING_DELAY_MS;
 
     clearPendingTimeout();
@@ -77,7 +82,7 @@ export function InterviewChatDemo() {
       if (!turn) {
         setIsTyping(false);
         setIsComplete(true);
-        setContextText(CONTEXT_BY_STATE.complete);
+        setContextText(script.contextByState.complete);
         return;
       }
 
@@ -93,7 +98,7 @@ export function InterviewChatDemo() {
       setContextText(turn.contextText);
       setScriptIndex((prev) => prev + 1);
 
-      if (scriptIndex + 1 >= SCRIPTED_TURNS.length) {
+      if (scriptIndex + 1 >= script.scriptedTurns.length) {
         setIsComplete(true);
       }
     }, delay);
@@ -102,7 +107,7 @@ export function InterviewChatDemo() {
   return (
     <div ref={rootRef} className="interview-chat-demo">
       <div className="interview-chat-demo__layout">
-        <InterviewSessionSidebar meta={SESSION_META} contextText={contextText} />
+        <InterviewSessionSidebar meta={script.sessionMeta} contextText={contextText} />
 
         <div className="interview-chat-demo__chat-panel">
           <InterviewChatMessages messages={displayMessages} />

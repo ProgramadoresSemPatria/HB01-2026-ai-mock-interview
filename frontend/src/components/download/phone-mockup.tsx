@@ -1,4 +1,8 @@
+"use client";
+
 import { ArrowUp, ChevronLeft } from "lucide-react";
+
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
 
 /** Generic phone frame — pure HTML/CSS, no real-device branding. */
 function PhoneFrame({ children }: { children: React.ReactNode }) {
@@ -49,6 +53,8 @@ function StatusBar() {
 }
 
 function AppScreen() {
+  const { t } = useSiteLocale();
+  const copy = t.download.phone;
   return (
     <div className="flex h-full flex-col">
       <StatusBar />
@@ -63,14 +69,14 @@ function AppScreen() {
         />
         <div className="min-w-0 flex-1">
           <p className="manrope truncate text-[13px] font-semibold text-ink-black">
-            System Design
+            {copy.topic}
           </p>
           <p className="manrope text-[11px] text-ash-gray">
-            Mid level · Question 3 of 6
+            {copy.progress}
           </p>
         </div>
         <span className="manrope rounded-full bg-jade-pale px-2 py-0.5 text-[10px] font-medium text-jade-deep">
-          Live
+          {copy.live}
         </span>
       </div>
 
@@ -78,27 +84,25 @@ function AppScreen() {
       <div className="flex flex-1 flex-col gap-2.5 overflow-hidden bg-fog-white px-3 py-3">
         <div className="max-w-[86%] rounded-[16px] rounded-tl-[6px] bg-paper-white p-3 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
           <p className="manrope mb-1 text-[10px] text-ash-gray">
-            AI Interviewer
+            {copy.interviewer}
           </p>
           <p className="manrope text-[12.5px] leading-snug text-ink-black">
-            Your resume mentions a feed service at 2M DAU. How would you shard
-            it without hot partitions?
+            {copy.question}
           </p>
         </div>
 
         <div className="ml-auto max-w-[86%] rounded-[16px] rounded-tr-[6px] bg-ink-black p-3">
           <p className="manrope text-[12.5px] leading-snug text-paper-white">
-            Consistent hashing on user ID, then isolate celebrity keys into a
-            fan-out-on-read path.
+            {copy.answer}
           </p>
         </div>
 
         <div className="max-w-[86%] rounded-[16px] rounded-tl-[6px] bg-paper-white p-3 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
           <p className="manrope mb-1 text-[10px] text-ash-gray">
-            AI Interviewer
+            {copy.interviewer}
           </p>
           <p className="manrope text-[12.5px] leading-snug text-ink-black">
-            Good. What breaks first when a celebrity posts
+            {copy.followUp}
             <span className="download-caret" aria-hidden />
           </p>
         </div>
@@ -108,7 +112,7 @@ function AppScreen() {
       <div className="border-t border-border-hairline bg-paper-white px-3 pb-6 pt-2.5">
         <div className="flex items-center gap-2 rounded-[16px] border border-border-hairline py-1.5 pl-3 pr-1.5">
           <span className="manrope flex-1 text-[12px] text-smoke-gray">
-            Type your answer…
+            {copy.composer}
           </span>
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-jade text-paper-white">
             <ArrowUp size={14} strokeWidth={2} aria-hidden />
@@ -124,27 +128,27 @@ function AppScreen() {
 }
 
 function FeedbackChip() {
+  const { t } = useSiteLocale();
+  const copy = t.download.phone;
   return (
     <div className="landing-artifact w-[200px] !p-4">
-      <p className="landing-tag !text-[12px]">Session feedback</p>
+      <p className="landing-tag !text-[12px]">{copy.feedbackTag}</p>
       <p className="manrope mt-1 text-[22px] font-medium leading-none text-ink-black">
         78<span className="text-[15px] text-slate-gray"> /100</span>
       </p>
       <p className="manrope mt-2 text-[12px] leading-snug text-slate-gray">
-        Strong trade-off framing. Go deeper on cache invalidation.
+        {copy.feedbackBody}
       </p>
     </div>
   );
 }
 
 function BacklogChip() {
-  const topics = [
-    { topic: "Cache invalidation", tag: "New" },
-    { topic: "Rate limiting", tag: "Review" },
-  ];
+  const { t } = useSiteLocale();
+  const topics = t.download.phone.backlog;
   return (
     <div className="landing-artifact w-[210px] !p-4">
-      <p className="landing-tag mb-2 !text-[12px]">Study backlog</p>
+      <p className="landing-tag mb-2 !text-[12px]">{t.download.phone.backlogTag}</p>
       <ul className="space-y-1.5">
         {topics.map((t) => (
           <li
@@ -163,11 +167,11 @@ function BacklogChip() {
 }
 
 export default function PhoneMockup() {
+  const { t } = useSiteLocale();
   return (
     <figure className="relative mx-auto w-full max-w-[560px]">
       <figcaption className="sr-only">
-        Hone running as an installed app: a live, resume-aware system design
-        interview on a phone, with session feedback and a study backlog.
+        {t.download.phone.caption}
       </figcaption>
       <div aria-hidden>
         <PhoneFrame>

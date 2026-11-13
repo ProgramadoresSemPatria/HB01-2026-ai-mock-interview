@@ -1,6 +1,7 @@
 import { CheckCheck, Sparkle, User } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
 
 import type { DemoMessageRole } from "./types";
 
@@ -11,11 +12,11 @@ type InterviewChatMessageProps = {
   isTyping?: boolean;
 };
 
-function formatTimestamp(iso: string): string {
-  return new Date(iso).toLocaleTimeString("en-US", {
+function formatTimestamp(iso: string, locale: string): string {
+  return new Date(iso).toLocaleTimeString(locale, {
     hour: "numeric",
     minute: "2-digit",
-    hour12: true,
+    hour12: locale === "en-US",
   });
 }
 
@@ -26,6 +27,7 @@ export function InterviewChatMessage({
   isTyping = false,
 }: InterviewChatMessageProps) {
   const isHuman = role === "human";
+  const { t } = useSiteLocale();
 
   return (
     <div
@@ -72,7 +74,7 @@ export function InterviewChatMessage({
               isHuman ? "text-white/70" : "text-[var(--color-ash-gray)]",
             )}
           >
-            {isHuman ? "Candidate" : "AI Interviewer"}
+            {isHuman ? t.interviewDemo.candidate : t.interviewDemo.interviewer}
           </span>
           {isHuman && (
             <User className="size-3 text-white/70" strokeWidth={1.5} />
@@ -108,7 +110,7 @@ export function InterviewChatMessage({
               isHuman ? "text-white/50" : "text-[var(--color-ash-gray)]",
             )}
           >
-            {formatTimestamp(createdAt)}
+            {formatTimestamp(createdAt, t.interviewDemo.timeLocale)}
           </span>
           {isHuman && !isTyping && (
             <CheckCheck className="size-3 text-white/50" strokeWidth={1.5} />

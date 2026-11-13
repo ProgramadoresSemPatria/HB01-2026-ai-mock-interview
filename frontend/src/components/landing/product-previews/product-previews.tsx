@@ -1,31 +1,20 @@
+"use client";
+
 import { DashboardPreview } from "@/components/product-previews/dashboard-preview";
-
-const STRENGTHS = [
-  "Articulated trade-offs without prompting",
-  "Identified bottleneck in O(n²) approach",
-  "Proposed horizontal scaling strategy",
-];
-
-const GROWTH_AREAS = [
-  "CAP theorem application in edge cases",
-  "Latency vs. throughput framing",
-  "Consensus algorithm depth",
-];
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
 
 function FeedbackPreview() {
+  const { t } = useSiteLocale();
+  const report = t.previews.report;
   return (
     <div className="landing-artifact !p-6 md:!p-8">
-      <p className="landing-tag mb-1">Session report</p>
+      <p className="landing-tag mb-1">{report.tag}</p>
       <h4 className="manrope mb-6 text-xl font-medium md:text-[22px] text-[var(--color-ink-black)]">
-        System Design — Ride Share App
+        {report.title}
       </h4>
 
       <div className="mb-5 grid grid-cols-3 gap-4 rounded-[16px] bg-[var(--color-mist-gray)] p-4">
-        {[
-          { label: "Independent thinking", value: "High" },
-          { label: "Canned answers", value: "0" },
-          { label: "Reasoning validated", value: "100%" },
-        ].map((m) => (
+        {report.metrics.map((m) => (
           <div key={m.label} className="text-center">
             <p className="manrope text-lg font-medium text-[var(--color-ink-black)]">
               {m.value}
@@ -36,9 +25,9 @@ function FeedbackPreview() {
       </div>
 
       <div className="mb-4">
-        <p className="landing-tag mb-2">Strengths</p>
+        <p className="landing-tag mb-2">{report.strengthsTag}</p>
         <ul className="space-y-1.5">
-          {STRENGTHS.map((s) => (
+          {report.strengths.map((s) => (
             <li
               key={s}
               className="manrope flex items-start gap-2 text-sm text-[var(--color-ink-black)] md:text-[15px]"
@@ -53,9 +42,9 @@ function FeedbackPreview() {
       </div>
 
       <div>
-        <p className="landing-tag mb-2">Growth areas</p>
+        <p className="landing-tag mb-2">{report.growthTag}</p>
         <ul className="space-y-1.5">
-          {GROWTH_AREAS.map((g) => (
+          {report.growthAreas.map((g) => (
             <li
               key={g}
               className="manrope flex items-start gap-2 text-sm text-[var(--color-ink-black)] md:text-[15px]"
@@ -73,25 +62,26 @@ function FeedbackPreview() {
 }
 
 export default function ProductPreviews() {
+  const { t } = useSiteLocale();
   return (
     <div className="mt-24 md:mt-32">
       <div className="mx-auto mb-10 max-w-3xl text-center md:mb-14">
-        <p className="landing-eyebrow">After every session</p>
+        <p className="landing-eyebrow">{t.previews.eyebrow}</p>
         <h3 className="landing-heading mt-4">
-          You answer. It measures exactly where you stand.
+          {t.previews.title}
         </h3>
       </div>
 
       <div className="grid gap-8 md:grid-cols-2 lg:gap-10">
         <div>
-          <p className="landing-tag mb-3">Progress dashboard</p>
+          <p className="landing-tag mb-3">{t.previews.dashboardTag}</p>
           <DashboardPreview
             className="!p-6 md:!p-8"
             rowTextClassName="text-sm md:text-[15px]"
           />
         </div>
         <div>
-          <p className="landing-tag mb-3">Feedback report</p>
+          <p className="landing-tag mb-3">{t.previews.feedbackTag}</p>
           <FeedbackPreview />
         </div>
       </div>

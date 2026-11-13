@@ -4,20 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Copy, Download } from "lucide-react";
 
-import {
-  ANDROID_STEPS,
-  IOS_STEPS,
-  StepList,
-} from "@/components/download/install-steps";
-import {
-  usePwaInstall,
-  type InstallOutcome,
-} from "@/features/pwa/use-pwa-install";
+import { StepList, useInstallSteps } from "@/components/download/install-steps";
+import { usePwaInstall } from "@/features/pwa/use-pwa-install";
+import { ComingSoonBadge } from "@/components/coming-soon-badge";
+import { ComingSoonDialog } from "@/components/coming-soon-dialog";
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
 
 const PILL =
   "manrope inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-base font-normal transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-jade/30 focus-visible:ring-offset-2";
-const SOLID = `${PILL} border border-jade bg-jade text-paper-white`;
-const OUTLINE = `${PILL} border border-ink-black bg-transparent text-ink-black`;
+const SOLID = `${PILL} cursor-pointer border border-jade bg-jade text-paper-white`;
+const OUTLINE = `${PILL} cursor-pointer border border-ink-black bg-transparent text-ink-black`;
 
 type InstallCtaProps = {
   align?: "start" | "center";
@@ -30,54 +26,29 @@ export default function InstallCta({
   showGuide = true,
 }: InstallCtaProps) {
   const install = usePwaInstall();
-  const [outcome, setOutcome] = useState<InstallOutcome | null>(null);
+  const { t } = useSiteLocale();
+  const copy = t.download.installCta;
+  const steps = useInstallSteps();
+  const [comingSoonOpen, setComingSoonOpen] = useState(false);
 
   const alignClass =
     align === "center" ? "items-center text-center" : "items-start text-left";
   const rowClass = align === "center" ? "justify-center" : "justify-start";
 
-  // Already running as an installed app (or just installed).
-  if (install.isInstalled || outcome === "accepted") {
+  // Already running as an installed app.
+  if (install.isInstalled) {
     return (
       <div className={`flex flex-col gap-3 ${alignClass}`} aria-live="polite">
         <p className="manrope inline-flex items-center gap-2 text-sm text-jade-deep">
           <Check size={16} strokeWidth={2} aria-hidden />
-          {install.isInstalled
-            ? "Hone is installed on this device."
-            : "Installing Hone — look for it on your home screen or app list."}
+          {copy.installed}
         </p>
         <div className={`flex flex-wrap gap-3 ${rowClass}`}>
           <Link href="/dashboard" className={SOLID}>
-            Open Hone
+            {copy.openHone}
             <ArrowRight size={18} strokeWidth={1.75} aria-hidden />
           </Link>
         </div>
-      </div>
-    );
-  }
-
-  // Native prompt available (Chromium on Android / desktop).
-  if (install.canPrompt) {
-    return (
-      <div className={`flex flex-col gap-3 ${alignClass}`}>
-        <div className={`flex flex-wrap gap-3 ${rowClass}`}>
-          <button
-            type="button"
-            className={SOLID}
-            onClick={async () => setOutcome(await install.promptInstall())}
-          >
-            <Download size={18} strokeWidth={1.75} aria-hidden />
-            Install Hone
-          </button>
-          <Link href="/login" className={OUTLINE}>
-            Use in browser
-          </Link>
-        </div>
-        <p className="manrope text-[13px] text-ash-gray" aria-live="polite">
-          {outcome === "dismissed"
-            ? "No problem — you can install any time from your browser menu."
-            : "Free · Installs in seconds · No app store"}
-        </p>
       </div>
     );
   }
@@ -87,14 +58,14 @@ export default function InstallCta({
     return (
       <div className={`flex w-full flex-col gap-4 ${alignClass}`}>
         {showGuide ? (
-          <GuideCard label="Install on iPhone in 3 taps">
-            <StepList steps={IOS_STEPS} compact />
+          <GuideCard label={copy.iosGuide}>
+            <StepList steps={steps.ios} compact />
           </GuideCard>
         ) : (
           <div className={`flex flex-wrap gap-3 ${rowClass}`}>
             <a href="#install" className={SOLID}>
               <Download size={18} strokeWidth={1.75} aria-hidden />
-              Add to Home Screen
+              {copy.addToHomeScreen}
             </a>
           </div>
         )}
@@ -106,14 +77,12 @@ export default function InstallCta({
   if (install.platform === "ios") {
     return (
       <div className={`flex w-full flex-col gap-4 ${alignClass}`}>
-        <GuideCard label="Open this page in Safari">
+        <GuideCard label={copy.safariGuide}>
           <p className="manrope text-[15px] leading-snug text-ink-black">
-            iPhone installs work best from Safari. Copy the link, paste it into
-            Safari, then tap Share → Add to Home Screen.
+            {copy.safariBody}
           </p>
           <p className="manrope mt-2 text-[13px] leading-snug text-slate-gray">
-            On recent iOS versions some browsers also offer Add to Home Screen
-            in their share menu.
+            {copy.safariNote}
           </p>
           <div className="mt-4">
             <CopyLinkButton />
@@ -124,31 +93,42 @@ export default function InstallCta({
   }
 
   // Android without a native prompt (prompt not ready yet, or other browser).
-  if (install.platform === "android" && showGuide) {
+  if (install.platform === "android" && !install.canPrompt && showGuide) {
     return (
       <div className={`flex w-full flex-col gap-4 ${alignClass}`}>
-        <GuideCard label="Install on Android">
-          <StepList steps={ANDROID_STEPS} compact />
+        <GuideCard label={copy.androidGuide}>
+          <StepList steps={steps.android} compact />
         </GuideCard>
       </div>
     );
   }
 
-  // Desktop without a prompt, or environment not read yet (SSR / no JS).
+  // Chromium with a native prompt, desktop, or environment not read yet
+  // (SSR / no JS). The app is still in development, so "Install Hone" opens
+  // the coming-soon dialog instead of `install.promptInstall()`; the hook and
+  // the beforeinstallprompt store stay in place to re-enable it at launch.
   return (
     <div className={`flex flex-col gap-3 ${alignClass}`}>
       <div className={`flex flex-wrap gap-3 ${rowClass}`}>
-        <a href="#install" className={SOLID}>
+        <button
+          type="button"
+          className={SOLID}
+          aria-haspopup="dialog"
+          onClick={() => setComingSoonOpen(true)}
+        >
           <Download size={18} strokeWidth={1.75} aria-hidden />
-          Install Hone
-        </a>
+          {copy.installHone}
+          <ComingSoonBadge tone="inverse" />
+        </button>
         <Link href="/login" className={OUTLINE}>
-          Use in browser
+          {t.common.useInBrowser}
         </Link>
       </div>
-      <p className="manrope text-[13px] text-ash-gray">
-        Free · Installs in seconds · No app store
-      </p>
+      <p className="manrope text-[13px] text-ash-gray">{copy.fineprint}</p>
+      <ComingSoonDialog
+        open={comingSoonOpen}
+        onOpenChange={setComingSoonOpen}
+      />
     </div>
   );
 }
@@ -160,6 +140,7 @@ function GuideCard({
   label: string;
   children: React.ReactNode;
 }) {
+  const { t } = useSiteLocale();
   return (
     <div className="flex w-full max-w-[420px] flex-col gap-3">
       <section
@@ -173,7 +154,7 @@ function GuideCard({
         href="/login"
         className="manrope inline-flex items-center gap-1.5 self-start rounded-md px-1 text-sm text-slate-gray underline-offset-4 transition-colors hover:text-ink-black hover:underline focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-jade/30"
       >
-        Or keep using Hone in your browser
+        {t.download.installCta.keepInBrowser}
         <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
       </Link>
     </div>
@@ -182,6 +163,8 @@ function GuideCard({
 
 function CopyLinkButton() {
   const [copied, setCopied] = useState(false);
+  const { t } = useSiteLocale();
+  const copy = t.download.installCta;
 
   return (
     <button
@@ -202,7 +185,7 @@ function CopyLinkButton() {
       ) : (
         <Copy size={16} strokeWidth={1.75} aria-hidden />
       )}
-      <span aria-live="polite">{copied ? "Link copied" : "Copy link"}</span>
+      <span aria-live="polite">{copied ? copy.linkCopied : copy.copyLink}</span>
     </button>
   );
 }

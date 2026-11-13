@@ -1,29 +1,12 @@
+"use client";
+
 import { ChevronDown } from "lucide-react";
 
-const FAQ = [
-  {
-    q: "Is the app free?",
-    a: "Yes. Installing Hone costs nothing — it's the same Hone you use in the browser, with the same account and the same plan. Start free, no credit card.",
-  },
-  {
-    q: "How much storage does it take?",
-    a: "Very little. Hone is a web app, so there's no large download — your device keeps an icon and a small cache so it opens quickly. Your interviews and progress live in your account, not on the phone.",
-  },
-  {
-    q: "Do I need an internet connection?",
-    a: "Yes. The AI interviewer and feedback run live, so practice sessions need a connection — just like in the browser.",
-  },
-  {
-    q: "How do I uninstall it?",
-    a: "On iPhone or Android, press and hold the Hone icon and choose Remove App or Uninstall. On desktop, open Hone, then use the window menu and choose Uninstall. Your account and history stay intact.",
-  },
-  {
-    q: "Is it safe?",
-    a: "Yes. Hone runs inside your browser's security sandbox and is served over HTTPS from the same site you already use. Installing doesn't ask for contacts, location or any extra permissions.",
-  },
-];
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
 
 export default function DownloadFaq() {
+  const { t } = useSiteLocale();
+  const copy = t.download.faq;
   return (
     <section
       aria-labelledby="download-faq-title"
@@ -31,14 +14,14 @@ export default function DownloadFaq() {
     >
       <div className="mx-auto grid max-w-[1200px] gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
         <div>
-          <p className="landing-tag mb-3">FAQ</p>
+          <p className="landing-tag mb-3">{copy.eyebrow}</p>
           <h2 id="download-faq-title" className="landing-heading">
-            Questions, answered
+            {copy.title}
           </h2>
         </div>
 
         <div className="border-t border-border-hairline">
-          {FAQ.map(({ q, a }) => (
+          {copy.items.map(({ q, a }) => (
             <details
               key={q}
               name="download-faq"

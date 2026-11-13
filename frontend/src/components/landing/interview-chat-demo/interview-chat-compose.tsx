@@ -1,5 +1,7 @@
 import { Send } from "lucide-react";
 
+import { useSiteLocale } from "@/features/site-locale/site-locale-provider";
+
 type InterviewChatComposeProps = {
   draft: string;
   onDraftChange: (value: string) => void;
@@ -13,6 +15,7 @@ export function InterviewChatCompose({
   onSubmit,
   disabled = false,
 }: InterviewChatComposeProps) {
+  const { t } = useSiteLocale();
   return (
     <form
       onSubmit={onSubmit}
@@ -23,17 +26,17 @@ export function InterviewChatCompose({
           type="text"
           value={draft}
           onChange={(e) => onDraftChange(e.target.value)}
-          placeholder="Type your response…"
+          placeholder={t.interviewDemo.composePlaceholder}
           disabled={disabled}
           className="manrope min-w-0 flex-1 bg-transparent text-base text-[var(--color-ink-black)] placeholder:text-[var(--color-smoke-gray)] focus:outline-none disabled:opacity-50"
         />
         <span className="manrope hidden shrink-0 text-xs text-[var(--color-ash-gray)] sm:inline">
-          Press Enter to send
+          {t.interviewDemo.composeHint}
         </span>
         <button
           type="submit"
           disabled={disabled || !draft.trim()}
-          aria-label="Send message"
+          aria-label={t.interviewDemo.sendAriaLabel}
           className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-jade text-paper-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Send className="size-4" strokeWidth={1.5} />
