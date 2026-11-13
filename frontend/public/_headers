@@ -1,2 +1,31 @@
+# https://developers.cloudflare.com/workers/static-assets/headers
+# NOTE: with NEXT_BASE_PATH, OpenNext copies public/ into
+# .open-next/assets/<basePath>/, so this file is not at the assets root.
+# The authoritative PWA headers live in next.config.ts `headers()`, which
+# OpenNext applies to asset responses too. Rules below are kept for setups
+# that serve public/ from the root (both path variants listed).
 /_next/static/*
   Cache-Control: public,max-age=31536000,immutable
+
+/ai-mock-interview/_next/static/*
+  Cache-Control: public,max-age=31536000,immutable
+
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+  Service-Worker-Allowed: /
+
+/ai-mock-interview/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+  Service-Worker-Allowed: /ai-mock-interview
+
+/manifest.webmanifest
+  Cache-Control: public, max-age=0, must-revalidate
+
+/ai-mock-interview/manifest.webmanifest
+  Cache-Control: public, max-age=0, must-revalidate
+
+/offline.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/ai-mock-interview/offline.html
+  Cache-Control: public, max-age=0, must-revalidate
