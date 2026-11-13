@@ -47,7 +47,7 @@ export function StudyTabs({ activeTab, onTabChange }: StudyTabsProps) {
 
   return (
     <div
-      className="flex items-center gap-6 border-b border-border-hairline"
+      className="flex flex-wrap items-center gap-x-5 border-b border-border-hairline sm:gap-x-6"
       role="tablist"
       aria-label="Study topic status"
     >
@@ -63,7 +63,7 @@ export function StudyTabs({ activeTab, onTabChange }: StudyTabsProps) {
           onClick={() => onTabChange(tab.value)}
           onKeyDown={(event) => handleKeyDown(event, index)}
           className={cn(
-            "cursor-pointer border-b-2 pb-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2",
+            "min-h-11 shrink-0 cursor-pointer border-b-2 pb-3 text-sm whitespace-nowrap transition-colors md:min-h-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2",
             activeTab === tab.value
               ? "border-jade-deep font-semibold text-jade-deep"
               : "border-transparent text-text-base hover:text-ink-black",

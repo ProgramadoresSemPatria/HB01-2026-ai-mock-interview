@@ -40,16 +40,16 @@ export function DashboardStats({
   return (
     <ul
       aria-label="Interview activity summary"
-      className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
+      className="grid grid-cols-2 gap-3 lg:grid-cols-4"
     >
       {CARDS.map(({ key, label, icon: Icon }) => (
         <li
           key={key}
-          className="landing-mist-card flex min-w-0 flex-col gap-3 p-5!"
+          className="landing-mist-card flex min-w-0 flex-col gap-3 p-4! sm:p-5!"
         >
           <div className="flex items-start justify-between gap-3">
             <p className="landing-tag pt-1 text-text-base!">{label}</p>
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-jade-mist">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-jade-mist sm:size-10">
               <Icon
                 aria-hidden="true"
                 className="h-4 w-4 text-jade-deep"

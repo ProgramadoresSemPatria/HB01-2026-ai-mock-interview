@@ -47,17 +47,21 @@ export function StudyItemCard({
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
+        <div className="flex min-w-0 items-start gap-3">
           {selectable && (
-            <input
-              type="checkbox"
-              checked={selected}
-              onChange={onSelectToggle}
-              className="mt-1 h-4 w-4 cursor-pointer accent-jade focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
-              aria-label={`Select ${topicAngleLabel}`}
-            />
+            // The label pads the 16-20px checkbox out to a 44px touch target
+            // without moving it (negative margin cancels the padding).
+            <label className="-m-3 flex shrink-0 cursor-pointer p-3 md:m-0 md:p-0">
+              <input
+                type="checkbox"
+                checked={selected}
+                onChange={onSelectToggle}
+                className="mt-1 h-5 w-5 cursor-pointer accent-jade focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2 md:h-4 md:w-4"
+                aria-label={`Select ${topicAngleLabel}`}
+              />
+            </label>
           )}
-          <div className="space-y-2">
+          <div className="min-w-0 space-y-2">
             <ReviewPriorityBadge priority={item.priority} />
             <div>
               <h2 className="font-semibold text-ink-black">{topicAngleLabel}</h2>

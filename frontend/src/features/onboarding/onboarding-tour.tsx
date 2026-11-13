@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { EVENTS, Joyride, STATUS, type EventData, type Step } from "react-joyride";
 
@@ -68,7 +69,35 @@ const STEPS: Step[] = [
   },
 ];
 
+const NAV_STEP_PREFIX = '[data-tour="tour-nav-';
+
+/**
+ * Below md the sidebar lives in a closed drawer, so its links have no box and
+ * Joyride would wait on them forever (spinner over a dimmed page). Phones get
+ * one step on the menu button instead of the four sidebar steps.
+ */
+const MOBILE_STEPS: Step[] = [
+  ...STEPS.filter(
+    (step) =>
+      typeof step.target !== "string" ||
+      !step.target.startsWith(NAV_STEP_PREFIX),
+  ).slice(0, -1),
+  {
+    target: '[data-tour="tour-mobile-menu"]',
+    title: "Navigation",
+    content:
+      "Open this menu for Practice, Feedback, Study, and Resumes: everything else in the app lives here.",
+  },
+  STEPS[STEPS.length - 1],
+];
+
+function getSteps(): Step[] {
+  if (typeof window === "undefined") return STEPS;
+  return window.matchMedia("(max-width: 767px)").matches ? MOBILE_STEPS : STEPS;
+}
+
 export function OnboardingTour({ ready }: { ready: boolean }) {
+  const [steps] = useState(getSteps);
   const { shouldRun, complete } = useOnboardingTutorial();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -95,7 +124,7 @@ export function OnboardingTour({ ready }: { ready: boolean }) {
   return (
     <Joyride
       run={(shouldRun || manualTrigger) && ready}
-      steps={STEPS}
+      steps={steps}
       continuous
       scrollToFirstStep
       onEvent={handleEvent}
@@ -115,7 +144,7 @@ export function OnboardingTour({ ready }: { ready: boolean }) {
         overlayColor: "rgba(23, 25, 28, 0.55)",
         zIndex: 10000,
         spotlightRadius: 16,
-        width: 380,
+        width: "min(380px, calc(100vw - 32px))",
         buttons: ["back", "primary", "skip"],
         skipBeacon: true,
         showProgress: true,
@@ -149,14 +178,14 @@ export function OnboardingTour({ ready }: { ready: boolean }) {
         },
         buttonPrimary: {
           borderRadius: "var(--radius-buttons)",
-          padding: "10px 20px",
+          padding: "12px 20px",
           fontSize: "0.875rem",
           fontWeight: 500,
           fontFamily: "var(--font-manrope), system-ui, sans-serif",
         },
         buttonBack: {
           borderRadius: "var(--radius-buttons)",
-          padding: "10px 14px",
+          padding: "12px 14px",
           fontSize: "0.875rem",
           fontFamily: "var(--font-manrope), system-ui, sans-serif",
           color: "var(--color-jade-deep)",

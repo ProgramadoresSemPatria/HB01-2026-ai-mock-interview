@@ -41,7 +41,7 @@ export function StudyResumeBanner() {
       </div>
       <Link
         href={config.href(session.id)}
-        className="flex shrink-0 cursor-pointer items-center gap-1 rounded-full px-2 py-1 text-sm font-semibold text-jade-deep hover:bg-jade-mist focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+        className="flex min-h-11 shrink-0 cursor-pointer items-center gap-1 rounded-full px-2 py-1 text-sm font-semibold text-jade-deep md:min-h-0 hover:bg-jade-mist focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
       >
         Resume
         <ChevronRight className="h-4 w-4" />

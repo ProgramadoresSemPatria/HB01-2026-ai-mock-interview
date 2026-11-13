@@ -39,7 +39,7 @@ export function InterviewMessageBubble({
 
       <div
         className={cn(
-          "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm",
+          "min-w-0 max-w-[85%] rounded-2xl px-4 py-2.5 text-sm",
           isHuman
             ? "rounded-tr-md bg-jade-deep text-white"
             : "rounded-tl-md border border-border-hairline bg-paper-white text-ink-black",

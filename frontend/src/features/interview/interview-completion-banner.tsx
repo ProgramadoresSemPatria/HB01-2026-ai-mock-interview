@@ -23,7 +23,7 @@ export function InterviewCompletionBanner({
             <button
               type="button"
               onClick={onViewReview}
-              className="cursor-pointer rounded-sm text-xs font-semibold text-jade-deep underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+              className="-my-3 cursor-pointer rounded-sm py-3 text-xs font-semibold text-jade-deep underline underline-offset-4 md:my-0 md:py-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
             >
               Jump to review
             </button>

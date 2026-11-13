@@ -73,7 +73,7 @@ export function InterviewMessageList({
   return (
     <div
       ref={scrollRef}
-      className="flex-1 space-y-4 overflow-y-auto rounded-[20px] bg-paper-white p-4 shadow-(--shadow-subtle-3)"
+      className="flex-1 space-y-4 overflow-y-auto overscroll-contain rounded-[20px] bg-paper-white p-3 shadow-(--shadow-subtle-3) sm:p-4"
     >
       {hasMoreOlder && (
         <div className="flex justify-center pb-2">
@@ -81,7 +81,7 @@ export function InterviewMessageList({
             type="button"
             onClick={handleLoadOlder}
             disabled={isLoadingOlder}
-            className="cursor-pointer rounded-full border border-border-hairline px-4 py-1.5 text-xs font-medium text-text-base transition-colors hover:bg-mist-gray disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+            className="min-h-11 cursor-pointer rounded-full border border-border-hairline px-4 py-1.5 text-xs font-medium text-text-base md:min-h-0 transition-colors hover:bg-mist-gray disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
           >
             {isLoadingOlder ? "Loading…" : "Load older messages"}
           </button>
@@ -94,7 +94,7 @@ export function InterviewMessageList({
           <button
             type="button"
             onClick={onStart}
-            className="cursor-pointer rounded-full bg-jade-deep px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+            className="min-h-11 cursor-pointer rounded-full bg-jade-deep px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
           >
             {startLabel}
           </button>

@@ -135,7 +135,7 @@ export function InterviewFeedbackWidget({
           placeholder="Optional comment…"
           rows={1}
           disabled={isSubmitting}
-          className="w-full resize-none rounded-2xl border border-border-hairline bg-paper-white px-3 py-2 text-sm text-ink-black placeholder:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2 disabled:opacity-50"
+          className="w-full resize-none rounded-2xl border border-border-hairline bg-paper-white px-3 py-2 text-base text-ink-black md:text-sm placeholder:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2 disabled:opacity-50"
         />
       </div>
 

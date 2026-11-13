@@ -139,7 +139,7 @@ function NewSessionContent() {
         action={
           <a
             href="/practice"
-            className="inline-flex rounded-full bg-jade-deep px-4 py-2 text-sm font-semibold text-white hover:bg-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+            className="inline-flex min-h-11 items-center rounded-full bg-jade-deep px-4 py-2 text-sm font-semibold text-white hover:bg-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
           >
             Choose a resume
           </a>
@@ -236,7 +236,7 @@ function NewSessionContent() {
           placeholder="Paste a job posting to tailor questions to a specific role…"
           rows={5}
           maxLength={MAX_JOB_DESCRIPTION_LENGTH}
-          className="w-full resize-y rounded-2xl border border-border-hairline bg-paper-white px-4 py-3 text-sm text-ink-black placeholder:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+          className="w-full resize-y rounded-2xl border border-border-hairline bg-paper-white px-4 py-3 text-base text-ink-black md:text-sm placeholder:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
         />
         <p className="text-right text-xs text-text-base">
           {jobDescription.length}/{MAX_JOB_DESCRIPTION_LENGTH}

@@ -5,7 +5,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const inputVariants = cva(
-  "w-full min-w-0 border px-4 text-sm text-text-strong transition-[color,background-color,border-color,box-shadow] duration-200 outline-none placeholder:text-text-soft file:inline-flex file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-4 focus-visible:ring-ring/35 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60 aria-invalid:border-destructive aria-invalid:ring-4 aria-invalid:ring-destructive/15",
+  "w-full min-w-0 border px-4 text-base text-text-strong md:text-sm transition-[color,background-color,border-color,box-shadow] duration-200 outline-none placeholder:text-text-soft file:inline-flex file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-4 focus-visible:ring-ring/35 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60 aria-invalid:border-destructive aria-invalid:ring-4 aria-invalid:ring-destructive/15",
   {
     variants: {
       variant: {
@@ -17,7 +17,7 @@ const inputVariants = cva(
       },
       size: {
         default: "h-12 rounded-2xl",
-        sm: "h-10 rounded-xl px-3.5 text-xs",
+        sm: "h-10 rounded-xl px-3.5 text-base md:text-xs",
       },
     },
     defaultVariants: {

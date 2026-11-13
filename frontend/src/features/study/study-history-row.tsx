@@ -69,7 +69,7 @@ export function StudyHistoryRow({
         type="button"
         aria-label="Delete review session"
         onClick={() => setDeleteOpen(true)}
-        className="flex w-10 shrink-0 cursor-pointer items-center justify-center text-text-base transition-colors hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-jade"
+        className="flex w-11 shrink-0 cursor-pointer items-center justify-center text-text-base transition-colors hover:text-red-700 md:w-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-jade"
       >
         <Trash2 className="h-3.5 w-3.5" />
       </button>

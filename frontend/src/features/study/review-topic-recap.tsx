@@ -60,7 +60,7 @@ function RecapSection({
                 isWentWell ? "bg-jade" : "bg-ash-gray",
               )}
             />
-            <span>{item}</span>
+            <span className="min-w-0">{item}</span>
           </li>
         ))}
       </ul>

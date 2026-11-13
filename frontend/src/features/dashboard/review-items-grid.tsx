@@ -76,7 +76,7 @@ export function ReviewItemsSectionHeader() {
       </div>
       <Link
         href="/feedback"
-        className="manrope flex items-center gap-1.5 text-sm font-medium text-jade-deep underline-offset-4 transition-colors hover:text-ink-black hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-jade-deep"
+        className="manrope flex min-h-11 items-center gap-1.5 text-sm font-medium text-jade-deep underline-offset-4 transition-colors hover:text-ink-black hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-jade-deep"
       >
         View all
         <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />

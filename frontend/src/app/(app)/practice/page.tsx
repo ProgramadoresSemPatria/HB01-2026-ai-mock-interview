@@ -61,6 +61,7 @@ import {
   setStoredInterviewTurns,
 } from "@/features/interview/lib/interview-setup-storage";
 import { AppEmptyState } from "@/components/app/app-empty-state";
+import { MobilePanelToggle } from "@/components/app/mobile-panel-toggle";
 
 const LEVELS: { value: InterviewLevel; label: string }[] = [
   { value: "entry", label: "Entry Level" },
@@ -168,6 +169,11 @@ function PracticeContent() {
     return sessions[0]?.id ?? null;
   }, [activeSessionId, querySessionId, sessions]);
 
+  // Phones stack this panel above the chat. It starts collapsed whenever a
+  // conversation is on screen so the transcript and composer get the height.
+  const [mobilePanelOpen, setMobilePanelOpen] = useState<boolean | null>(null);
+  const isMobilePanelOpen = mobilePanelOpen ?? !resolvedSessionId;
+
   async function handleStartNewInterview() {
     if (!resolvedResumeId) {
       toast.error("Please upload and select a CV first.");
@@ -211,6 +217,7 @@ function PracticeContent() {
 
       // Select the new session
       setActiveSessionId(id);
+      setMobilePanelOpen(false);
       router.push(`/practice?sessionId=${id}`);
     } catch (err) {
       toast.error(
@@ -227,6 +234,7 @@ function PracticeContent() {
 
   function handleSelectSession(id: string) {
     setActiveSessionId(id);
+    setMobilePanelOpen(false);
     router.push(`/practice?sessionId=${id}`);
   }
 
@@ -257,202 +265,224 @@ function PracticeContent() {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden md:flex-row">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden lg:flex-row">
       {/* Lateral Panel */}
-      <aside className="flex max-h-[48%] w-full shrink-0 flex-col overflow-y-auto border-b border-border-hairline bg-fog-white md:h-full md:max-h-none md:w-80 md:border-r md:border-b-0">
-        <div className="shrink-0 space-y-4 border-b border-border-hairline p-4">
+      <aside className="flex max-h-[70%] w-full shrink-0 flex-col overflow-y-auto overscroll-contain border-b border-border-hairline bg-fog-white lg:h-full lg:max-h-none lg:w-80 lg:border-r lg:border-b-0">
+        <div
+          className={cn(
+            "shrink-0 space-y-4 border-b border-border-hairline p-4",
+            !isMobilePanelOpen && "max-lg:space-y-0",
+          )}
+        >
           <div className="flex items-center gap-2 text-ink-black">
             <Dumbbell className="h-5 w-5" />
             <h1 className="text-sm font-semibold">Practice panel</h1>
+            <MobilePanelToggle
+              open={isMobilePanelOpen}
+              onToggle={() => setMobilePanelOpen(!isMobilePanelOpen)}
+              controls="practice-panel-body"
+              label="practice settings and history"
+            />
           </div>
 
-          {/* Active CV Selector */}
-          <div className="space-y-1.5">
-            <label
-              htmlFor="practice-resume"
-              className="text-xs font-semibold text-text-base"
-            >
-              Active CV
-            </label>
-            {isLoadingResumes ? (
-              <div className="flex items-center gap-2 py-2 text-xs text-text-base">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                Loading CVs…
-              </div>
-            ) : resumesError ? (
-              <p
-                className="rounded-2xl bg-(--status-critical-surface) p-3 text-xs text-text-base"
-                role="alert"
+          <div
+            id="practice-panel-body"
+            className={cn("space-y-4", !isMobilePanelOpen && "max-lg:hidden")}
+          >
+            {/* Active CV Selector */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="practice-resume"
+                className="text-xs font-semibold text-text-base"
               >
-                {resumesError instanceof Error
-                  ? resumesError.message
-                  : "Failed to load CVs"}
-              </p>
-            ) : readyResumes.length === 0 ? (
-              <div className="flex items-start gap-2 rounded-2xl bg-jade-pale p-3">
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-jade-deep" />
-                <div className="text-[11px] font-medium text-jade-deep">
-                  No ready CV found.{" "}
-                  <Link
-                    href="/resumes"
-                    className="cursor-pointer rounded-sm font-bold underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+                Active CV
+              </label>
+              {isLoadingResumes ? (
+                <div className="flex items-center gap-2 py-2 text-xs text-text-base">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Loading CVs…
+                </div>
+              ) : resumesError ? (
+                <p
+                  className="rounded-2xl bg-(--status-critical-surface) p-3 text-xs text-text-base"
+                  role="alert"
+                >
+                  {resumesError instanceof Error
+                    ? resumesError.message
+                    : "Failed to load CVs"}
+                </p>
+              ) : readyResumes.length === 0 ? (
+                <div className="flex items-start gap-2 rounded-2xl bg-jade-pale p-3">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-jade-deep" />
+                  <div className="text-[11px] font-medium text-jade-deep">
+                    No ready CV found.{" "}
+                    <Link
+                      href="/resumes"
+                      className="cursor-pointer rounded-sm py-3 font-bold underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+                    >
+                      Upload one
+                    </Link>{" "}
+                    first to practice.
+                  </div>
+                </div>
+              ) : (
+                <select
+                  id="practice-resume"
+                  value={resolvedResumeId ?? ""}
+                  onChange={(e) => {
+                    setStoredResumeId(e.target.value);
+                    setActiveResumeId(e.target.value);
+                  }}
+                  className="min-h-11 w-full cursor-pointer rounded-2xl border border-border-hairline bg-paper-white px-3 py-2 text-base font-medium text-ink-black md:min-h-0 md:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+                >
+                  {readyResumes.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            <InterviewLocaleSelector />
+
+            {/* Choose level */}
+            <fieldset className="space-y-1.5">
+              <legend className="text-xs font-semibold text-text-base">
+                Difficulty Level
+              </legend>
+              <div className="grid grid-cols-3 gap-1">
+                {LEVELS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => handleLevelChange(opt.value)}
+                    aria-pressed={level === opt.value}
+                    className={cn(
+                      "flex min-h-11 cursor-pointer flex-col items-center justify-center rounded-2xl border px-1 py-2 text-center transition-colors md:min-h-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2",
+                      level === opt.value
+                        ? "border-jade bg-jade-pale font-semibold text-jade-deep"
+                        : "border-border-hairline bg-paper-white text-ink-black hover:bg-mist-gray",
+                    )}
                   >
-                    Upload one
-                  </Link>{" "}
-                  first to practice.
+                    <span className="text-xs">{opt.label.split(" ")[0]}</span>
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
+            {/* Choose turns */}
+            <div className="space-y-1.5">
+              <span
+                id="practice-turns-label"
+                className="text-xs font-semibold text-text-base"
+              >
+                Number of turns
+              </span>
+              <div
+                role="group"
+                aria-labelledby="practice-turns-label"
+                className="flex items-center justify-between rounded-2xl border border-border-hairline bg-paper-white py-0.5 pr-1 pl-3 md:px-3 md:py-1.5"
+              >
+                <span className="text-sm font-medium text-ink-black">
+                  {turns} turns
+                </span>
+                {/* Row of 44px targets on touch screens, compact stack from md. */}
+                <div className="flex flex-row-reverse md:flex-col">
+                  <button
+                    type="button"
+                    aria-label="Increase number of turns"
+                    disabled={turns >= MAX_INTERVIEW_TURNS}
+                    onClick={handleIncreaseTurns}
+                    className="inline-flex size-11 cursor-pointer items-center justify-center rounded-full text-text-base md:size-auto md:rounded-none transition-colors hover:text-jade-deep disabled:pointer-events-none disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade"
+                  >
+                    <ChevronUp className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Decrease number of turns"
+                    disabled={turns <= MIN_INTERVIEW_TURNS}
+                    onClick={handleDecreaseTurns}
+                    className="inline-flex size-11 cursor-pointer items-center justify-center rounded-full text-text-base md:size-auto md:rounded-none transition-colors hover:text-jade-deep disabled:pointer-events-none disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade"
+                  >
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               </div>
-            ) : (
-              <select
-                id="practice-resume"
-                value={resolvedResumeId ?? ""}
-                onChange={(e) => {
-                  setStoredResumeId(e.target.value);
-                  setActiveResumeId(e.target.value);
-                }}
-                className="w-full cursor-pointer rounded-2xl border border-border-hairline bg-paper-white px-3 py-2 text-sm font-medium text-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+            </div>
+
+            {/* Optional job description */}
+            <div className="space-y-1.5">
+              <button
+                id="practice-job-description-label"
+                type="button"
+                onClick={() => setShowJobDescription((open) => !open)}
+                aria-expanded={showJobDescription}
+                aria-controls="practice-job-description"
+                className="flex min-h-11 w-full cursor-pointer items-center justify-between text-xs font-semibold text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
               >
-                {readyResumes.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-
-          <InterviewLocaleSelector />
-
-          {/* Choose level */}
-          <fieldset className="space-y-1.5">
-            <legend className="text-xs font-semibold text-text-base">
-              Difficulty Level
-            </legend>
-            <div className="grid grid-cols-3 gap-1">
-              {LEVELS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => handleLevelChange(opt.value)}
-                  aria-pressed={level === opt.value}
+                <span>Job description (optional)</span>
+                <ChevronRight
                   className={cn(
-                    "flex cursor-pointer flex-col items-center justify-center rounded-2xl border px-1 py-2 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2",
-                    level === opt.value
-                      ? "border-jade bg-jade-pale font-semibold text-jade-deep"
-                      : "border-border-hairline bg-paper-white text-ink-black hover:bg-mist-gray",
+                    "h-3.5 w-3.5 transition-transform",
+                    showJobDescription && "rotate-90",
                   )}
-                >
-                  <span className="text-xs">{opt.label.split(" ")[0]}</span>
-                </button>
-              ))}
-            </div>
-          </fieldset>
-
-          {/* Choose turns */}
-          <div className="space-y-1.5">
-            <span
-              id="practice-turns-label"
-              className="text-xs font-semibold text-text-base"
-            >
-              Number of turns
-            </span>
-            <div
-              role="group"
-              aria-labelledby="practice-turns-label"
-              className="flex items-center justify-between rounded-2xl border border-border-hairline bg-paper-white px-3 py-1.5"
-            >
-              <span className="text-sm font-medium text-ink-black">
-                {turns} turns
-              </span>
-              <div className="flex flex-col">
-                <button
-                  type="button"
-                  aria-label="Increase number of turns"
-                  disabled={turns >= MAX_INTERVIEW_TURNS}
-                  onClick={handleIncreaseTurns}
-                  className="cursor-pointer text-text-base transition-colors hover:text-jade-deep disabled:pointer-events-none disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade"
-                >
-                  <ChevronUp className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Decrease number of turns"
-                  disabled={turns <= MIN_INTERVIEW_TURNS}
-                  onClick={handleDecreaseTurns}
-                  className="cursor-pointer text-text-base transition-colors hover:text-jade-deep disabled:pointer-events-none disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade"
-                >
-                  <ChevronDown className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Optional job description */}
-          <div className="space-y-1.5">
-            <button
-              id="practice-job-description-label"
-              type="button"
-              onClick={() => setShowJobDescription((open) => !open)}
-              aria-expanded={showJobDescription}
-              aria-controls="practice-job-description"
-              className="flex min-h-11 w-full cursor-pointer items-center justify-between text-xs font-semibold text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
-            >
-              <span>Job description (optional)</span>
-              <ChevronRight
-                className={cn(
-                  "h-3.5 w-3.5 transition-transform",
-                  showJobDescription && "rotate-90",
-                )}
-              />
-            </button>
-            {showJobDescription && (
-              <div className="space-y-1">
-                <textarea
-                  id="practice-job-description"
-                  aria-labelledby="practice-job-description-label"
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                  placeholder="Paste a job posting to tailor questions to a specific role…"
-                  rows={4}
-                  maxLength={MAX_JOB_DESCRIPTION_LENGTH}
-                  className="w-full resize-y rounded-2xl border border-border-hairline bg-paper-white px-3 py-2 text-xs text-ink-black placeholder:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
                 />
-                <p className="text-right text-[10px] text-text-base">
-                  {jobDescription.length}/{MAX_JOB_DESCRIPTION_LENGTH}
-                </p>
-              </div>
-            )}
-          </div>
+              </button>
+              {showJobDescription && (
+                <div className="space-y-1">
+                  <textarea
+                    id="practice-job-description"
+                    aria-labelledby="practice-job-description-label"
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                    placeholder="Paste a job posting to tailor questions to a specific role…"
+                    rows={4}
+                    maxLength={MAX_JOB_DESCRIPTION_LENGTH}
+                    className="w-full resize-y rounded-2xl border border-border-hairline bg-paper-white px-3 py-2 text-base text-ink-black md:text-xs placeholder:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+                  />
+                  <p className="text-right text-[10px] text-text-base">
+                    {jobDescription.length}/{MAX_JOB_DESCRIPTION_LENGTH}
+                  </p>
+                </div>
+              )}
+            </div>
 
-          {/* Start New Session CTA */}
-          <SessionQuotaHint
-            bucket={quota?.practice}
-            isError={isQuotaError}
-            isLoading={isQuotaLoading}
-            dataUpdatedAt={quotaUpdatedAt}
-          />
-          <button
-            type="button"
-            disabled={
-              isCreatingSession ||
-              Boolean(resumesError) ||
-              readyResumes.length === 0 ||
-              quotaExhausted
-            }
-            onClick={handleStartNewInterview}
-            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-jade-deep px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink-black disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
-          >
-            {isCreatingSession ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Plus className="h-4 w-4" />
-            )}
-            Start New Practice
-          </button>
+            {/* Start New Session CTA */}
+            <SessionQuotaHint
+              bucket={quota?.practice}
+              isError={isQuotaError}
+              isLoading={isQuotaLoading}
+              dataUpdatedAt={quotaUpdatedAt}
+            />
+            <button
+              type="button"
+              disabled={
+                isCreatingSession ||
+                Boolean(resumesError) ||
+                readyResumes.length === 0 ||
+                quotaExhausted
+              }
+              onClick={handleStartNewInterview}
+              className="flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-jade-deep px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink-black disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+            >
+              {isCreatingSession ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+              Start New Practice
+            </button>
+          </div>
         </div>
 
         {/* Sessions History */}
-        <div className="flex flex-none flex-col">
+        <div
+          className={cn(
+            "flex flex-none flex-col",
+            !isMobilePanelOpen && "max-lg:hidden",
+          )}
+        >
           <div className="flex items-center gap-2 border-b border-border-hairline bg-mist-gray p-3">
             <Clock className="h-3.5 w-3.5 text-text-base" />
             <span className="text-xs font-semibold text-text-base">
@@ -530,7 +560,7 @@ function PracticeContent() {
                       type="button"
                       aria-label="Delete conversation"
                       onClick={() => setSessionPendingDelete(sess.id)}
-                      className="flex w-10 shrink-0 cursor-pointer items-center justify-center text-text-base transition-colors hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-jade"
+                      className="flex w-11 shrink-0 cursor-pointer items-center justify-center text-text-base transition-colors hover:text-red-700 md:w-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-jade"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -546,7 +576,7 @@ function PracticeContent() {
                 type="button"
                 disabled={isFetchingNextPage}
                 onClick={() => void handleLoadMore()}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-border-hairline bg-paper-white px-4 py-2 text-xs font-semibold text-ink-black transition-colors hover:bg-mist-gray disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+                className="flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-border-hairline bg-paper-white px-4 py-2 text-xs font-semibold text-ink-black md:min-h-0 transition-colors hover:bg-mist-gray disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
               >
                 {isFetchingNextPage ? (
                   <>
@@ -597,7 +627,7 @@ function PracticeContent() {
             </p>
           </div>
         ) : resolvedSessionId ? (
-          <div className="flex-1 flex flex-col h-full p-4 overflow-hidden">
+          <div className="flex h-full flex-1 flex-col overflow-hidden p-3 sm:p-4">
             <InterviewChat
               key={resolvedSessionId}
               sessionId={resolvedSessionId}
@@ -614,7 +644,7 @@ function PracticeContent() {
             </p>
           </div>
         ) : (
-          <div className="flex flex-1 items-center justify-center bg-paper-white p-8">
+          <div className="flex flex-1 items-center justify-center overflow-y-auto bg-paper-white p-6 sm:p-8">
             <AppEmptyState
               icon={<MessageSquare className="h-6 w-6" />}
               title="AI mock interview"
@@ -629,7 +659,7 @@ function PracticeContent() {
                   {readyResumes.length === 0 && (
                     <Link
                       href="/resumes"
-                      className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-jade-deep px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+                      className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full bg-jade-deep px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
                     >
                       Go to Resumes
                     </Link>

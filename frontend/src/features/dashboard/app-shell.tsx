@@ -39,8 +39,11 @@ export function AppShell({
     return () => desktopMedia.removeEventListener("change", closeAtDesktop);
   }, []);
 
+  // Safe-area insets keep content clear of notches and the home indicator
+  // when the app runs edge-to-edge (viewport-fit=cover / standalone PWA).
+  // They resolve to 0 everywhere else.
   return (
-    <div className="app-canvas manrope flex h-dvh min-h-0 overflow-hidden bg-paper-white text-ink-black">
+    <div className="app-canvas manrope flex h-dvh min-h-0 overflow-hidden bg-paper-white pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] text-ink-black md:pt-[env(safe-area-inset-top)]">
       <AppSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
       <div
@@ -49,13 +52,14 @@ export function AppShell({
         inert={sidebarOpen || undefined}
       >
         {/* Mobile top bar */}
-        <div className="flex h-16 items-center gap-3 border-b border-border-hairline bg-paper-white px-6 md:hidden">
+        <div className="box-content flex h-16 shrink-0 items-center gap-3 border-b border-border-hairline bg-paper-white px-4 pt-[env(safe-area-inset-top)] sm:px-6 md:hidden">
           <button
             ref={menuButtonRef}
             type="button"
             onClick={() => setSidebarOpen(true)}
             className="-ml-2 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-text-base transition-colors hover:bg-mist-gray hover:text-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
             aria-label="Open navigation"
+            data-tour="tour-mobile-menu"
             aria-expanded={sidebarOpen}
             aria-controls="app-mobile-navigation"
           >
@@ -74,8 +78,8 @@ export function AppShell({
         <main
           className={`relative min-h-0 flex-1 bg-paper-white ${
             noPadding
-              ? "flex flex-col overflow-hidden *:min-h-0 *:flex-1"
-              : "overflow-y-auto px-6 py-6 md:px-10 md:py-8"
+              ? "flex flex-col overflow-hidden pb-[env(safe-area-inset-bottom)] *:min-h-0 *:flex-1"
+              : "overflow-y-auto overscroll-contain px-4 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:px-6 md:px-10 md:pt-8 md:pb-[calc(2rem+env(safe-area-inset-bottom))]"
           }`}
         >
           {children}

@@ -387,7 +387,9 @@ function ReviewSessionChatContent({ sessionId }: ReviewSessionChatProps) {
     }
   }
 
-  sendTurnRef.current = sendTurn;
+  useEffect(() => {
+    sendTurnRef.current = sendTurn;
+  });
 
   useEffect(() => {
     if (!sessionQuery.isSuccess) return;

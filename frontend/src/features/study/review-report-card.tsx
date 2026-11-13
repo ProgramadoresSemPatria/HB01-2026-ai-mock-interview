@@ -72,7 +72,7 @@ export function ReviewReportCard({
 
   return (
     <AppCard as="li" className="overflow-hidden p-0">
-      <div className="space-y-4 p-5">
+      <div className="space-y-4 p-4 sm:p-5">
         <header className="flex flex-wrap items-start justify-between gap-2">
           <h2 className="min-w-0 flex-1 font-semibold text-ink-black">
             {card.topic}
@@ -93,7 +93,7 @@ export function ReviewReportCard({
         <SuggestionLine card={card} />
       </div>
 
-      <div className="flex flex-wrap gap-x-8 gap-y-3 border-t border-border-hairline px-5 py-4">
+      <div className="flex flex-wrap gap-x-8 gap-y-3 border-t border-border-hairline px-4 py-4 sm:px-5">
         <fieldset>
           <legend className="mb-2 text-xs font-medium text-text-base">
             Review outcome

@@ -61,7 +61,7 @@ export default function DashboardPage() {
   }
 
   const header = (
-    <header className="flex shrink-0 items-center justify-between border-b border-border-hairline bg-paper-white px-6 py-3">
+    <header className="flex shrink-0 items-center justify-between border-b border-border-hairline bg-paper-white px-4 py-1 sm:px-6 md:py-3">
       <div
         role="tablist"
         aria-label="Dashboard sections"
@@ -79,7 +79,7 @@ export default function DashboardPage() {
             onClick={() => setActiveTab(tab)}
             onKeyDown={(event) => handleTabKeyDown(event, index)}
             className={cn(
-              "cursor-pointer border-b-2 px-0.5 pb-1 text-sm transition-colors focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-jade-deep",
+              "inline-flex min-h-11 cursor-pointer items-center border-b-2 px-0.5 pt-1 text-sm transition-colors focus-visible:rounded-sm md:min-h-0 md:pt-0 md:pb-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-jade-deep",
               activeTab === tab
                 ? "border-jade font-medium text-jade-deep"
                 : "border-transparent text-text-base hover:text-ink-black",

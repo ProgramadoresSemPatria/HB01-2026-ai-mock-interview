@@ -228,7 +228,7 @@ export function StudyHubContent() {
               action={
                 <Link
                   href="/practice"
-                  className="inline-flex cursor-pointer rounded-full bg-jade-deep px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+                  className="inline-flex min-h-11 cursor-pointer items-center rounded-full bg-jade-deep px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
                 >
                   Go to Practice
                 </Link>

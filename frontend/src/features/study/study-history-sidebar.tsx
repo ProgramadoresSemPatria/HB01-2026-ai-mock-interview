@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { Clock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppEmptyState } from "@/components/app/app-empty-state";
+import { MobilePanelToggle } from "@/components/app/mobile-panel-toggle";
+import { cn } from "@/lib/utils";
 import { useDeleteReviewSession } from "@/lib/query/hooks/use-delete-review-session";
 import { useReviewSessionsInfinite } from "@/lib/query/hooks/use-review-sessions-list";
 
@@ -28,6 +31,9 @@ export function StudyHistorySidebar({
     isFetchingNextPage,
   } = useReviewSessionsInfinite({ status: "completed", limit: 10 });
   const deleteReviewSession = useDeleteReviewSession();
+  // Phones stack the history above the study hub; keep it collapsed until
+  // asked for so the backlog stays the first thing on screen.
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   async function handleLoadMore() {
     const result = await fetchNextPage();
@@ -49,9 +55,21 @@ export function StudyHistorySidebar({
         <span className="text-xs font-semibold text-text-base">
           Previous review sessions
         </span>
+        <MobilePanelToggle
+          open={mobileOpen}
+          onToggle={() => setMobileOpen((open) => !open)}
+          controls="study-history-list"
+          label="previous review sessions"
+        />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div
+        id="study-history-list"
+        className={cn(
+          "min-h-0 flex-1 overflow-y-auto overscroll-contain",
+          !mobileOpen && "max-lg:hidden",
+        )}
+      >
         <div className="divide-y divide-border-hairline">
           {isLoading ? (
             <div className="flex items-center justify-center gap-2 py-8 text-xs text-text-base">
@@ -80,7 +98,10 @@ export function StudyHistorySidebar({
                 key={session.id}
                 summary={session}
                 isActive={activeSessionId === session.id}
-                onSelect={() => onSelectSession(session.id)}
+                onSelect={() => {
+                  setMobileOpen(false);
+                  onSelectSession(session.id);
+                }}
                 onDelete={() => deleteReviewSession.mutate(session.id)}
               />
             ))
@@ -93,7 +114,7 @@ export function StudyHistorySidebar({
               type="button"
               disabled={isFetchingNextPage}
               onClick={() => void handleLoadMore()}
-              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-border-hairline bg-paper-white px-4 py-2 text-xs font-semibold text-ink-black transition-colors hover:bg-mist-gray disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+              className="flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-border-hairline bg-paper-white px-4 py-2 text-xs font-semibold text-ink-black md:min-h-0 transition-colors hover:bg-mist-gray disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
             >
               {isFetchingNextPage ? (
                 <>

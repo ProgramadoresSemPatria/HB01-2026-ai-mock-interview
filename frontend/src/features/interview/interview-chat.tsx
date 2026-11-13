@@ -360,7 +360,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
 
   return (
     <div className="flex flex-col h-full w-full min-h-0">
-      <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-3">
+      <div className="mb-3 flex shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 sm:mb-4">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-2">
           <h2 className="instrument-serif shrink-0 text-2xl leading-tight text-ink-black">
             Mock interview
@@ -412,7 +412,8 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
           <button
             type="button"
             onClick={() => setViewMode("review")}
-            className="inline-flex min-h-11 shrink-0 cursor-pointer items-center rounded-sm text-sm font-medium text-jade-deep underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+            // Phones already have the Chat/Review switch; skip the duplicate row.
+            className="hidden min-h-11 shrink-0 cursor-pointer items-center rounded-sm text-sm sm:inline-flex font-medium text-jade-deep underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
           >
             View review
           </button>
@@ -433,7 +434,7 @@ export function InterviewChat({ sessionId }: { sessionId: string }) {
           />
 
           {isCompleted && (
-            <div className="mt-4 shrink-0">
+            <div className="mt-3 max-h-[45%] shrink-0 overflow-y-auto overscroll-contain sm:mt-4 md:max-h-none md:overflow-visible">
               <InterviewCompletionBanner
                 sessionId={sessionId}
                 onViewReview={() => setViewMode("review")}

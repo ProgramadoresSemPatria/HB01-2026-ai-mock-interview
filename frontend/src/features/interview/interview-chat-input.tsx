@@ -57,7 +57,9 @@ export function InterviewChatInput({
   }
 
   return (
-    <div className="mt-4 space-y-2">
+    // A finished interview's composer is permanently disabled; on phones it
+    // only steals height from the transcript, so it is hidden there.
+    <div className={`mt-3 space-y-2 sm:mt-4 ${isFinished ? "max-md:hidden" : ""}`}>
       {isStreaming && (
         <p className="text-xs text-text-base" role="status">
           AI is responding…
@@ -78,7 +80,8 @@ export function InterviewChatInput({
           placeholder={placeholder}
           disabled={isInputDisabled}
           aria-busy={isStreaming}
-          className="min-h-11 min-w-0 flex-1 resize-none overflow-y-auto rounded-2xl border border-border-hairline bg-paper-white px-4 py-2.5 text-sm text-ink-black placeholder:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2 disabled:opacity-50"
+          enterKeyHint="send"
+          className="min-h-11 min-w-0 flex-1 resize-none overflow-y-auto rounded-2xl border border-border-hairline bg-paper-white px-4 py-2.5 text-base text-ink-black md:text-sm placeholder:text-text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2 disabled:opacity-50"
         />
         {hasSpeechToText && locale && getAccessToken && onTranscript && (
           <InterviewMicControl
@@ -92,7 +95,7 @@ export function InterviewChatInput({
         <button
           type="submit"
           disabled={isInputDisabled || !draft.trim()}
-          className="flex min-h-11 min-w-22 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-jade-deep px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink-black disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+          className="flex min-h-11 min-w-18 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-jade-deep px-4 py-2.5 sm:min-w-22 text-sm font-semibold text-white transition-colors hover:bg-ink-black disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
         >
           Send
         </button>

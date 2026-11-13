@@ -14,7 +14,7 @@ import {
 } from "@/features/auth/session-provider";
 
 const authInputClassName =
-  "manrope h-12 rounded-[var(--radius-inputs)] border-[var(--color-border-hairline)] bg-[var(--color-paper-white)] text-sm text-[var(--color-ink-black)] shadow-none placeholder:text-[var(--text-base)] focus-visible:border-[var(--color-jade-deep)] focus-visible:ring-[var(--color-jade-deep)] disabled:bg-[var(--color-mist-gray)] disabled:text-[var(--color-ink-black)] disabled:opacity-100";
+  "manrope h-12 rounded-[var(--radius-inputs)] border-[var(--color-border-hairline)] bg-[var(--color-paper-white)] text-base text-[var(--color-ink-black)] shadow-none sm:text-sm placeholder:text-[var(--text-base)] focus-visible:border-[var(--color-jade-deep)] focus-visible:ring-[var(--color-jade-deep)] disabled:bg-[var(--color-mist-gray)] disabled:text-[var(--color-ink-black)] disabled:opacity-100";
 
 export default function SignInForm() {
   const { login } = useAuth();
@@ -82,6 +82,11 @@ export default function SignInForm() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
+              inputMode="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="next"
               disabled={isSubmitting}
               className={authInputClassName}
             />
@@ -102,6 +107,7 @@ export default function SignInForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
+              enterKeyHint="go"
               disabled={isSubmitting}
               className={authInputClassName}
             />

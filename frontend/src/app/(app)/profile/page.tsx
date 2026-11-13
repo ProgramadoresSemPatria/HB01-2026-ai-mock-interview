@@ -116,7 +116,7 @@ export default function ProfilePage() {
                   id="resume-select"
                   value={resolvedResumeId ?? ""}
                   onChange={(e) => setSelectedResumeId(e.target.value)}
-                  className="cursor-pointer rounded-full border border-border-hairline bg-paper-white px-3 py-1.5 text-sm font-medium text-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+                  className="min-h-11 max-w-full min-w-0 cursor-pointer rounded-full border border-border-hairline bg-paper-white px-3 py-1.5 text-base font-medium text-ink-black md:min-h-0 md:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
                 >
                   {readyResumes.map((r) => (
                     <option key={r.id} value={r.id}>
@@ -159,7 +159,7 @@ export default function ProfilePage() {
             action={
               <a
                 href="/resumes"
-                className="inline-flex cursor-pointer rounded-full bg-jade-deep px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+                className="inline-flex min-h-11 cursor-pointer items-center rounded-full bg-jade-deep px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
               >
                 Go to Resumes
               </a>

@@ -83,8 +83,8 @@ export function StudyHubShell() {
     (sessionQuery.isLoading || isRedirecting || !sessionQuery.isFetched);
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden md:flex-row">
-      <aside className="flex max-h-[48%] w-full shrink-0 flex-col overflow-hidden border-b border-border-hairline bg-fog-white md:h-full md:max-h-none md:w-80 md:border-r md:border-b-0">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden lg:flex-row">
+      <aside className="flex max-h-[60%] w-full shrink-0 flex-col overflow-hidden border-b border-border-hairline bg-fog-white lg:h-full lg:max-h-none lg:w-80 lg:border-r lg:border-b-0">
         <StudyHistorySidebar
           activeSessionId={showTranscript ? sessionId : null}
           onSelectSession={handleSelectSession}
@@ -97,14 +97,14 @@ export function StudyHubShell() {
             label={isRedirecting ? "Opening session…" : "Loading session…"}
           />
         ) : showTranscript && sessionId ? (
-          <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden p-4">
+          <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden p-3 sm:p-4">
             <StudySessionTranscript
               sessionId={sessionId}
               onBack={handleBackToHub}
             />
           </div>
         ) : (
-          <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6 md:px-10 md:py-8">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-6 sm:px-6 md:px-10 md:py-8">
             <StudyHubContent />
           </div>
         )}

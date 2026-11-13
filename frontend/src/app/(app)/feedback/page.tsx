@@ -23,6 +23,7 @@ import type { SessionMessage } from "@/types/interview";
 import { AppCard } from "@/components/app/app-card";
 import { AppEmptyState } from "@/components/app/app-empty-state";
 import { AppPageHeader } from "@/components/app/app-page-header";
+import { MobilePanelToggle } from "@/components/app/mobile-panel-toggle";
 
 function getClosingFeedback(messages: SessionMessage[]): string | null {
   for (let i = messages.length - 1; i >= 0; i -= 1) {
@@ -74,7 +75,7 @@ function SessionFeedbackDetail({
           : "Failed to load feedback details";
 
     return (
-      <div className="h-full overflow-y-auto space-y-6 p-6">
+      <div className="h-full space-y-6 overflow-y-auto overscroll-contain p-4 sm:p-6">
         <AppPageHeader
           headingLevel={2}
           title="Feedback details"
@@ -93,7 +94,7 @@ function SessionFeedbackDetail({
   }
 
   return (
-    <div className="h-full overflow-y-auto p-6 space-y-6">
+    <div className="h-full space-y-6 overflow-y-auto overscroll-contain p-4 sm:p-6">
       <AppPageHeader
         headingLevel={2}
         title="Feedback details"
@@ -107,7 +108,7 @@ function SessionFeedbackDetail({
           </h3>
           <AppCard
             variant="mist"
-            className="prose prose-sm max-w-none space-y-2.5 px-5 py-4 text-sm leading-relaxed text-text-base [&_li]:my-0.5 [&_ol]:list-decimal [&_ol]:pl-4 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-4"
+            className="prose prose-sm max-w-none space-y-2.5 px-4 py-4 text-sm leading-relaxed sm:px-5 text-text-base [&_li]:my-0.5 [&_ol]:list-decimal [&_ol]:pl-4 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-4"
           >
             <ReactMarkdown>{closingFeedback}</ReactMarkdown>
           </AppCard>
@@ -174,6 +175,11 @@ function FeedbackContent() {
   const resolvedSessionId =
     selectedSessionId ?? finishedSessions[0]?.id ?? null;
 
+  // Phones stack the report list above the details; collapse it once a
+  // report is showing so the details get the screen.
+  const [mobileListOpen, setMobileListOpen] = useState<boolean | null>(null);
+  const isMobileListOpen = mobileListOpen ?? !resolvedSessionId;
+
   const deletingId = deleteSession.isPending
     ? (deleteSession.variables ?? null)
     : null;
@@ -208,15 +214,27 @@ function FeedbackContent() {
   const selectedResumeName = selectedSession?.resumeName ?? "Resume";
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden md:flex-row">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden lg:flex-row">
       {/* Sidebar List */}
-      <aside className="flex max-h-[42%] w-full shrink-0 flex-col overflow-hidden border-b border-border-hairline bg-fog-white md:h-full md:max-h-none md:w-80 md:border-r md:border-b-0">
+      <aside className="flex max-h-[60%] w-full shrink-0 flex-col overflow-hidden border-b border-border-hairline bg-fog-white lg:h-full lg:max-h-none lg:w-80 lg:border-r lg:border-b-0">
         <div className="flex items-center gap-2 border-b border-border-hairline p-4 text-ink-black">
           <BookOpen className="h-5 w-5" />
           <h1 className="text-sm font-semibold">Feedback</h1>
+          <MobilePanelToggle
+            open={isMobileListOpen}
+            onToggle={() => setMobileListOpen(!isMobileListOpen)}
+            controls="feedback-report-list"
+            label="feedback reports"
+          />
         </div>
 
-        <div className="flex-1 divide-y divide-border-hairline overflow-y-auto">
+        <div
+          id="feedback-report-list"
+          className={cn(
+            "flex-1 divide-y divide-border-hairline overflow-y-auto overscroll-contain",
+            !isMobileListOpen && "max-lg:hidden",
+          )}
+        >
           {isLoadingSessions ? (
             <div
               className="flex items-center justify-center gap-2 py-12 text-xs text-text-base"
@@ -265,7 +283,10 @@ function FeedbackContent() {
                 >
                   <button
                     type="button"
-                    onClick={() => setSelectedSessionId(sess.id)}
+                    onClick={() => {
+                      setSelectedSessionId(sess.id);
+                      setMobileListOpen(false);
+                    }}
                     className="flex min-h-11 min-w-0 flex-1 cursor-pointer flex-col gap-1 rounded-xl p-1.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
                   >
                     <span className="truncate text-xs font-semibold text-ink-black">

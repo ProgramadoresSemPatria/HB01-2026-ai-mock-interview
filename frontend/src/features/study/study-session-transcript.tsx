@@ -87,7 +87,7 @@ export function StudySessionTranscript({
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-sm text-sm font-medium text-jade-deep transition-colors hover:text-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
+            className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-sm text-sm font-medium text-jade-deep transition-colors md:min-h-0 hover:text-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade focus-visible:ring-offset-2"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden />
             Back
