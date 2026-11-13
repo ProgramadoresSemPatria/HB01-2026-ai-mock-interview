@@ -9,6 +9,7 @@ import LandingCta from "@/components/landing/get-started-button";
 const NAV_LINKS = [
   { label: "Product", href: "/#features" },
   { label: "How it works", href: "/#demo" },
+  { label: "Get the app", href: "/download" },
 ];
 
 const SCROLL_THRESHOLD = 24;
@@ -36,23 +37,23 @@ export default function LandingNavbar() {
       }`}
     >
       <nav
-        className="landing-container flex h-16 items-center justify-between"
+        className="mx-auto flex h-16 w-full max-w-[1360px] items-center justify-between px-6 md:h-20 md:px-10"
         aria-label="Main navigation"
       >
         <Link
           href="/"
-          className="instrument-serif text-2xl font-normal tracking-tight text-[var(--color-ink-black)]"
+          className="instrument-serif text-[26px] font-normal tracking-tight text-[var(--color-ink-black)] md:text-[30px]"
           aria-label="Hone home"
         >
           Hone
         </Link>
 
-        <div className="hidden items-center gap-8 md:flex">
+        <div className="hidden items-center gap-10 md:flex">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.label}
               href={link.href}
-              className="manrope text-base font-normal text-[var(--color-ink-black)] transition-opacity hover:opacity-60"
+              className="manrope text-base font-normal text-[var(--color-ink-black)] transition-opacity hover:opacity-60 lg:text-[17px]"
             >
               {link.label}
             </Link>
@@ -89,7 +90,7 @@ export default function LandingNavbar() {
               <Link
                 key={link.label}
                 href={link.href}
-                className="manrope text-base text-[var(--color-ink-black)]"
+                className="manrope py-1 text-lg text-[var(--color-ink-black)]"
                 onClick={() => setOpen(false)}
               >
                 {link.label}

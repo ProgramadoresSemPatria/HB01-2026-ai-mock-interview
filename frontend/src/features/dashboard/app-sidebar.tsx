@@ -12,11 +12,13 @@ import {
   FileText,
   User,
   HelpCircle,
+  Smartphone,
   X,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/session-provider";
+import { usePwaInstall } from "@/features/pwa/use-pwa-install";
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard", tour: undefined },
@@ -49,6 +51,7 @@ type AppSidebarProps = {
 export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { isInstalled } = usePwaInstall();
   const mobileDialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -116,7 +119,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   }, [isOpen, onClose]);
 
   const sidebar = (
-    <aside className="manrope flex h-full w-60 shrink-0 flex-col border-r border-border-hairline bg-fog-white text-ink-black">
+    <aside className="manrope flex h-full w-60 max-w-[85vw] shrink-0 flex-col overflow-y-auto overscroll-contain border-r border-border-hairline bg-fog-white pb-[env(safe-area-inset-bottom)] text-ink-black">
       <div className="flex items-start justify-between px-6 pt-6 pb-8">
         <div>
           <p className="instrument-serif text-2xl font-normal tracking-tight text-ink-black">
@@ -148,7 +151,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
               data-tour={tour}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade-deep focus-visible:ring-offset-2",
+                "flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors md:min-h-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade-deep focus-visible:ring-offset-2",
                 active
                   ? "bg-jade-mist font-medium text-jade-deep"
                   : "text-text-base hover:bg-mist-gray hover:text-ink-black",
@@ -162,6 +165,16 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
       </nav>
 
       <div className="space-y-3 border-t border-border-hairline px-3 pt-4 pb-6">
+        {!isInstalled && (
+          <Link
+            href="/download"
+            onClick={onClose}
+            className="flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg border border-border-hairline px-3 py-2.5 text-sm text-text-base transition-colors hover:bg-mist-gray hover:text-ink-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade-deep focus-visible:ring-offset-2 md:min-h-0"
+          >
+            <Smartphone className="h-4 w-4 shrink-0 text-jade-deep" aria-hidden="true" />
+            Install the app
+          </Link>
+        )}
         <Link
           href="/practice"
           onClick={onClose}
@@ -197,7 +210,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
         <div
           ref={mobileDialogRef}
           id="app-mobile-navigation"
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          className="fixed inset-0 z-[60] bg-black/50 md:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="App navigation"
@@ -208,7 +221,9 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             }
           }}
         >
-          <div className="absolute inset-y-0 left-0 flex">{sidebar}</div>
+          <div className="absolute inset-y-0 left-0 flex bg-fog-white pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)]">
+            {sidebar}
+          </div>
         </div>
       )}
     </>

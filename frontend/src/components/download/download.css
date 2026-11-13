@@ -1,0 +1,40 @@
+/* /download page — small additions on top of the landing visual system. */
+
+.download-caret {
+  display: inline-block;
+  width: 6px;
+  height: 12px;
+  margin-left: 3px;
+  vertical-align: -1px;
+  border-radius: 1px;
+  background: var(--color-jade);
+  animation: download-caret-blink 1s steps(2, start) infinite;
+}
+
+@keyframes download-caret-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+.download-faq summary {
+  list-style: none;
+}
+
+.download-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.download-faq details[open] .download-faq-chevron {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .download-caret {
+    animation: none;
+  }
+
+  .download-faq-chevron {
+    transition: none !important;
+  }
+}
